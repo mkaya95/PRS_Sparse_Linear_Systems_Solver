@@ -72,6 +72,27 @@ struct KRestrict {
   }
 };
 
+// L2: SIMD on the vector kernels. GCC vectorizes floating-point sums only with this pragma or
+// -ffast-math, because adding in a different order can change the rounded result.
+struct KSimd : KRestrict {
+  SSOLVE_NOINLINE static double dot(const double* SSOLVE_RESTRICT x, const double* SSOLVE_RESTRICT y, std::size_t n) {
+    double sum = 0.0;
+#pragma omp simd reduction(+ : sum)
+    for (std::size_t i = 0; i < n; ++i) sum += x[i] * y[i];
+    return sum;
+  }
+  SSOLVE_NOINLINE static void axpy(double alpha, const double* SSOLVE_RESTRICT x, double* SSOLVE_RESTRICT y,
+                                   std::size_t n) {
+#pragma omp simd
+    for (std::size_t i = 0; i < n; ++i) y[i] += alpha * x[i];
+  }
+  SSOLVE_NOINLINE static void xpby(const double* SSOLVE_RESTRICT x, double beta, double* SSOLVE_RESTRICT y,
+                                   std::size_t n) {
+#pragma omp simd
+    for (std::size_t i = 0; i < n; ++i) y[i] = x[i] + beta * y[i];
+  }
+};
+
 // Textbook CG: one separate pass per operation, as in Eigen's loop.
 template <class K>
 SolveResult cg_passes(const CsrMatrix& a, const double* b, double* x, const SolveOptions& options) {
@@ -144,11 +165,12 @@ KernelSet make_kernels(const CsrMatrix& a) {
 
 }  // namespace
 
-std::vector<std::string> ladder_kernel_names() { return {"L0", "L1"}; }
+std::vector<std::string> ladder_kernel_names() { return {"L0", "L1", "L2"}; }
 
 KernelSet ladder_kernels(const std::string& name, const CsrMatrix& a) {
   if (name == "L0") return make_kernels<KNaive>(a);
   if (name == "L1") return make_kernels<KRestrict>(a);
+  if (name == "L2") return make_kernels<KSimd>(a);
   std::string names = "eigen";
   for (const std::string& valid : ladder_kernel_names()) names += ", " + valid;
   throw std::runtime_error("unknown implementation '" + name + "'. Valid names: " + names);
@@ -158,6 +180,7 @@ std::vector<NamedSolver> ladder_solvers() {
   return {
       {"L0-naive", Precond::None, cg_passes<KNaive>},
       {"L1-restrict", Precond::None, cg_passes<KRestrict>},
+      {"L2-simd", Precond::None, cg_passes<KSimd>},
   };
 }
 

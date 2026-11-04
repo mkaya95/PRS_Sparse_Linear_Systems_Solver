@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "kernels.hpp"
 #include "matrix_spec.hpp"
 #include "registry.hpp"
 #include "ssolve/generators.hpp"
@@ -265,8 +266,37 @@ TEST(our_solvers_match_eigen_spmv_counts) {
   }
 }
 
+TEST(every_ladder_spmv_matches_the_reference_on_all_short_row_lengths) {
+  // Row lengths 0 to 9 exercise each unrolled loop's remainder path.
+  const Index n = 16;
+  Coo coo;
+  coo.n_rows = n;
+  coo.n_cols = n;
+  for (Index i = 0; i < n; ++i) {
+    const Index length = i % 10;
+    for (Index offset = 0; offset < length; ++offset) {
+      coo.add(i, (i + 3 * offset) % n, 1.0 + 0.25 * i - 0.125 * offset);
+    }
+  }
+  const CsrMatrix a = csr_from_coo(coo);
+
+  std::vector<double> x(n), expected(n), y(n);
+  for (Index i = 0; i < n; ++i) x[i] = 1.0 / (1.0 + i);
+  spmv_reference(a, x.data(), expected.data());
+
+  for (const std::string& name : ssolve_bench::ladder_kernel_names()) {
+    y.assign(n, 99.0);
+    ssolve_bench::ladder_kernels(name, a).spmv(x.data(), y.data());
+    for (Index i = 0; i < n; ++i) {
+      if (!(std::fabs(y[i] - expected[i]) <= 1e-14 * (1.0 + std::fabs(expected[i])))) {
+        test_util::fail(name.c_str(), i, "SpMV differs from the reference");
+      }
+    }
+  }
+}
+
 TEST(the_ladder_has_every_rung) {
-  for (const char* name : {"L0-naive", "L1-restrict"}) {
+  for (const char* name : {"L0-naive", "L1-restrict", "L2-simd", "L3-acc2", "L3-unroll4", "L3-simdrow"}) {
     CHECK_EQ(ssolve_bench::find_solver(name).name, std::string(name));
   }
 }
