@@ -77,6 +77,8 @@ add_executable(bench_cg apps/bench_cg.cpp)
 target_link_libraries(bench_cg PRIVATE ssolve_bench)
 add_executable(bench_kernels apps/bench_kernels.cpp)
 target_link_libraries(bench_kernels PRIVATE ssolve_bench)
+add_executable(solve apps/solve.cpp)
+target_link_libraries(solve PRIVATE ssolve_bench)
 
 enable_testing()
 

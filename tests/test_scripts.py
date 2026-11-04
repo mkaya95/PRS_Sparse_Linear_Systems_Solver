@@ -277,6 +277,57 @@ class Ladder(unittest.TestCase):
             self.assertIn("0.707", l2)  # against L1
 
 
+class SolveCommand(unittest.TestCase):
+    def run_solve(self, *args):
+        return subprocess.run([os.path.join(BUILD_DIR, "solve"), *args], capture_output=True, text=True)
+
+    def test_a_converged_solve_exits_0_and_reports_the_true_residual(self):
+        done = self.run_solve("--matrix", "poisson2d:30")
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertIn("Converged", done.stdout)
+        line = next(l for l in done.stdout.splitlines() if l.startswith("true residual"))
+        self.assertLess(float(line.split()[-1]), 1e-7)
+
+    def test_jacobi_is_selectable(self):
+        done = self.run_solve("--matrix", "poisson2d:30", "--precond", "jacobi")
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertIn("jacobi", done.stdout)
+
+    def test_running_out_of_iterations_exits_2(self):
+        done = self.run_solve("--matrix", "poisson2d:30", "--maxit", "1")
+        self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
+        self.assertIn("MaxIterations", done.stdout)
+
+    def test_a_missing_file_exits_1_and_names_it(self):
+        done = self.run_solve("--matrix", "missing.mtx")
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("missing.mtx", done.stderr)
+
+    def test_an_unknown_preconditioner_exits_1(self):
+        done = self.run_solve("--matrix", "poisson2d:5", "--precond", "ilu")
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("ilu", done.stderr)
+
+    def test_a_nonsymmetric_matrix_file_is_rejected_before_iterating(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "n.mtx")
+            with open(path, "w", encoding="ascii") as f:
+                f.write("%%MatrixMarket matrix coordinate real general\n2 2 3\n1 1 2\n1 2 1\n2 2 2\n")
+            done = self.run_solve("--matrix", path)
+            self.assertEqual(done.returncode, 1)
+            self.assertIn("symmetric", done.stderr)
+
+    def test_the_solution_can_be_written_to_a_file(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "x.txt")
+            done = self.run_solve("--matrix", "poisson2d:5", "--out", path)
+            self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+            with open(path, encoding="ascii") as f:
+                values = [float(line) for line in f]
+            self.assertEqual(len(values), 25)
+            self.assertTrue(all(abs(v - 1.0) < 1e-5 for v in values))
+
+
 class Summarize(unittest.TestCase):
     def test_gate_table_reports_pass_and_fail(self):
         with tempfile.TemporaryDirectory() as d:
