@@ -102,8 +102,9 @@ class SeqBackend final : public Backend {
                                         const double* SSOLVE_RESTRICT val, const double* SSOLVE_RESTRICT x,
                                         std::size_t i) {
     double sum0 = 0.0, sum1 = 0.0;
-    Ptr k = row_ptr[i];
-    const Ptr end = row_ptr[i + 1];
+    // Widen once per row, so a 32-bit row pointer adds no sign extension to the inner loop.
+    std::int64_t k = row_ptr[i];
+    const std::int64_t end = row_ptr[i + 1];
     for (; k + 1 < end; k += 2) {
       sum0 += val[k] * x[col[k]];
       sum1 += val[k + 1] * x[col[k + 1]];
