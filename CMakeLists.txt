@@ -26,12 +26,19 @@ endif()
 
 include_directories(include)
 
+add_library(ssolve STATIC
+  src/formats/csr.cpp
+  src/verify.cpp
+)
+
 enable_testing()
 
 function(ssolve_test name)
   add_executable(${name} tests/${name}.cpp)
   target_include_directories(${name} PRIVATE tests)
+  target_link_libraries(${name} PRIVATE ssolve)
   add_test(NAME ${name} COMMAND ${name})
 endfunction()
 
 ssolve_test(test_aligned_array)
+ssolve_test(test_matrix)
