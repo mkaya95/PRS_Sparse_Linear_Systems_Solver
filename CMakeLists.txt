@@ -43,9 +43,11 @@ add_custom_target(ssolve_build_info
 add_library(ssolve STATIC
   src/bench/csv.cpp
   src/bench/manifest.cpp
+  src/backends/seq/seq_backend.cpp
   src/formats/csr.cpp
   src/io/generators.cpp
   src/io/mtx_reader.cpp
+  src/solvers/cg.cpp
   src/verify.cpp
 )
 add_dependencies(ssolve ssolve_build_info)
@@ -90,6 +92,7 @@ ssolve_test(test_matrix)
 ssolve_test(test_mtx_reader)
 ssolve_test(test_generators)
 ssolve_test(test_csv)
+ssolve_test(test_backend)
 
 add_executable(test_solvers tests/test_solvers.cpp)
 target_include_directories(test_solvers PRIVATE tests)

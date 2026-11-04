@@ -8,10 +8,14 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <memory>
 #include <stdexcept>
+#include <utility>
 
 #include "kernels.hpp"
 #include "registry.hpp"
+#include "ssolve/backend.hpp"
+#include "ssolve/cg.hpp"
 #include "ssolve/cg_common.hpp"
 #include "ssolve/kernels_common.hpp"
 #include "ssolve/timer.hpp"
@@ -215,6 +219,28 @@ SolveResult cg_passes(const CsrMatrix& a, const double* b, double* x, const Solv
   return result;
 }
 
+// The shipping solver, as a ladder rung. The copy of the matrix happens before any timer,
+// and building the backend counts as setup, like Eigen's compute().
+template <bool AllowNarrowRowPtr, bool InitialSpmv, Precond P>
+SolveResult run_backend(const CsrMatrix& a, const double* b, double* x, const SolveOptions& options) {
+  CsrMatrix copy = clone(a);
+  const double setup_start = wall_seconds();
+  const std::unique_ptr<Backend> backend = make_seq_backend(std::move(copy), AllowNarrowRowPtr);
+  AlignedArray<double> inv_diag;
+  if (P == Precond::Jacobi) inv_diag = jacobi_inverse_diagonal(a);
+  const double setup_seconds = wall_seconds() - setup_start;
+
+  SolveOptions used = options;
+  if (InitialSpmv && !options.use_initial_guess) {
+    // A zero guess makes cg() compute r = b - A x with an SpMV, as the earlier rungs do.
+    backend->set_zero(x);
+    used.use_initial_guess = true;
+  }
+  SolveResult result = cg(*backend, P == Precond::Jacobi ? inv_diag.data() : nullptr, b, x, used);
+  result.setup_seconds = setup_seconds;
+  return result;
+}
+
 template <class K>
 KernelSet make_kernels(const CsrMatrix& a) {
   const CsrMatrix* const matrix = &a;
@@ -254,6 +280,7 @@ std::vector<NamedSolver> ladder_solvers() {
       {"L3-acc2", Precond::None, cg_passes<KAcc2>},
       {"L3-unroll4", Precond::None, cg_passes<KUnroll4>},
       {"L3-simdrow", Precond::None, cg_passes<KSimdRow>},
+      {"L4-fused", Precond::None, run_backend<false, true, Precond::None>},
   };
 }
 
