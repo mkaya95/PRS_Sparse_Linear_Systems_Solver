@@ -1,5 +1,7 @@
 // Behaviour every solver must show. Each solver name registered in bench/ runs through these.
+#include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <limits>
 #include <string>
 #include <vector>
@@ -114,6 +116,152 @@ TEST(a_zero_iteration_limit_means_twice_n) {
     SolveOptions options;
     options.max_iterations = 0;
     CHECK(solve(solver, a, b, x, options).status == SolveStatus::Converged);
+  }
+}
+
+TEST(our_solvers_solve_a_large_2d_poisson_system) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 100);
+  const std::vector<double> b = unit_rhs(a);
+  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+    std::vector<double> x;
+    SolveOptions options;
+    options.max_iterations = 2000;
+    const SolveResult result = solve(solver, a, b, x, options);
+    CHECK(result.status == SolveStatus::Converged);
+    CHECK(true_relative_residual(a, b.data(), x.data()) < 1e-7);
+    check_near_ones(solver.name, x, 1e-5);
+  }
+}
+
+TEST(our_solvers_solve_a_1x1_system) {
+  const CsrMatrix a = diagonal_matrix({4});
+  const std::vector<double> b = {8};
+  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+    std::vector<double> x;
+    const SolveResult result = solve(solver, a, b, x);
+    CHECK_EQ(result.spmv_count, std::int64_t{1});
+    CHECK_NEAR(x[0], 2.0, 1e-14);
+  }
+}
+
+TEST(our_solvers_report_breakdown_on_an_indefinite_matrix) {
+  const CsrMatrix a = diagonal_matrix({1, -1});
+  const std::vector<double> b = {1, 1};
+  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+    std::vector<double> x;
+    CHECK_EQ(std::string(to_string(solve(solver, a, b, x).status)), std::string("Breakdown"));
+  }
+}
+
+TEST(our_solvers_report_breakdown_on_nan_values_without_spinning) {
+  const CsrMatrix a = diagonal_matrix({1, std::numeric_limits<double>::quiet_NaN()});
+  const std::vector<double> b = {1, 1};
+  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+    std::vector<double> x;
+    const SolveResult result = solve(solver, a, b, x);
+    CHECK_EQ(std::string(to_string(result.status)), std::string("Breakdown"));
+    CHECK_EQ(result.spmv_count, std::int64_t{1});
+  }
+}
+
+TEST(our_solvers_report_breakdown_on_a_nan_rhs) {
+  const CsrMatrix a = diagonal_matrix({1, 2});
+  const std::vector<double> b = {1, std::numeric_limits<double>::quiet_NaN()};
+  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+    std::vector<double> x;
+    CHECK_EQ(std::string(to_string(solve(solver, a, b, x).status)), std::string("Breakdown"));
+  }
+}
+
+TEST(our_solvers_do_not_mistake_an_all_nan_rhs_for_zero) {
+  const CsrMatrix a = diagonal_matrix({1, 2});
+  const double nan = std::numeric_limits<double>::quiet_NaN();
+  const std::vector<double> b = {nan, nan};
+  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+    std::vector<double> x;
+    CHECK_EQ(std::string(to_string(solve(solver, a, b, x).status)), std::string("Breakdown"));
+  }
+}
+
+TEST(our_solvers_report_breakdown_on_an_infinite_rhs) {
+  const CsrMatrix a = diagonal_matrix({1, 2});
+  const std::vector<double> b = {1, std::numeric_limits<double>::infinity()};
+  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+    std::vector<double> x;
+    CHECK_EQ(std::string(to_string(solve(solver, a, b, x).status)), std::string("Breakdown"));
+  }
+}
+
+TEST(our_solvers_reject_a_non_square_matrix) {
+  Coo coo;
+  coo.n_rows = 1;
+  coo.n_cols = 2;
+  coo.add(0, 0, 1);
+  const CsrMatrix a = csr_from_coo(coo);
+  const std::vector<double> b = {1};
+  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+    std::vector<double> x;
+    CHECK_THROWS_WITH(solve(solver, a, b, x), "square");
+  }
+}
+
+TEST(our_solvers_handle_a_very_small_rhs) {
+  // Squaring 1e-200 underflows to 0, which must not look like b = 0.
+  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 20);
+  std::vector<double> b = unit_rhs(a);
+  for (double& value : b) value = value * 1e-200 + 1e-200;
+  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+    std::vector<double> x;
+    const SolveResult result = solve(solver, a, b, x);
+    CHECK(result.status == SolveStatus::Converged);
+    CHECK(result.spmv_count > 1);
+    CHECK(true_relative_residual(a, b.data(), x.data()) < 1e-7);
+  }
+}
+
+TEST(our_solvers_handle_a_very_large_rhs) {
+  // Squaring 1e+200 overflows to infinity, which must not look like a failure.
+  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 20);
+  std::vector<double> b = unit_rhs(a);
+  for (double& value : b) value = value * 1e+200 + 1e+200;
+  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+    std::vector<double> x;
+    const SolveResult result = solve(solver, a, b, x);
+    CHECK(result.status == SolveStatus::Converged);
+    CHECK(result.spmv_count > 1);
+    CHECK(true_relative_residual(a, b.data(), x.data()) < 1e-7);
+  }
+}
+
+TEST(our_solvers_start_from_a_given_guess) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 10);
+  const std::vector<double> b = unit_rhs(a);
+  SolveOptions options;
+  options.use_initial_guess = true;
+  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+    std::vector<double> exact(b.size(), 1.0);
+    const SolveResult at_solution = solver.run(a, b.data(), exact.data(), options);
+    CHECK(at_solution.status == SolveStatus::Converged);
+    CHECK_EQ(at_solution.spmv_count, std::int64_t{0});
+
+    std::vector<double> nearby(b.size(), 1.001);
+    const SolveResult from_nearby = solver.run(a, b.data(), nearby.data(), options);
+    CHECK(from_nearby.status == SolveStatus::Converged);
+    CHECK(true_relative_residual(a, b.data(), nearby.data()) < 1e-7);
+  }
+}
+
+TEST(our_solvers_match_eigen_spmv_counts) {
+  const CsrMatrix poisson = make_stencil(Stencil::Poisson3D, 15);
+  const std::vector<double> b = unit_rhs(poisson);
+  std::vector<double> x;
+  const SolveResult plain = solve(ssolve_bench::find_solver("eigen-E0"), poisson, b, x);
+  const SolveResult jacobi = solve(ssolve_bench::find_solver("eigen-E1"), poisson, b, x);
+  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+    const SolveResult ours = solve(solver, poisson, b, x);
+    const SolveResult& theirs = solver.precond == Precond::None ? plain : jacobi;
+    CHECK(std::llabs(ours.spmv_count - theirs.spmv_count) <=
+          std::max<long long>(1, theirs.spmv_count / 100));
   }
 }
 

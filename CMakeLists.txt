@@ -62,6 +62,7 @@ endif()
 # Benchmark fixtures: the Eigen baselines and the optimization ladder.
 add_library(ssolve_bench STATIC
   bench/eigen_solvers.cpp
+  bench/ladder.cpp
   bench/matrix_spec.cpp
   bench/registry.cpp
 )
