@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Summarizes bench_cg CSV files as Markdown tables and checks gates.
 
-Example:
+Examples:
   python3 scripts/summarize.py results/my-laptop/g1.csv --gate eigen-E0=ours --gate eigen-E1=ours-jacobi
+  python3 scripts/summarize.py results/my-laptop/kernels.csv --kernel-baseline eigen
 
 A gate BASE=OURS passes on a matrix when OURS takes at most 1.05x BASE per SpMV and
 their SpMV counts differ by at most 1% or 1 iteration, whichever is larger.
@@ -58,33 +59,68 @@ def spmv_passes(base, ours):
     return abs(ours - base) <= max(1, 0.01 * base)
 
 
+def paired_ratios(base, ours):
+    """Ratio ours/base within each round both ran. Each argument maps a round to a time.
+
+    Solvers take turns, so a round's two measurements are adjacent in time. Comparing them
+    cancels slow drift in machine speed, which a ratio of overall medians does not.
+    """
+    return [ours[key] / base[key] for key in base if key in ours and base[key] > 0]
+
+
+def record_round(entry, row, value):
+    """Stores a time under (repeat, occurrence), so appended runs do not overwrite each other."""
+    if "repeat" not in row:
+        return
+    occurrence = entry["seen"][row["repeat"]]
+    entry["seen"][row["repeat"]] += 1
+    entry["rounds"][(row["repeat"], occurrence)] = value
+
+
+def new_entry():
+    return {"times": [], "spmv": [], "status": set(), "rounds": {}, "seen": collections.Counter()}
+
+
 def load_groups(paths):
-    """Returns {(matrix, maxit): {solver: {"times": [...], "spmv": [...], "status": set}}}."""
-    groups = collections.defaultdict(
-        lambda: collections.defaultdict(lambda: {"times": [], "spmv": [], "status": set()})
-    )
+    """Returns {(matrix, maxit): {solver: entry}}."""
+    groups = collections.defaultdict(lambda: collections.defaultdict(new_entry))
     for path in paths:
         with open(path, newline="", encoding="utf-8") as f:
             for row in csv.DictReader(f):
                 entry = groups[(row["matrix"], row.get("maxit", ""))][row["solver"]]
-                entry["times"].append(float(row["per_spmv_s"]))
+                time = float(row["per_spmv_s"])
+                entry["times"].append(time)
                 entry["spmv"].append(int(row["spmv_count"]))
                 entry["status"].add(row["status"])
+                record_round(entry, row, time)
     return groups
+
+
+def ratio_with_ci(base_entry, our_entry):
+    """Returns (ratio, ci_low, ci_high), with the interval None when rounds cannot be paired."""
+    ratios = paired_ratios(base_entry["rounds"], our_entry["rounds"])
+    if ratios:
+        low, high = ci_bounds(ratios)
+        return median(ratios), low, high
+    reference = median(base_entry["times"])
+    return (median(our_entry["times"]) / reference if reference > 0 else math.inf), None, None
 
 
 def print_gate(groups, base, ours):
     print(f"\n### Gate: {ours} against {base}\n")
-    print("| Matrix | Limit | Base (us/SpMV) | Ours (us/SpMV) | Ours 95% CI | Ratio | Base SpMVs | Our SpMVs | Result |")
+    print("| Matrix | Limit | Base (us/SpMV) | Ours (us/SpMV) | Ratio | Ratio 95% CI | Base SpMVs | Our SpMVs | Result |")
     print("| --- | --- | --- | --- | --- | --- | --- | --- | --- |")
     passed = total = 0
+    noisy = []
     for (matrix, maxit), solvers in sorted(groups.items()):
         if base not in solvers or ours not in solvers:
             continue
         base_time = median(solvers[base]["times"])
         our_time = median(solvers[ours]["times"])
-        low, high = ci_bounds(solvers[ours]["times"])
-        ratio = our_time / base_time if base_time > 0 else math.inf
+        ratio, low, high = ratio_with_ci(solvers[base], solvers[ours])
+        interval = f"{low:.3f} to {high:.3f}" if low is not None else "not paired"
+        if low is not None and high - low > NOISY_CI_FRACTION:
+            noisy.append(matrix)
         base_spmv = median(solvers[base]["spmv"])
         our_spmv = median(solvers[ours]["spmv"])
         ok = time_passes(ratio) and spmv_passes(base_spmv, our_spmv)
@@ -92,11 +128,12 @@ def print_gate(groups, base, ours):
         passed += 1 if ok else 0
         limit = maxit if maxit not in ("", "0") else "default"
         print(
-            f"| {matrix} | {limit} | {base_time * 1e6:.2f} | {our_time * 1e6:.2f} | "
-            f"{low * 1e6:.2f} to {high * 1e6:.2f} | {ratio:.3f} | {base_spmv:g} | {our_spmv:g} | "
-            f"{'PASS' if ok else 'FAIL'} |"
+            f"| {matrix} | {limit} | {base_time * 1e6:.2f} | {our_time * 1e6:.2f} | {ratio:.3f} | "
+            f"{interval} | {base_spmv:g} | {our_spmv:g} | {'PASS' if ok else 'FAIL'} |"
         )
     print(f"\n{passed} of {total} matrices pass.")
+    if noisy:
+        print(f"WARNING: ratio interval wider than 0.10 on: {', '.join(sorted(set(noisy)))}. Rerun on a quiet machine.")
 
 
 def print_all(groups):
@@ -111,6 +148,29 @@ def print_all(groups):
                 f"{low * 1e6:.2f} to {high * 1e6:.2f} | {median(entry['spmv']):g} | "
                 f"{'/'.join(sorted(entry['status']))} | {len(entry['times'])} |"
             )
+
+
+def print_kernels(paths, baseline):
+    """Prints median time per kernel and the ratio to the baseline implementation."""
+    groups = collections.defaultdict(lambda: collections.defaultdict(new_entry))
+    for path in paths:
+        with open(path, newline="", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                entry = groups[(row["matrix"], row["kernel"])][row["impl"]]
+                time = float(row["seconds"])
+                entry["times"].append(time)
+                record_round(entry, row, time)
+    print(f"| Matrix | Kernel | Implementation | Median us | Time / {baseline} | Ratio 95% CI |")
+    print("| --- | --- | --- | --- | --- | --- |")
+    for (matrix, kernel), implementations in sorted(groups.items()):
+        for impl, entry in sorted(implementations.items()):
+            if baseline in implementations:
+                ratio, low, high = ratio_with_ci(implementations[baseline], entry)
+                ratio_text = f"{ratio:.3f}"
+                interval = f"{low:.3f} to {high:.3f}" if low is not None else "not paired"
+            else:
+                ratio_text, interval = "no baseline", ""
+            print(f"| {matrix} | {kernel} | {impl} | {median(entry['times']) * 1e6:.2f} | {ratio_text} | {interval} |")
 
 
 def print_noise_warnings(groups):
@@ -129,7 +189,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("files", nargs="+", help="CSV files from bench_cg")
     parser.add_argument("--gate", action="append", default=[], metavar="BASE=OURS")
+    parser.add_argument("--kernel-baseline", metavar="IMPL", help="treat the files as bench_kernels output")
     args = parser.parse_args()
+
+    if args.kernel_baseline:
+        print_kernels(args.files, args.kernel_baseline)
+        return 0
 
     groups = load_groups(args.files)
     if not groups:
@@ -143,8 +208,8 @@ def main():
             print_gate(groups, base, ours)
     else:
         print_all(groups)
-    print()
-    print_noise_warnings(groups)
+        print()
+        print_noise_warnings(groups)
     return 0
 
 

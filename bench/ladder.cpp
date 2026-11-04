@@ -10,6 +10,7 @@
 #include <limits>
 #include <stdexcept>
 
+#include "kernels.hpp"
 #include "registry.hpp"
 #include "ssolve/cg_common.hpp"
 #include "ssolve/timer.hpp"
@@ -101,7 +102,29 @@ SolveResult cg_passes(const CsrMatrix& a, const double* b, double* x, const Solv
   return result;
 }
 
+template <class K>
+KernelSet make_kernels(const CsrMatrix& a) {
+  const CsrMatrix* const matrix = &a;
+  const std::size_t n = static_cast<std::size_t>(a.n_rows);
+  KernelSet set;
+  set.spmv = [matrix](const double* x, double* y) { K::spmv(*matrix, x, y); };
+  set.dot = [n](const double* x, const double* y) { return K::dot(x, y, n); };
+  set.axpy = [n](double alpha, const double* x, double* y) { K::axpy(alpha, x, y, n); };
+  set.norm2 = [n](const double* x) { return K::dot(x, x, n); };
+  set.xpby = [n](const double* x, double beta, double* y) { K::xpby(x, beta, y, n); };
+  return set;
+}
+
 }  // namespace
+
+std::vector<std::string> ladder_kernel_names() { return {"L0"}; }
+
+KernelSet ladder_kernels(const std::string& name, const CsrMatrix& a) {
+  if (name == "L0") return make_kernels<KNaive>(a);
+  std::string names = "eigen";
+  for (const std::string& valid : ladder_kernel_names()) names += ", " + valid;
+  throw std::runtime_error("unknown implementation '" + name + "'. Valid names: " + names);
+}
 
 std::vector<NamedSolver> ladder_solvers() {
   return {

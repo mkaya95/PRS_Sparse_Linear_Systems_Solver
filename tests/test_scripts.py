@@ -128,6 +128,96 @@ class RunBench(unittest.TestCase):
         self.assertNotEqual(done.returncode, 0)
 
 
+class BenchKernels(unittest.TestCase):
+    def run_kernels(self, impl, out):
+        return subprocess.run(
+            [os.path.join(BUILD_DIR, "bench_kernels"), "--matrix", "poisson2d:50", "--impl", impl,
+             "--repeat", "2", "--min-ms", "1", "--csv", out],
+            capture_output=True,
+            text=True,
+        )
+
+    def test_each_implementation_writes_a_row_per_kernel_and_repeat(self):
+        for impl in ("L0", "eigen"):
+            with self.subTest(impl=impl), tempfile.TemporaryDirectory() as d:
+                out = os.path.join(d, "k.csv")
+                done = self.run_kernels(impl, out)
+                self.assertEqual(done.returncode, 0, done.stderr)
+                with open(out, newline="", encoding="utf-8") as f:
+                    rows = list(csv.DictReader(f))
+                self.assertEqual(len(rows), 10)
+                self.assertEqual({r["kernel"] for r in rows}, {"spmv", "dot", "axpy", "norm2", "xpby"})
+                self.assertTrue(all(float(r["seconds"]) > 0 for r in rows))
+
+    def test_implementations_take_turns(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "k.csv")
+            done = self.run_kernels("L0,eigen", out)
+            self.assertEqual(done.returncode, 0, done.stderr)
+            with open(out, newline="", encoding="utf-8") as f:
+                rows = list(csv.DictReader(f))
+            self.assertEqual(len(rows), 20)
+            self.assertEqual([r["impl"] for r in rows[:2]], ["L0", "eigen"])
+
+    def test_an_unknown_implementation_names_the_valid_ones(self):
+        with tempfile.TemporaryDirectory() as d:
+            done = self.run_kernels("no-such-impl", os.path.join(d, "k.csv"))
+            self.assertNotEqual(done.returncode, 0)
+            self.assertIn("eigen", done.stderr)
+
+    def test_summarize_prints_kernel_ratios_against_a_baseline(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "k.csv")
+            with open(path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=["matrix", "impl", "kernel", "seconds", "gb_per_s"])
+                writer.writeheader()
+                for _ in range(3):
+                    writer.writerow(dict(matrix="m", impl="eigen", kernel="dot", seconds=2.0, gb_per_s=1))
+                    writer.writerow(dict(matrix="m", impl="L0", kernel="dot", seconds=3.0, gb_per_s=1))
+            done = subprocess.run(
+                [sys.executable, str(ROOT / "scripts" / "summarize.py"), path, "--kernel-baseline", "eigen"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(done.returncode, 0, done.stderr)
+            line = next(l for l in done.stdout.splitlines() if l.startswith("| m | dot | L0"))
+            self.assertIn("1.500", line)
+
+
+class PairedRatios(unittest.TestCase):
+    def test_each_round_is_compared_with_itself(self):
+        # The machine doubles in speed between rounds. Ours is always 2% slower than base
+        # within a round, but a ratio of overall medians would report 0.51.
+        base = {0: 1.0, 1: 2.0, 2: 2.0}
+        ours = {0: 1.02, 1: 2.04, 2: 1.02}
+        ratios = summarize.paired_ratios(base, ours)
+        self.assertEqual(sorted(round(r, 3) for r in ratios), [0.51, 1.02, 1.02])
+        self.assertAlmostEqual(summarize.median(ratios), 1.02)
+
+    def test_rounds_present_on_only_one_side_are_ignored(self):
+        self.assertEqual(summarize.paired_ratios({0: 1.0, 1: 1.0}, {1: 2.0, 2: 9.0}), [2.0])
+
+    def test_gate_uses_paired_ratios_when_repeats_are_recorded(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "r.csv")
+            fields = ["matrix", "solver", "spmv_count", "per_spmv_s", "status", "repeat"]
+            with open(path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=fields)
+                writer.writeheader()
+                for repeat, (base, ours) in enumerate([(1.0, 1.02), (2.0, 2.04), (4.0, 4.08)]):
+                    writer.writerow(dict(matrix="m", solver="base", spmv_count=100, per_spmv_s=base, status="Converged", repeat=repeat))
+                    writer.writerow(dict(matrix="m", solver="ours", spmv_count=100, per_spmv_s=ours, status="Converged", repeat=repeat))
+            done = subprocess.run(
+                [sys.executable, str(ROOT / "scripts" / "summarize.py"), path, "--gate", "base=ours"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(done.returncode, 0, done.stderr)
+            line = next(l for l in done.stdout.splitlines() if l.startswith("| m "))
+            self.assertIn("1.020", line)
+            self.assertIn("PASS", line)
+
+
 class Summarize(unittest.TestCase):
     def test_gate_table_reports_pass_and_fail(self):
         with tempfile.TemporaryDirectory() as d:
