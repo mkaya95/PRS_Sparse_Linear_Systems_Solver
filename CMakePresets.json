@@ -1,0 +1,38 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "release",
+      "displayName": "Benchmarks: -O3 -march=native",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG",
+        "SSOLVE_NATIVE": "ON"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Tests: address and undefined-behaviour sanitizers",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS_DEBUG": "-g -O1 -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer",
+        "SSOLVE_NATIVE": "ON"
+      }
+    },
+    {
+      "name": "generic-o2",
+      "displayName": "Ladder flags row: -O2 without -march=native",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O2 -DNDEBUG",
+        "SSOLVE_NATIVE": "OFF"
+      }
+    }
+  ]
+}
