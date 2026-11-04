@@ -1,0 +1,2 @@
+# Reading list PDFs are kept local; the plan's reading list links to each paper
+docs/papers/*.pdf
