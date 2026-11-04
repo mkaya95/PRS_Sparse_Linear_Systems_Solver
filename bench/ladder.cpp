@@ -13,11 +13,10 @@
 #include "kernels.hpp"
 #include "registry.hpp"
 #include "ssolve/cg_common.hpp"
+#include "ssolve/kernels_common.hpp"
 #include "ssolve/timer.hpp"
 
 using namespace ssolve;
-
-#define SSOLVE_NOINLINE __attribute__((noinline))
 
 namespace ssolve_bench {
 
@@ -41,6 +40,34 @@ struct KNaive {
     for (std::size_t i = 0; i < n; ++i) y[i] += alpha * x[i];
   }
   SSOLVE_NOINLINE static void xpby(const double* x, double beta, double* y, std::size_t n) {
+    for (std::size_t i = 0; i < n; ++i) y[i] = x[i] + beta * y[i];
+  }
+};
+
+// L1: the same loops, with non-aliasing pointers and local copies of the matrix arrays.
+struct KRestrict {
+  SSOLVE_NOINLINE static void spmv(const CsrMatrix& a, const double* SSOLVE_RESTRICT x, double* SSOLVE_RESTRICT y) {
+    const std::int64_t* SSOLVE_RESTRICT const row_ptr = a.row_ptr.data();
+    const Index* SSOLVE_RESTRICT const col = a.col.data();
+    const double* SSOLVE_RESTRICT const val = a.val.data();
+    const Index rows = a.n_rows;
+    for (Index i = 0; i < rows; ++i) {
+      double sum = 0.0;
+      for (std::int64_t k = row_ptr[i]; k < row_ptr[i + 1]; ++k) sum += val[k] * x[col[k]];
+      y[i] = sum;
+    }
+  }
+  SSOLVE_NOINLINE static double dot(const double* SSOLVE_RESTRICT x, const double* SSOLVE_RESTRICT y, std::size_t n) {
+    double sum = 0.0;
+    for (std::size_t i = 0; i < n; ++i) sum += x[i] * y[i];
+    return sum;
+  }
+  SSOLVE_NOINLINE static void axpy(double alpha, const double* SSOLVE_RESTRICT x, double* SSOLVE_RESTRICT y,
+                                   std::size_t n) {
+    for (std::size_t i = 0; i < n; ++i) y[i] += alpha * x[i];
+  }
+  SSOLVE_NOINLINE static void xpby(const double* SSOLVE_RESTRICT x, double beta, double* SSOLVE_RESTRICT y,
+                                   std::size_t n) {
     for (std::size_t i = 0; i < n; ++i) y[i] = x[i] + beta * y[i];
   }
 };
@@ -117,10 +144,11 @@ KernelSet make_kernels(const CsrMatrix& a) {
 
 }  // namespace
 
-std::vector<std::string> ladder_kernel_names() { return {"L0"}; }
+std::vector<std::string> ladder_kernel_names() { return {"L0", "L1"}; }
 
 KernelSet ladder_kernels(const std::string& name, const CsrMatrix& a) {
   if (name == "L0") return make_kernels<KNaive>(a);
+  if (name == "L1") return make_kernels<KRestrict>(a);
   std::string names = "eigen";
   for (const std::string& valid : ladder_kernel_names()) names += ", " + valid;
   throw std::runtime_error("unknown implementation '" + name + "'. Valid names: " + names);
@@ -129,6 +157,7 @@ KernelSet ladder_kernels(const std::string& name, const CsrMatrix& a) {
 std::vector<NamedSolver> ladder_solvers() {
   return {
       {"L0-naive", Precond::None, cg_passes<KNaive>},
+      {"L1-restrict", Precond::None, cg_passes<KRestrict>},
   };
 }
 

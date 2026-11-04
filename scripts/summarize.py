@@ -87,7 +87,9 @@ def load_groups(paths):
     for path in paths:
         with open(path, newline="", encoding="utf-8") as f:
             for row in csv.DictReader(f):
-                entry = groups[(row["matrix"], row.get("maxit", ""))][row["solver"]]
+                # A label separates the same solver measured from different builds, as solver@label.
+                solver = row["solver"] + (f"@{row['label']}" if row.get("label") else "")
+                entry = groups[(row["matrix"], row.get("maxit", ""))][solver]
                 time = float(row["per_spmv_s"])
                 entry["times"].append(time)
                 entry["spmv"].append(int(row["spmv_count"]))
@@ -134,6 +136,31 @@ def print_gate(groups, base, ours):
     print(f"\n{passed} of {total} matrices pass.")
     if noisy:
         print(f"WARNING: ratio interval wider than 0.10 on: {', '.join(sorted(set(noisy)))}. Rerun on a quiet machine.")
+
+
+def geometric_mean_ratio(groups, base, ours):
+    """Geometric mean across matrices of the time ratio ours/base, or None if never compared."""
+    ratios = [
+        ratio_with_ci(solvers[base], solvers[ours])[0]
+        for solvers in groups.values()
+        if base in solvers and ours in solvers
+    ]
+    if not ratios:
+        return None, 0
+    return math.exp(sum(math.log(ratio) for ratio in ratios) / len(ratios)), len(ratios)
+
+
+def print_ladder(groups, rungs):
+    """One row per rung: time per SpMV against the first rung and against the previous one."""
+    print(f"| Rung | Time / {rungs[0]} | Time / previous rung | Matrices |")
+    print("| --- | --- | --- | --- |")
+    print(f"| {rungs[0]} | 1.000 | | |")
+    for previous, rung in zip(rungs, rungs[1:]):
+        to_first, count = geometric_mean_ratio(groups, rungs[0], rung)
+        to_previous, _ = geometric_mean_ratio(groups, previous, rung)
+        first_text = f"{to_first:.3f}" if to_first else "no data"
+        previous_text = f"{to_previous:.3f}" if to_previous else "no data"
+        print(f"| {rung} | {first_text} | {previous_text} | {count} |")
 
 
 def print_all(groups):
@@ -190,6 +217,7 @@ def main():
     parser.add_argument("files", nargs="+", help="CSV files from bench_cg")
     parser.add_argument("--gate", action="append", default=[], metavar="BASE=OURS")
     parser.add_argument("--kernel-baseline", metavar="IMPL", help="treat the files as bench_kernels output")
+    parser.add_argument("--ladder", metavar="A,B,C", help="print one row per rung of the optimization ladder")
     args = parser.parse_args()
 
     if args.kernel_baseline:
@@ -200,7 +228,9 @@ def main():
     if not groups:
         print("No benchmark rows found.")
         return 1
-    if args.gate:
+    if args.ladder:
+        print_ladder(groups, args.ladder.split(","))
+    elif args.gate:
         for gate in args.gate:
             if "=" not in gate:
                 parser.error(f"--gate needs BASE=OURS, got '{gate}'")

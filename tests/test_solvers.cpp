@@ -265,6 +265,12 @@ TEST(our_solvers_match_eigen_spmv_counts) {
   }
 }
 
+TEST(the_ladder_has_every_rung) {
+  for (const char* name : {"L0-naive", "L1-restrict"}) {
+    CHECK_EQ(ssolve_bench::find_solver(name).name, std::string(name));
+  }
+}
+
 TEST(unknown_solver_name_lists_the_valid_ones) {
   CHECK_THROWS_WITH(ssolve_bench::find_solver("no-such-solver"), "eigen-E0");
 }

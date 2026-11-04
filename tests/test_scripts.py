@@ -218,6 +218,53 @@ class PairedRatios(unittest.TestCase):
             self.assertIn("PASS", line)
 
 
+class Labels(unittest.TestCase):
+    def test_a_label_separates_the_same_solver_from_two_builds(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "r.csv")
+            fields = ["matrix", "solver", "spmv_count", "per_spmv_s", "status", "label"]
+            with open(path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=fields)
+                writer.writeheader()
+                for label, time in (("o2", 2.0), ("o3", 1.0)):
+                    writer.writerow(dict(matrix="m", solver="L0", spmv_count=100, per_spmv_s=time, status="Converged", label=label))
+            done = subprocess.run(
+                [sys.executable, str(ROOT / "scripts" / "summarize.py"), path, "--gate", "L0@o2=L0@o3"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(done.returncode, 0, done.stderr)
+            line = next(l for l in done.stdout.splitlines() if l.startswith("| m "))
+            self.assertIn("0.500", line)
+
+
+class Ladder(unittest.TestCase):
+    def test_ladder_table_reports_each_rung_against_the_previous_one(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "r.csv")
+            fields = ["matrix", "solver", "spmv_count", "per_spmv_s", "status", "repeat"]
+            times = {"a": {"L0": 4.0, "L1": 2.0, "L2": 2.0}, "b": {"L0": 1.0, "L1": 1.0, "L2": 0.5}}
+            with open(path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=fields)
+                writer.writeheader()
+                for matrix, rungs in times.items():
+                    for solver, time in rungs.items():
+                        writer.writerow(dict(matrix=matrix, solver=solver, spmv_count=10, per_spmv_s=time, status="Converged", repeat=0))
+            done = subprocess.run(
+                [sys.executable, str(ROOT / "scripts" / "summarize.py"), path, "--ladder", "L0,L1,L2"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(done.returncode, 0, done.stderr)
+            lines = done.stdout.splitlines()
+            # Geometric means across matrices: L1/L0 = sqrt(0.5 * 1), L2/L0 = sqrt(0.5 * 0.5).
+            l1 = next(l for l in lines if l.startswith("| L1 "))
+            self.assertIn("0.707", l1)
+            l2 = next(l for l in lines if l.startswith("| L2 "))
+            self.assertIn("0.500", l2)  # against L0
+            self.assertIn("0.707", l2)  # against L1
+
+
 class Summarize(unittest.TestCase):
     def test_gate_table_reports_pass_and_fail(self):
         with tempfile.TemporaryDirectory() as d:
