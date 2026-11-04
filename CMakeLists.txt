@@ -28,6 +28,7 @@ include_directories(include)
 
 add_library(ssolve STATIC
   src/formats/csr.cpp
+  src/io/mtx_reader.cpp
   src/verify.cpp
 )
 
@@ -42,3 +43,4 @@ endfunction()
 
 ssolve_test(test_aligned_array)
 ssolve_test(test_matrix)
+ssolve_test(test_mtx_reader)
