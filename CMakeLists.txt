@@ -26,12 +26,38 @@ endif()
 
 include_directories(include)
 
+# Build information for the benchmark manifest, refreshed on every build.
+string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type_upper)
+string(STRIP "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${build_type_upper}} -fopenmp-simd" build_flags)
+if(SSOLVE_NATIVE)
+  string(APPEND build_flags " -march=native")
+endif()
+set(build_info_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+set(build_info_header "${build_info_dir}/ssolve_build_info.h")
+add_custom_target(ssolve_build_info
+  BYPRODUCTS "${build_info_header}"
+  COMMAND "${CMAKE_COMMAND}" "-DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}" "-DOUTPUT=${build_info_header}"
+          "-DFLAGS=${build_flags}" -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/write_build_info.cmake"
+  VERBATIM)
+
 add_library(ssolve STATIC
+  src/bench/csv.cpp
+  src/bench/manifest.cpp
   src/formats/csr.cpp
   src/io/generators.cpp
   src/io/mtx_reader.cpp
   src/verify.cpp
 )
+add_dependencies(ssolve ssolve_build_info)
+set_source_files_properties(src/bench/manifest.cpp PROPERTIES INCLUDE_DIRECTORIES "${build_info_dir}")
+
+# STREAM measures the machine's memory bandwidth, so it alone uses threads for now.
+find_package(OpenMP)
+add_executable(stream apps/stream.cpp)
+target_link_libraries(stream PRIVATE ssolve)
+if(OpenMP_CXX_FOUND)
+  target_link_libraries(stream PRIVATE OpenMP::OpenMP_CXX)
+endif()
 
 enable_testing()
 
@@ -46,3 +72,4 @@ ssolve_test(test_aligned_array)
 ssolve_test(test_matrix)
 ssolve_test(test_mtx_reader)
 ssolve_test(test_generators)
+ssolve_test(test_csv)
