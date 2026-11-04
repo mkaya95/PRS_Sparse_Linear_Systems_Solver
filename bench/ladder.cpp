@@ -219,6 +219,70 @@ SolveResult cg_passes(const CsrMatrix& a, const double* b, double* x, const Solv
   return result;
 }
 
+// J0: textbook Jacobi PCG, with separate passes and a stored z, on the winning kernels.
+// Its shape matches Eigen's loop, including the extra norm pass needed for the stopping test.
+template <class K>
+SolveResult jacobi_passes(const CsrMatrix& a, const double* b, double* x, const SolveOptions& options) {
+  if (a.n_rows != a.n_cols) throw std::runtime_error("CG needs a square matrix");
+  const std::size_t n = static_cast<std::size_t>(a.n_rows);
+  const double setup_start = wall_seconds();
+  const AlignedArray<double> inv_diag = jacobi_inverse_diagonal(a);
+  const double setup_seconds = wall_seconds() - setup_start;
+  const double start = wall_seconds();
+
+  SolveResult result = with_rhs_scaling(n, b, x, options, [&](const double* rhs, double* solution) {
+    const std::int64_t limit =
+        options.max_iterations > 0 ? options.max_iterations : 2 * static_cast<std::int64_t>(n);
+    AlignedArray<double> r_array(n), p_array(n), q_array(n), z_array(n);
+    double* const r = r_array.data();
+    double* const p = p_array.data();
+    double* const q = q_array.data();
+    double* const z = z_array.data();
+    const double* const d = inv_diag.data();
+
+    if (!options.use_initial_guess) {
+      for (std::size_t i = 0; i < n; ++i) solution[i] = 0.0;
+    }
+    K::spmv(a, solution, q);
+    for (std::size_t i = 0; i < n; ++i) r[i] = rhs[i] - q[i];
+    for (std::size_t i = 0; i < n; ++i) p[i] = d[i] * r[i];
+
+    const double rhs_squared = K::dot(rhs, rhs, n);
+    const double threshold =
+        std::max(options.tol * options.tol * rhs_squared, std::numeric_limits<double>::min());
+    double rr = K::dot(r, r, n);
+    double rz = K::dot(r, p, n);
+
+    SolveResult out;
+    const auto finish = [&](SolveStatus status) {
+      out.status = status;
+      out.recursive_residual = std::sqrt(rr / rhs_squared);
+      return out;
+    };
+    if (rr < threshold) return finish(SolveStatus::Converged);
+
+    while (out.spmv_count < limit) {
+      K::spmv(a, p, q);
+      ++out.spmv_count;
+      const double pq = K::dot(p, q, n);
+      if (!(pq > 0.0)) return finish(SolveStatus::Breakdown);  // also catches NaN
+      const double alpha = rz / pq;
+      K::axpy(alpha, p, solution, n);
+      K::axpy(-alpha, q, r, n);
+      rr = K::dot(r, r, n);
+      if (rr < threshold) return finish(SolveStatus::Converged);
+      for (std::size_t i = 0; i < n; ++i) z[i] = d[i] * r[i];
+      const double rz_new = K::dot(r, z, n);
+      K::xpby(z, rz_new / rz, p, n);
+      rz = rz_new;
+    }
+    return finish(SolveStatus::MaxIterations);
+  });
+  result.setup_seconds = setup_seconds;
+  result.solve_seconds = wall_seconds() - start;
+  return result;
+}
+
 // The shipping solver, as a ladder rung. The copy of the matrix happens before any timer,
 // and building the backend counts as setup, like Eigen's compute().
 template <bool AllowNarrowRowPtr, bool InitialSpmv, Precond P>
@@ -281,6 +345,13 @@ std::vector<NamedSolver> ladder_solvers() {
       {"L3-unroll4", Precond::None, cg_passes<KUnroll4>},
       {"L3-simdrow", Precond::None, cg_passes<KSimdRow>},
       {"L4-fused", Precond::None, run_backend<false, true, Precond::None>},
+      {"L5-nopass", Precond::None, run_backend<false, false, Precond::None>},
+      {"L6-rowptr32", Precond::None, run_backend<true, false, Precond::None>},
+      {"J0-passes", Precond::Jacobi, jacobi_passes<KAcc2>},
+      {"J1-fused", Precond::Jacobi, run_backend<false, false, Precond::Jacobi>},
+      // The shipping configurations, equal to the top rungs. Always compare these against Eigen.
+      {"ours", Precond::None, run_backend<true, false, Precond::None>},
+      {"ours-jacobi", Precond::Jacobi, run_backend<true, false, Precond::Jacobi>},
   };
 }
 

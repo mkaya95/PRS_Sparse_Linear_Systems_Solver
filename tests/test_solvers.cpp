@@ -266,6 +266,33 @@ TEST(our_solvers_match_eigen_spmv_counts) {
   }
 }
 
+TEST(jacobi_solvers_converge_at_once_on_a_badly_scaled_diagonal_system) {
+  const CsrMatrix a = diagonal_matrix({1, 1e6, 1e-6});
+  const std::vector<double> b = {1, 2, 3};
+  int jacobi_solvers = 0;
+  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+    if (solver.precond != Precond::Jacobi) continue;
+    ++jacobi_solvers;
+    std::vector<double> x;
+    const SolveResult result = solve(solver, a, b, x);
+    CHECK(result.status == SolveStatus::Converged);
+    CHECK(result.spmv_count <= 2);
+    CHECK_NEAR(x[2] / 3e6, 1.0, 1e-9);
+  }
+  CHECK(jacobi_solvers >= 3);
+}
+
+TEST(a_plain_solver_needs_more_iterations_on_that_system_than_jacobi) {
+  // Proves the Jacobi solvers are actually preconditioning, not just running plain CG.
+  const CsrMatrix a = diagonal_matrix({1, 1e3, 1e-3, 5, 7});
+  const std::vector<double> b = {1, 2, 3, 4, 5};
+  std::vector<double> x;
+  const SolveResult plain = solve(ssolve_bench::find_solver("ours"), a, b, x);
+  const SolveResult jacobi = solve(ssolve_bench::find_solver("ours-jacobi"), a, b, x);
+  CHECK(jacobi.spmv_count < plain.spmv_count);
+  CHECK_EQ(jacobi.spmv_count, std::int64_t{1});
+}
+
 TEST(every_ladder_spmv_matches_the_reference_on_all_short_row_lengths) {
   // Row lengths 0 to 9 exercise each unrolled loop's remainder path.
   const Index n = 16;
@@ -296,7 +323,8 @@ TEST(every_ladder_spmv_matches_the_reference_on_all_short_row_lengths) {
 }
 
 TEST(the_ladder_has_every_rung) {
-  for (const char* name : {"L0-naive", "L1-restrict", "L2-simd", "L3-acc2", "L3-unroll4", "L3-simdrow"}) {
+  for (const char* name : {"L0-naive", "L1-restrict", "L2-simd", "L3-acc2", "L3-unroll4", "L3-simdrow", "L4-fused",
+                           "L5-nopass", "L6-rowptr32", "J0-passes", "J1-fused", "ours", "ours-jacobi"}) {
     CHECK_EQ(ssolve_bench::find_solver(name).name, std::string(name));
   }
 }
