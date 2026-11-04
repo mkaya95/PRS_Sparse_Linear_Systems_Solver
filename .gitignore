@@ -1,4 +1,4 @@
-# Reading list PDFs are kept local; the plan's reading list links to each paper
+# Papers kept locally
 docs/papers/*.pdf
 
 # Build trees and downloaded data
