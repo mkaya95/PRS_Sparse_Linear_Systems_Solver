@@ -59,6 +59,19 @@ if(OpenMP_CXX_FOUND)
   target_link_libraries(stream PRIVATE OpenMP::OpenMP_CXX)
 endif()
 
+# Benchmark fixtures: the Eigen baselines and the optimization ladder.
+add_library(ssolve_bench STATIC
+  bench/eigen_solvers.cpp
+  bench/matrix_spec.cpp
+  bench/registry.cpp
+)
+target_include_directories(ssolve_bench PUBLIC bench)
+target_include_directories(ssolve_bench SYSTEM PRIVATE "${SSOLVE_EIGEN_DIR}")
+target_link_libraries(ssolve_bench PUBLIC ssolve)
+
+add_executable(bench_cg apps/bench_cg.cpp)
+target_link_libraries(bench_cg PRIVATE ssolve_bench)
+
 enable_testing()
 
 function(ssolve_test name)
@@ -73,3 +86,14 @@ ssolve_test(test_matrix)
 ssolve_test(test_mtx_reader)
 ssolve_test(test_generators)
 ssolve_test(test_csv)
+
+add_executable(test_solvers tests/test_solvers.cpp)
+target_include_directories(test_solvers PRIVATE tests)
+target_link_libraries(test_solvers PRIVATE ssolve_bench)
+add_test(NAME test_solvers COMMAND test_solvers)
+
+find_package(Python3 COMPONENTS Interpreter)
+if(Python3_Interpreter_FOUND)
+  add_test(NAME test_scripts
+    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_scripts.py" "$<TARGET_FILE_DIR:bench_cg>")
+endif()
