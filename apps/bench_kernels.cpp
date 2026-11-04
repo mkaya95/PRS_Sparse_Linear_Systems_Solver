@@ -2,8 +2,8 @@
 //
 // Usage: bench_kernels --matrix SPEC --impl eigen,L0,... [--repeat 10] [--min-ms 50] [--csv FILE]
 //
-// Implementations take turns, kernel by kernel, so a machine that slows down mid-run
-// affects them equally. SpMV swaps its input and output vectors between calls (Asudeh
+// Implementations take turns, kernel by kernel, and rotate who goes first each round, so
+// a machine that slows down mid-run affects them equally. SpMV swaps its input and output vectors between calls (Asudeh
 // et al. 2025), because a fixed x stays in cache in a way it never does inside CG. The
 // output is rescaled outside the timed region every 8 calls, so values stay finite.
 #include <algorithm>
@@ -52,9 +52,17 @@ void rescale(double* v, std::size_t n) {
   for (std::size_t i = 0; i < n; ++i) v[i] /= largest;
 }
 
-// Seconds per call, timing only the kernel and repeating until min_seconds have been timed.
-template <class Call>
-double seconds_per_call(double min_seconds, Call call) {
+struct Sample {
+  double seconds_per_call;
+  long long calls;
+};
+
+// Times only `call`, until min_seconds have been timed and at least kMinCalls calls were made.
+// `between` runs untimed after each call.
+constexpr long long kMinCalls = 4;
+
+template <class Call, class Between>
+Sample timed_calls(double min_seconds, Call call, Between between) {
   double timed = 0.0;
   long long calls = 0;
   do {
@@ -62,39 +70,40 @@ double seconds_per_call(double min_seconds, Call call) {
     call(calls);
     timed += wall_seconds() - start;
     ++calls;
-  } while (timed < min_seconds);
-  return timed / static_cast<double>(calls);
+    between(calls);
+  } while (timed < min_seconds || calls < kMinCalls);
+  return {timed / static_cast<double>(calls), calls};
+}
+
+template <class Call>
+Sample timed_calls(double min_seconds, Call call) {
+  return timed_calls(min_seconds, call, [](long long) {});
 }
 
 volatile double sink;  // keeps the compiler from removing kernels whose result is unused
 
-double measure(const std::string& kernel, const KernelSet& k, Vectors& v, std::size_t n, double min_seconds) {
+Sample measure(const std::string& kernel, const KernelSet& k, Vectors& v, std::size_t n, double min_seconds) {
   double* x = v.x.data();
   double* y = v.y.data();
   if (kernel == "spmv") {
-    long long calls = 0;
-    double timed = 0.0;
-    do {
-      const double start = wall_seconds();
-      k.spmv(x, y);
-      timed += wall_seconds() - start;
-      std::swap(x, y);
-      ++calls;
-      if (calls % 8 == 0) rescale(x, n);
-    } while (timed < min_seconds);
-    return timed / static_cast<double>(calls);
+    return timed_calls(
+        min_seconds, [&](long long) { k.spmv(x, y); },
+        [&](long long calls) {
+          std::swap(x, y);
+          if (calls % 8 == 0) rescale(x, n);
+        });
   }
   if (kernel == "dot") {
-    return seconds_per_call(min_seconds, [&](long long) { sink = k.dot(x, y); });
+    return timed_calls(min_seconds, [&](long long) { sink = k.dot(x, y); });
   }
   if (kernel == "axpy") {
-    return seconds_per_call(min_seconds, [&](long long call) { k.axpy(call % 2 == 0 ? 1e-3 : -1e-3, x, y); });
+    return timed_calls(min_seconds, [&](long long call) { k.axpy(call % 2 == 0 ? 1e-3 : -1e-3, x, y); });
   }
   if (kernel == "norm2") {
-    return seconds_per_call(min_seconds, [&](long long) { sink = k.norm2(x); });
+    return timed_calls(min_seconds, [&](long long) { sink = k.norm2(x); });
   }
   if (kernel == "xpby") {
-    return seconds_per_call(min_seconds, [&](long long) { k.xpby(x, 0.5, y); });
+    return timed_calls(min_seconds, [&](long long) { k.xpby(x, 0.5, y); });
   }
   throw std::logic_error("unknown kernel " + kernel);
 }
@@ -127,7 +136,7 @@ int main(int argc, char** argv) {
     }
 
     std::vector<std::string> columns = manifest_columns();
-    for (const char* column : {"matrix", "n", "nnz", "impl", "kernel", "repeat", "seconds", "gb_per_s"}) {
+    for (const char* column : {"matrix", "n", "nnz", "impl", "kernel", "repeat", "calls", "seconds", "gb_per_s"}) {
       columns.push_back(column);
     }
     std::unique_ptr<CsvWriter> csv;
@@ -137,16 +146,26 @@ int main(int argc, char** argv) {
     const std::string matrix_name = matrix_display_name(spec);
     Vectors vectors(n);
     for (int repeat = 0; repeat < repeats; ++repeat) {
+      // Rotate who goes first, because the first run in a round is measurably slower.
+      if (repeat > 0) std::rotate(implementations.begin(), implementations.begin() + 1, implementations.end());
       for (const char* kernel : {"spmv", "dot", "axpy", "norm2", "xpby"}) {
         for (const Implementation& impl : implementations) {
-          const double seconds = measure(kernel, impl.kernels, vectors, n, min_seconds);
-          const double gb_per_s = kernel_bytes(kernel, static_cast<double>(n), static_cast<double>(a.nnz())) / 1e9 / seconds;
-          std::printf("%s %s %s %.3e s %.2f GB/s\n", matrix_name.c_str(), impl.name.c_str(), kernel, seconds, gb_per_s);
+          const Sample sample = measure(kernel, impl.kernels, vectors, n, min_seconds);
+          const double bytes = kernel_bytes(kernel, static_cast<double>(n), static_cast<double>(a.nnz()));
+          const double gb_per_s = bytes / 1e9 / sample.seconds_per_call;
+          std::printf("%s %s %s %.3e s %.2f GB/s\n", matrix_name.c_str(), impl.name.c_str(), kernel,
+                      sample.seconds_per_call, gb_per_s);
           if (csv) {
             std::vector<std::string> row = manifest_values(manifest);
-            const std::vector<std::string> values = {matrix_name,      std::to_string(n), std::to_string(a.nnz()),
-                                                     impl.name,        kernel,            std::to_string(repeat),
-                                                     fmt_double(seconds), fmt_double(gb_per_s)};
+            const std::vector<std::string> values = {matrix_name,
+                                                     std::to_string(n),
+                                                     std::to_string(a.nnz()),
+                                                     impl.name,
+                                                     kernel,
+                                                     std::to_string(repeat),
+                                                     std::to_string(sample.calls),
+                                                     fmt_double(sample.seconds_per_call),
+                                                     fmt_double(gb_per_s)};
             row.insert(row.end(), values.begin(), values.end());
             csv->write_row(row);
           }

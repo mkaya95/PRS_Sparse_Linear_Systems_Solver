@@ -85,13 +85,14 @@ class RunBench(unittest.TestCase):
         self.assertTrue(rows[0]["cpu_model"] or rows[0]["logical_cpus"])
         self.assertLess(float(rows[0]["rel_res_true"]), 1e-7)
 
-    def test_solvers_are_interleaved_round_by_round(self):
-        # A machine that slows down mid-run must affect every solver equally.
+    def test_solvers_are_interleaved_and_rotate_who_goes_first(self):
+        # A machine that slows down mid-run must affect every solver equally, and the
+        # first solver in a round was measured to run about 20% slower than the second.
         self.write_suite(generated=[{"stencil": "poisson2d", "n": [8]}])
         done = run_bench("--solvers", "eigen-E0,eigen-E1", "--repeat", "2", "--out", self.out, suite=self.suite)
         self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
         order = [(row["solver"], row["repeat"]) for row in self.rows()]
-        self.assertEqual(order, [("eigen-E0", "0"), ("eigen-E1", "0"), ("eigen-E0", "1"), ("eigen-E1", "1")])
+        self.assertEqual(order, [("eigen-E0", "0"), ("eigen-E1", "0"), ("eigen-E1", "1"), ("eigen-E0", "1")])
 
     def test_a_failing_solver_is_reported_once_not_every_round(self):
         self.write_suite(generated=[{"stencil": "poisson2d", "n": [8]}])
@@ -158,6 +159,17 @@ class BenchKernels(unittest.TestCase):
                 rows = list(csv.DictReader(f))
             self.assertEqual(len(rows), 20)
             self.assertEqual([r["impl"] for r in rows[:2]], ["L0", "eigen"])
+            self.assertEqual([r["impl"] for r in rows[10:12]], ["eigen", "L0"])  # rotated next round
+
+    def test_spmv_samples_always_take_several_calls(self):
+        # With one call per sample the input and output vectors would never swap.
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "k.csv")
+            done = self.run_kernels("L0", out)
+            self.assertEqual(done.returncode, 0, done.stderr)
+            with open(out, newline="", encoding="utf-8") as f:
+                rows = [r for r in csv.DictReader(f) if r["kernel"] == "spmv"]
+            self.assertTrue(all(int(r["calls"]) >= 4 for r in rows), rows)
 
     def test_an_unknown_implementation_names_the_valid_ones(self):
         with tempfile.TemporaryDirectory() as d:

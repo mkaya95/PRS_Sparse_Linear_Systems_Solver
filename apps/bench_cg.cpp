@@ -3,11 +3,12 @@
 // Usage: bench_cg --matrix SPEC --solver NAME[,NAME...] [--tol 1e-8] [--maxit N] [--repeat 10]
 //                 [--csv FILE] [--label TEXT]
 //
-// Solvers take turns round by round (A, B, A, B, ...), so a machine that slows down
-// mid-run affects them equally. A solver that fails is reported and dropped, the others
-// continue, and the exit status is then 1.
+// Solvers take turns round by round (A, B, then B, A, ...), so a machine that slows down
+// mid-run affects them equally and none always goes first. A solver that fails is reported
+// and dropped, the others continue, and the exit status is then 1.
 //
 // The right-hand side is b = A·1, so the exact solution is the vector of ones.
+#include <algorithm>
 #include <cstdio>
 #include <exception>
 #include <memory>
@@ -111,6 +112,8 @@ int main(int argc, char** argv) {
     };
 
     for (int repeat = 0; repeat < repeats; ++repeat) {
+      // Rotate who goes first, because the first run in a round is measurably slower.
+      if (repeat > 0 && !solvers.empty()) std::rotate(solvers.begin(), solvers.begin() + 1, solvers.end());
       for (auto solver = solvers.begin(); solver != solvers.end();) {
         try {
           run_once(*solver, repeat);
