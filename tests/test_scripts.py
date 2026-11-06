@@ -76,13 +76,15 @@ class RunBench(unittest.TestCase):
 
     def test_writes_one_row_per_repeat_with_the_manifest(self):
         self.write_suite(generated=[{"stencil": "poisson2d", "n": [8]}])
-        done = run_bench("--solvers", "eigen-E0", "--repeat", "2", "--out", self.out, suite=self.suite)
+        done = run_bench("--solvers", "eigen-E0", "--warmup", "2", "--repeat", "2", "--out", self.out, suite=self.suite)
         self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
         rows = self.rows()
         self.assertEqual(len(rows), 2)
         self.assertEqual(rows[0]["matrix"], "poisson2d:8")
         self.assertEqual(rows[0]["solver"], "eigen-E0")
         self.assertEqual(rows[0]["status"], "Converged")
+        self.assertEqual(rows[0]["warmup"], "2")
+        self.assertEqual([row["repeat"] for row in rows], ["0", "1"])
         self.assertTrue(rows[0]["cpu_model"] or rows[0]["logical_cpus"])
         self.assertLess(float(rows[0]["rel_res_true"]), 1e-7)
 
@@ -117,7 +119,7 @@ class RunBench(unittest.TestCase):
     def test_a_failing_run_is_reported_and_the_rest_still_run(self):
         self.write_suite(generated=[{"stencil": "poisson2d", "n": [8]}])
         done = run_bench("--solvers", "no-such-solver,eigen-E0", "--repeat", "1", "--out", self.out, suite=self.suite)
-        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertNotEqual(done.returncode, 0, done.stdout + done.stderr)
         self.assertIn("FAILED", done.stdout)
         self.assertIn("no-such-solver", done.stdout)
         self.assertEqual(len(self.rows()), 1)
@@ -128,6 +130,18 @@ class RunBench(unittest.TestCase):
             "--solvers", "eigen-E0", "--repeat", "1", "--data-dir", self.dir.name, "--out", self.out, suite=self.suite
         )
         self.assertNotEqual(done.returncode, 0)
+
+    def test_fixed_iteration_mode_is_explicit_and_not_a_solve_gate(self):
+        self.write_suite(generated=[{"stencil": "poisson2d", "n": [8]}])
+        done = run_bench("--solvers", "eigen-E0,ours", "--mode", "fixed", "--maxit", "1",
+                         "--repeat", "1", "--out", self.out, suite=self.suite)
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertTrue(all(row["status"] == "MaxIterations" for row in self.rows()))
+        report = subprocess.run(
+            [sys.executable, str(ROOT / "scripts/summarize.py"), self.out, "--gate", "eigen-E0=ours"],
+            capture_output=True, text=True)
+        self.assertEqual(report.returncode, 2, report.stdout + report.stderr)
+        self.assertNotIn("PASS", report.stdout)
 
 
 class BenchKernels(unittest.TestCase):
@@ -213,13 +227,15 @@ class PairedRatios(unittest.TestCase):
     def test_gate_uses_paired_ratios_when_repeats_are_recorded(self):
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "r.csv")
-            fields = ["matrix", "solver", "spmv_count", "per_spmv_s", "status", "repeat"]
+            fields = ["matrix", "solver", "spmv_count", "per_spmv_s", "solve_s", "status", "repeat", "tol", "rel_res_true"]
             with open(path, "w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(f, fieldnames=fields)
                 writer.writeheader()
                 for repeat, (base, ours) in enumerate([(1.0, 1.02), (2.0, 2.04), (4.0, 4.08)]):
-                    writer.writerow(dict(matrix="m", solver="base", spmv_count=100, per_spmv_s=base, status="Converged", repeat=repeat))
-                    writer.writerow(dict(matrix="m", solver="ours", spmv_count=100, per_spmv_s=ours, status="Converged", repeat=repeat))
+                    writer.writerow(dict(matrix="m", solver="base", spmv_count=100, per_spmv_s=base, solve_s=base,
+                                         status="Converged", repeat=repeat, tol=1e-8, rel_res_true=1e-10))
+                    writer.writerow(dict(matrix="m", solver="ours", spmv_count=100, per_spmv_s=ours, solve_s=ours,
+                                         status="Converged", repeat=repeat, tol=1e-8, rel_res_true=1e-10))
             done = subprocess.run(
                 [sys.executable, str(ROOT / "scripts" / "summarize.py"), path, "--gate", "base=ours"],
                 capture_output=True,
@@ -228,19 +244,20 @@ class PairedRatios(unittest.TestCase):
             self.assertEqual(done.returncode, 0, done.stderr)
             line = next(l for l in done.stdout.splitlines() if l.startswith("| m "))
             self.assertIn("1.020", line)
-            self.assertIn("PASS", line)
+            self.assertIn("VERIFIED", line)
 
 
 class Labels(unittest.TestCase):
     def test_a_label_separates_the_same_solver_from_two_builds(self):
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "r.csv")
-            fields = ["matrix", "solver", "spmv_count", "per_spmv_s", "status", "label"]
+            fields = ["matrix", "solver", "spmv_count", "per_spmv_s", "solve_s", "status", "label", "tol", "rel_res_true"]
             with open(path, "w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(f, fieldnames=fields)
                 writer.writeheader()
                 for label, time in (("o2", 2.0), ("o3", 1.0)):
-                    writer.writerow(dict(matrix="m", solver="L0", spmv_count=100, per_spmv_s=time, status="Converged", label=label))
+                    writer.writerow(dict(matrix="m", solver="L0", spmv_count=100, per_spmv_s=time, solve_s=time,
+                                         status="Converged", label=label, tol=1e-8, rel_res_true=1e-10))
             done = subprocess.run(
                 [sys.executable, str(ROOT / "scripts" / "summarize.py"), path, "--gate", "L0@o2=L0@o3"],
                 capture_output=True,
@@ -369,25 +386,46 @@ class Summarize(unittest.TestCase):
     def test_gate_table_reports_pass_and_fail(self):
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "r.csv")
-            fields = ["matrix", "solver", "spmv_count", "per_spmv_s", "status"]
+            fields = ["matrix", "solver", "spmv_count", "per_spmv_s", "solve_s", "status", "tol", "rel_res_true"]
             with open(path, "w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(f, fieldnames=fields)
                 writer.writeheader()
                 for matrix, ours in (("good", 1.04), ("bad", 1.5)):
                     for _ in range(3):
-                        writer.writerow(dict(matrix=matrix, solver="base", spmv_count=100, per_spmv_s=1.0, status="Converged"))
-                        writer.writerow(dict(matrix=matrix, solver="ours", spmv_count=100, per_spmv_s=ours, status="Converged"))
+                        writer.writerow(dict(matrix=matrix, solver="base", spmv_count=100, per_spmv_s=1.0,
+                                             solve_s=1.0, status="Converged", tol=1e-8, rel_res_true=1e-10))
+                        writer.writerow(dict(matrix=matrix, solver="ours", spmv_count=100, per_spmv_s=ours,
+                                             solve_s=ours, status="Converged", tol=1e-8, rel_res_true=1e-10))
             done = subprocess.run(
-                [sys.executable, str(ROOT / "scripts" / "summarize.py"), path, "--gate", "base=ours"],
+                [sys.executable, str(ROOT / "scripts" / "summarize.py"), path, "--gate", "base=ours",
+                 "--time-ratio", "1.05"],
                 capture_output=True,
                 text=True,
             )
-            self.assertEqual(done.returncode, 0, done.stderr)
+            self.assertEqual(done.returncode, 2, done.stderr)
             lines = done.stdout.splitlines()
             good = next(line for line in lines if line.startswith("| good"))
             bad = next(line for line in lines if line.startswith("| bad"))
             self.assertIn("PASS", good)
             self.assertIn("FAIL", bad)
+
+    def test_nonconverged_runs_cannot_pass_and_incompatible_runs_are_rejected(self):
+        def row(solver, status="MaxIterations", tol="1e-8"):
+            return dict(matrix="m", solver=solver, spmv_count="1", per_spmv_s="1", solve_s="1",
+                        status=status, tol=tol, rel_res_true="0.5")
+        with tempfile.TemporaryDirectory() as d:
+            path = pathlib.Path(d) / "r.csv"
+            for rows in ([row("base"), row("ours")],
+                         [row("base"), row("ours", tol="1e-6")]):
+                with path.open("w", newline="", encoding="ascii") as f:
+                    writer = csv.DictWriter(f, fieldnames=list(rows[0]))
+                    writer.writeheader()
+                    writer.writerows(rows)
+                done = subprocess.run(
+                    [sys.executable, str(ROOT / "scripts/summarize.py"), str(path), "--gate", "base=ours"],
+                    capture_output=True, text=True)
+                self.assertNotEqual(done.returncode, 0)
+                self.assertNotIn("PASS", done.stdout)
 
 
 if __name__ == "__main__":

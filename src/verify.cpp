@@ -1,8 +1,10 @@
 #include "ssolve/verify.hpp"
 
 #include <cmath>
+#include <cstring>
 #include <limits>
 #include <random>
+#include <sstream>
 #include <stdexcept>
 #include <vector>
 
@@ -42,6 +44,29 @@ void validate_cg_matrix(const CsrMatrix& a) {
   }
   const double defect = symmetry_defect(a);
   if (!std::isfinite(defect) || defect > 1e-8) throw std::runtime_error("matrix is not symmetric (CG symmetry check)");
+}
+
+std::string matrix_fingerprint(const CsrMatrix& a) {
+  // Stable FNV-1a over dimensions, structure and FP64 bit patterns (not a security hash).
+  std::uint64_t hash = 14695981039346656037ULL;
+  const auto mix = [&](std::uint64_t word) {
+    for (int byte = 0; byte < 8; ++byte) {
+      hash = (hash ^ (word & 255)) * 1099511628211ULL;
+      word >>= 8;
+    }
+  };
+  mix(a.n_rows);
+  mix(a.n_cols);
+  for (const auto ptr : a.row_ptr) mix(ptr);
+  for (std::int64_t k = 0; k < a.nnz(); ++k) {
+    mix(a.col[k]);
+    std::uint64_t bits;
+    std::memcpy(&bits, &a.val[k], sizeof(bits));
+    mix(bits);
+  }
+  std::ostringstream out;
+  out << std::hex << hash;
+  return out.str();
 }
 
 void spmv_reference(const CsrMatrix& a, const double* x, double* y) {

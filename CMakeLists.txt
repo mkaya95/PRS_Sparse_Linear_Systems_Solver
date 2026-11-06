@@ -37,7 +37,8 @@ set(build_info_header "${build_info_dir}/ssolve_build_info.h")
 add_custom_target(ssolve_build_info
   BYPRODUCTS "${build_info_header}"
   COMMAND "${CMAKE_COMMAND}" "-DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}" "-DOUTPUT=${build_info_header}"
-          "-DFLAGS=${build_flags}" -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/write_build_info.cmake"
+          "-DFLAGS=${build_flags}" "-DEIGEN_DIR=${SSOLVE_EIGEN_DIR}"
+          -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/write_build_info.cmake"
   VERBATIM)
 
 add_library(ssolve STATIC
@@ -71,6 +72,7 @@ add_library(ssolve_bench STATIC
 )
 target_include_directories(ssolve_bench PUBLIC bench)
 target_include_directories(ssolve_bench SYSTEM PRIVATE "${SSOLVE_EIGEN_DIR}")
+target_compile_definitions(ssolve_bench PRIVATE EIGEN_DONT_PARALLELIZE)
 target_link_libraries(ssolve_bench PUBLIC ssolve)
 
 add_executable(bench_cg apps/bench_cg.cpp)

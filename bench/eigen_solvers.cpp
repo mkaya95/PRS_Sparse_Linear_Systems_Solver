@@ -31,7 +31,8 @@ SolveResult run_eigen(const CsrMatrix& a, const double* b, double* x, const Solv
     throw std::runtime_error("Eigen driver supports at most 2^31 - 1 non-zeros");
   }
 
-  // Copy the same numbers into Eigen's own storage, before any timer starts.
+  const double setup_start = wall_seconds();
+  // Storage construction is part of setup on both sides.
   AlignedArray<int> row_ptr(a.row_ptr.size());
   for (std::size_t i = 0; i < a.row_ptr.size(); ++i) row_ptr[i] = static_cast<int>(a.row_ptr[i]);
   const Eigen::Map<const RowMajorMatrix> mapped(a.n_rows, a.n_cols, a.nnz(), row_ptr.data(), a.col.data(),
@@ -48,9 +49,15 @@ SolveResult run_eigen(const CsrMatrix& a, const double* b, double* x, const Solv
   cg.setMaxIterations(options.max_iterations > 0 ? static_cast<Eigen::Index>(options.max_iterations) : 2 * n);
 
   SolveResult result;
-  const double setup_start = wall_seconds();
   cg.compute(matrix);
   result.setup_seconds = wall_seconds() - setup_start;
+  if (cg.info() != Eigen::Success) {
+    solution.setZero();
+    result.status = SolveStatus::Breakdown;
+    result.detail = "Eigen preconditioner setup failed";
+    verify_result(a, b, x, options, result);
+    return result;
+  }
 
   const double solve_start = wall_seconds();
   if (options.use_initial_guess) {
@@ -75,6 +82,16 @@ SolveResult run_eigen(const CsrMatrix& a, const double* b, double* x, const Solv
 }
 
 }  // namespace
+
+std::string eigen_version() {
+#ifdef EIGEN_PATCH_VERSION
+  return std::to_string(EIGEN_MAJOR_VERSION) + "." + std::to_string(EIGEN_MINOR_VERSION) + "." +
+         std::to_string(EIGEN_PATCH_VERSION);
+#else
+  return std::to_string(EIGEN_WORLD_VERSION) + "." + std::to_string(EIGEN_MAJOR_VERSION) + "." +
+         std::to_string(EIGEN_MINOR_VERSION);
+#endif
+}
 
 std::vector<NamedSolver> eigen_solvers() {
   using Eigen::DiagonalPreconditioner;

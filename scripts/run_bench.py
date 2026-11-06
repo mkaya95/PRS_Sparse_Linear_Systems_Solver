@@ -4,7 +4,7 @@
 Solvers run interleaved inside one process per matrix (A, B, A, B, ...), so a machine
 that slows down mid-run affects them equally. A missing matrix file prints SKIP and a
 failed or killed run prints FAILED. Either way the remaining matrices still run. The
-exit status is non-zero only if nothing ran.
+exit status is non-zero if any run failed or nothing ran.
 
 Example:
   python3 scripts/run_bench.py --build ~/p08/build/release --solvers eigen-E0,ours \\
@@ -53,6 +53,8 @@ def main():
     parser.add_argument("--data-dir", default=str(ROOT / "data"), help="directory holding NAME.mtx files")
     parser.add_argument("--pin", default="2", help="logical CPU for taskset, or 'none'")
     parser.add_argument("--repeat", default="10")
+    parser.add_argument("--warmup", default="1")
+    parser.add_argument("--mode", choices=("solve", "fixed"), default="solve")
     parser.add_argument("--maxit", default=None)
     parser.add_argument("--tol", default=None)
     parser.add_argument("--matrices", default=None, help="comma-separated names; default is the whole suite")
@@ -76,6 +78,7 @@ def main():
             skipped += 1
             continue
         command = [*prefix, binary, "--matrix", spec, "--solver", args.solvers, "--repeat", args.repeat, "--csv", args.out]
+        command += ["--warmup", args.warmup, "--mode", args.mode]
         if args.maxit is not None:
             command += ["--maxit", args.maxit]
         if args.tol is not None:
@@ -101,7 +104,7 @@ def main():
             failed += 1
 
     print(f"Finished: {ran} ran, {skipped} skipped, {failed} failed. Results: {args.out}")
-    return 0 if ran > 0 else 1
+    return 0 if ran > 0 and failed == 0 else 1
 
 
 if __name__ == "__main__":

@@ -286,12 +286,11 @@ SolveResult jacobi_passes(const CsrMatrix& a, const double* b, double* x, const 
   return result;
 }
 
-// The shipping solver, as a ladder rung. The copy of the matrix happens before any timer,
-// and building the backend counts as setup, like Eigen's compute().
+// The shipping solver, as a ladder rung. Storage construction and the backend count as setup.
 template <bool AllowNarrowRowPtr, bool InitialSpmv, Precond P>
 SolveResult run_backend(const CsrMatrix& a, const double* b, double* x, const SolveOptions& options) {
-  CsrMatrix copy = clone(a);
   const double setup_start = wall_seconds();
+  CsrMatrix copy = clone(a);
   const std::unique_ptr<Backend> backend = make_seq_backend(std::move(copy), AllowNarrowRowPtr);
   AlignedArray<double> inv_diag;
   if (P == Precond::Jacobi) inv_diag = jacobi_inverse_diagonal(a);

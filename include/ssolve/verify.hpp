@@ -4,6 +4,8 @@
 // a tuned kernel cannot hide itself here. Never call a backend from verify.cpp.
 #pragma once
 
+#include <string>
+
 #include "ssolve/matrix.hpp"
 #include "ssolve/solver.hpp"
 
@@ -11,6 +13,7 @@ namespace ssolve {
 
 // Necessary CG checks, not a proof of positive definiteness. SPD provenance is required.
 void validate_cg_matrix(const CsrMatrix& a);
+std::string matrix_fingerprint(const CsrMatrix& a);
 
 // y = A x
 void spmv_reference(const CsrMatrix& a, const double* x, double* y);
