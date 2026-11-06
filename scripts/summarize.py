@@ -5,8 +5,9 @@ Examples:
   python3 scripts/summarize.py results/my-laptop/g1.csv --gate eigen-E0=ours --gate eigen-E1=ours-jacobi
   python3 scripts/summarize.py results/my-laptop/kernels.csv --kernel-baseline eigen
 
-A gate BASE=OURS passes on a matrix when OURS takes at most 1.05x BASE per SpMV and
-their SpMV counts differ by at most 1% or 1 iteration, whichever is larger.
+Gates require converged, independently verified solves. Time ratios use complete
+solve time by default; --metric iteration is a diagnostic, not an SpMV timer.
+An optional --time-ratio sets an explicit performance acceptance limit.
 Medians and 95% nonparametric confidence intervals follow Hoefler and Belli (SC15).
 """
 import argparse
@@ -72,28 +73,46 @@ def record_round(entry, row, value):
     """Stores a time under (repeat, occurrence), so appended runs do not overwrite each other."""
     if "repeat" not in row:
         return
-    occurrence = entry["seen"][row["repeat"]]
-    entry["seen"][row["repeat"]] += 1
-    entry["rounds"][(row["repeat"], occurrence)] = value
+    round_key = (row.get("run_id", ""), row["repeat"])
+    occurrence = entry["seen"][round_key]
+    entry["seen"][round_key] += 1
+    entry["rounds"][(*round_key, occurrence)] = value
 
 
 def new_entry():
-    return {"times": [], "spmv": [], "status": set(), "rounds": {}, "seen": collections.Counter()}
+    return {"times": [], "spmv": [], "status": set(), "rounds": {}, "seen": collections.Counter(),
+            "verified": [], "precond": set()}
 
 
-def load_groups(paths):
+def load_groups(paths, metric="solve_s"):
     """Returns {(matrix, maxit): {solver: entry}}."""
     groups = collections.defaultdict(lambda: collections.defaultdict(new_entry))
+    configurations = {}
     for path in paths:
         with open(path, newline="", encoding="utf-8") as f:
             for row in csv.DictReader(f):
+                check_configuration(configurations, ("platform", row["matrix"], row.get("maxit", "")), row,
+                                    ("n", "nnz", "matrix_id", "input", "tol", "mode", "cpu_model",
+                                     "hostname", "affinity", "mem_bytes", "logical_cpus", "l3_bytes"))
+                check_configuration(configurations, ("build", row["matrix"], row.get("maxit", ""), row.get("label", "")), row)
                 # A label separates the same solver measured from different builds, as solver@label.
                 solver = row["solver"] + (f"@{row['label']}" if row.get("label") else "")
                 entry = groups[(row["matrix"], row.get("maxit", ""))][solver]
-                time = float(row["per_spmv_s"])
+                # Legacy CSVs remain readable, but cannot pass an accuracy gate without residual evidence.
+                time = float(row[metric] if metric in row else row["per_spmv_s"])
+                if not math.isfinite(time) or time < 0:
+                    raise ValueError(f"{path}: invalid timing")
                 entry["times"].append(time)
                 entry["spmv"].append(int(row["spmv_count"]))
                 entry["status"].add(row["status"])
+                entry["precond"].add(row.get("precond", "unknown"))
+                residual = float(row.get("rel_res_true", "nan"))
+                tolerance = float(row.get("tol", "nan"))
+                entry["verified"].append(
+                    row["status"] == "Converged" and row.get("mode", "solve") == "solve"
+                    and metric in row and math.isfinite(residual) and math.isfinite(tolerance)
+                    and tolerance > 0 and 0 <= residual <= tolerance
+                )
                 record_round(entry, row, time)
     return groups
 
@@ -108,14 +127,28 @@ def ratio_with_ci(base_entry, our_entry):
     return (median(our_entry["times"]) / reference if reference > 0 else math.inf), None, None
 
 
-def print_gate(groups, base, ours):
+def check_configuration(configurations, key, row, fields=None):
+    if fields is None:
+        fields = ("n", "nnz", "matrix_id", "input", "tol", "mode", "cpu_model", "compiler", "flags",
+                  "git_commit", "eigen_commit", "eigen_version", "affinity", "warmup", "repeats",
+                  "logical_cpus", "physical_cores", "l3_bytes", "mem_bytes", "hostname")
+    signature = tuple(row.get(field, "") for field in fields)
+    if key in configurations and configurations[key] != signature:
+        raise ValueError(f"incompatible benchmark configurations for {key}; summarize separately")
+    configurations[key] = signature
+
+
+def print_gate(groups, base, ours, time_ratio=None):
     print(f"\n### Gate: {ours} against {base}\n")
-    print("| Matrix | Limit | Base (us/SpMV) | Ours (us/SpMV) | Ratio | Ratio 95% CI | Base SpMVs | Our SpMVs | Result |")
+    print("| Matrix | Limit | Base (us) | Ours (us) | Ratio | Ratio 95% CI | Base iterations | Our iterations | Result |")
     print("| --- | --- | --- | --- | --- | --- | --- | --- | --- |")
     passed = total = 0
     noisy = []
     for (matrix, maxit), solvers in sorted(groups.items()):
         if base not in solvers or ours not in solvers:
+            if base in solvers or ours in solvers:
+                total += 1
+                print(f"| {matrix} | {maxit or 'default'} | - | - | - | - | - | - | FAIL (missing solver) |")
             continue
         base_time = median(solvers[base]["times"])
         our_time = median(solvers[ours]["times"])
@@ -125,17 +158,22 @@ def print_gate(groups, base, ours):
             noisy.append(matrix)
         base_spmv = median(solvers[base]["spmv"])
         our_spmv = median(solvers[ours]["spmv"])
-        ok = time_passes(ratio) and spmv_passes(base_spmv, our_spmv)
+        ok = (all(solvers[base]["verified"]) and all(solvers[ours]["verified"])
+              and solvers[base]["precond"] == solvers[ours]["precond"])
+        if time_ratio is not None:
+            ok = ok and ratio <= time_ratio
         total += 1
         passed += 1 if ok else 0
         limit = maxit if maxit not in ("", "0") else "default"
         print(
             f"| {matrix} | {limit} | {base_time * 1e6:.2f} | {our_time * 1e6:.2f} | {ratio:.3f} | "
-            f"{interval} | {base_spmv:g} | {our_spmv:g} | {'PASS' if ok else 'FAIL'} |"
+            f"{interval} | {base_spmv:g} | {our_spmv:g} | "
+            f"{('PASS' if time_ratio is not None else 'VERIFIED') if ok else 'FAIL'} |"
         )
     print(f"\n{passed} of {total} matrices pass.")
     if noisy:
         print(f"WARNING: ratio interval wider than 0.10 on: {', '.join(sorted(set(noisy)))}. Rerun on a quiet machine.")
+    return total > 0 and passed == total
 
 
 def geometric_mean_ratio(groups, base, ours):
@@ -164,7 +202,7 @@ def print_ladder(groups, rungs):
 
 
 def print_all(groups):
-    print("| Matrix | Limit | Solver | Median us/SpMV | 95% CI | SpMVs | Status | Runs |")
+    print("| Matrix | Limit | Solver | Median us | 95% CI | Iterations | Status | Runs |")
     print("| --- | --- | --- | --- | --- | --- | --- | --- |")
     for (matrix, maxit), solvers in sorted(groups.items()):
         limit = maxit if maxit not in ("", "0") else "default"
@@ -180,9 +218,11 @@ def print_all(groups):
 def print_kernels(paths, baseline):
     """Prints median time per kernel and the ratio to the baseline implementation."""
     groups = collections.defaultdict(lambda: collections.defaultdict(new_entry))
+    configurations = {}
     for path in paths:
         with open(path, newline="", encoding="utf-8") as f:
             for row in csv.DictReader(f):
+                check_configuration(configurations, (row["matrix"], row["kernel"]), row)
                 entry = groups[(row["matrix"], row["kernel"])][row["impl"]]
                 time = float(row["seconds"])
                 entry["times"].append(time)
@@ -218,24 +258,37 @@ def main():
     parser.add_argument("--gate", action="append", default=[], metavar="BASE=OURS")
     parser.add_argument("--kernel-baseline", metavar="IMPL", help="treat the files as bench_kernels output")
     parser.add_argument("--ladder", metavar="A,B,C", help="print one row per rung of the optimization ladder")
+    parser.add_argument("--metric", choices=("solve", "end-to-end", "iteration"), default="solve")
+    parser.add_argument("--time-ratio", type=float, help="explicit maximum ours/base ratio for gates")
     args = parser.parse_args()
 
     if args.kernel_baseline:
         print_kernels(args.files, args.kernel_baseline)
         return 0
 
-    groups = load_groups(args.files)
+    if args.time_ratio is not None and (not math.isfinite(args.time_ratio) or args.time_ratio <= 0):
+        parser.error("--time-ratio must be finite and positive")
+    metric = {"solve": "solve_s", "end-to-end": "end_to_end_s", "iteration": "per_spmv_s"}[args.metric]
+    try:
+        groups = load_groups(args.files, metric)
+    except ValueError as error:
+        parser.error(str(error))
+    print(f"Timing metric: {args.metric} (legacy CSVs fall back to time per iteration).")
     if not groups:
         print("No benchmark rows found.")
         return 1
     if args.ladder:
         print_ladder(groups, args.ladder.split(","))
     elif args.gate:
+        if args.metric == "iteration":
+            parser.error("iteration timings are diagnostic; use solve or end-to-end for gates")
+        passed = True
         for gate in args.gate:
             if "=" not in gate:
                 parser.error(f"--gate needs BASE=OURS, got '{gate}'")
             base, ours = gate.split("=", 1)
-            print_gate(groups, base, ours)
+            passed = print_gate(groups, base, ours, args.time_ratio) and passed
+        return 0 if passed else 2
     else:
         print_all(groups)
         print()

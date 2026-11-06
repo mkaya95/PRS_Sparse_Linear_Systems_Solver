@@ -37,7 +37,8 @@ set(build_info_header "${build_info_dir}/ssolve_build_info.h")
 add_custom_target(ssolve_build_info
   BYPRODUCTS "${build_info_header}"
   COMMAND "${CMAKE_COMMAND}" "-DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}" "-DOUTPUT=${build_info_header}"
-          "-DFLAGS=${build_flags}" -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/write_build_info.cmake"
+          "-DFLAGS=${build_flags}" "-DEIGEN_DIR=${SSOLVE_EIGEN_DIR}"
+          -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/write_build_info.cmake"
   VERBATIM)
 
 add_library(ssolve STATIC
@@ -47,6 +48,7 @@ add_library(ssolve STATIC
   src/formats/csr.cpp
   src/io/generators.cpp
   src/io/mtx_reader.cpp
+  src/io/matrix_spec.cpp
   src/solvers/cg.cpp
   src/verify.cpp
 )
@@ -66,11 +68,11 @@ add_library(ssolve_bench STATIC
   bench/eigen_kernels.cpp
   bench/eigen_solvers.cpp
   bench/ladder.cpp
-  bench/matrix_spec.cpp
   bench/registry.cpp
 )
 target_include_directories(ssolve_bench PUBLIC bench)
 target_include_directories(ssolve_bench SYSTEM PRIVATE "${SSOLVE_EIGEN_DIR}")
+target_compile_definitions(ssolve_bench PRIVATE EIGEN_DONT_PARALLELIZE)
 target_link_libraries(ssolve_bench PUBLIC ssolve)
 
 add_executable(bench_cg apps/bench_cg.cpp)
@@ -78,7 +80,7 @@ target_link_libraries(bench_cg PRIVATE ssolve_bench)
 add_executable(bench_kernels apps/bench_kernels.cpp)
 target_link_libraries(bench_kernels PRIVATE ssolve_bench)
 add_executable(solve apps/solve.cpp)
-target_link_libraries(solve PRIVATE ssolve_bench)
+target_link_libraries(solve PRIVATE ssolve)
 
 enable_testing()
 

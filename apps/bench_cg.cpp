@@ -1,7 +1,7 @@
 // Times named solvers on one matrix and appends one CSV row per repeat.
 //
 // Usage: bench_cg --matrix SPEC --solver NAME[,NAME...] [--tol 1e-8] [--maxit N] [--repeat 10]
-//                 [--csv FILE] [--label TEXT]
+//                 [--warmup 1] [--mode solve|fixed] [--csv FILE] [--label TEXT]
 //
 // Solvers take turns round by round (A, B, then B, A, ...), so a machine that slows down
 // mid-run affects them equally and none always goes first. A solver that fails is reported
@@ -9,6 +9,7 @@
 //
 // The right-hand side is b = A·1, so the exact solution is the vector of ones.
 #include <algorithm>
+#include <chrono>
 #include <cstdio>
 #include <exception>
 #include <memory>
@@ -16,14 +17,16 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <unistd.h>
 
 #include "cli.hpp"
-#include "matrix_spec.hpp"
+#include "ssolve/matrix_spec.hpp"
 #include "registry.hpp"
 #include "ssolve/aligned_array.hpp"
 #include "ssolve/csv.hpp"
 #include "ssolve/generators.hpp"
 #include "ssolve/manifest.hpp"
+#include "ssolve/timer.hpp"
 #include "ssolve/verify.hpp"
 
 using namespace ssolve;
@@ -31,29 +34,37 @@ using namespace ssolve_bench;
 
 int main(int argc, char** argv) {
   try {
-    const ssolve_cli::Args args(argc, argv, {"matrix", "solver", "tol", "maxit", "repeat", "csv", "label"});
+    const ssolve_cli::Args args(argc, argv,
+                               {"matrix", "solver", "tol", "maxit", "repeat", "warmup", "mode", "csv", "label"});
     const std::string spec = args.required("matrix");
     const std::string solver_list = args.required("solver");
-    const int repeats = static_cast<int>(args.get_int("repeat", 10));
-    if (repeats < 1) throw std::runtime_error("--repeat must be positive");
+    const int repeats = args.get_count("repeat", 10, 1);
+    const int warmups = args.get_count("warmup", 1);
+    const std::string mode = args.get("mode", "solve");
+    if (mode != "solve" && mode != "fixed") throw std::runtime_error("--mode must be solve or fixed");
 
     SolveOptions options;
     options.tol = args.get_double("tol", 1e-8);
     options.max_iterations = args.get_int("maxit", 0);
+    validate_options(options);
+    if (mode == "fixed" && options.max_iterations == 0) throw std::runtime_error("fixed mode needs --maxit");
 
+    const double preparation_start = wall_seconds();
     const CsrMatrix a = load_matrix_spec(spec);
-    if (a.n_rows != a.n_cols) throw std::runtime_error("CG needs a square matrix: " + spec);
-    const double defect = symmetry_defect(a);
-    if (defect > 1e-8) {
-      throw std::runtime_error("matrix is not symmetric (defect " + fmt_double(defect) + "), so CG does not apply: " + spec);
-    }
+    validate_cg_matrix(a);
+    const std::string fingerprint = matrix_fingerprint(a);
     const AlignedArray<double> b = rhs_for_unit_solution(a);
     AlignedArray<double> x(static_cast<std::size_t>(a.n_rows));
+    const double preparation_seconds = wall_seconds() - preparation_start;
+    const std::string run_id = std::to_string(std::chrono::system_clock::now().time_since_epoch().count()) + "-" +
+                               std::to_string(getpid());
 
     std::vector<std::string> columns = manifest_columns();
     for (const char* column :
          {"matrix", "n", "nnz", "solver", "precond", "tol", "maxit", "repeat", "status", "spmv_count",
-          "rel_res_recursive", "rel_res_true", "setup_s", "solve_s", "per_spmv_s", "label"}) {
+          "rel_res_recursive", "rel_res_true", "setup_s", "solve_s", "per_spmv_s", "label",
+          "mode", "warmup", "repeats", "preparation_s", "verification_s", "end_to_end_s", "eigen_version",
+          "input", "matrix_id", "run_id"}) {
       columns.push_back(column);
     }
     std::unique_ptr<CsvWriter> csv;
@@ -78,11 +89,21 @@ int main(int argc, char** argv) {
     const Manifest manifest = collect_manifest();
     const std::string name = matrix_display_name(spec);
     const auto run_once = [&](const NamedSolver& solver, int repeat) {
+      // Identical initial state for warm-ups and all implementations.
+      x.fill(0.0);
+      const double start = wall_seconds();
       const SolveResult result = solver.run(a, b.data(), x.data(), options);
-      const double true_residual = true_relative_residual(a, b.data(), x.data());
+      const double end_to_end = preparation_seconds + wall_seconds() - start;
+      if (repeat < 0) {
+        if (result.status == SolveStatus::Breakdown || result.status == SolveStatus::ResidualFailure) {
+          throw std::runtime_error(std::string(to_string(result.status)) + ": " + result.detail);
+        }
+        return;
+      }
+      const double true_residual = result.true_residual;
       const double per_spmv = result.spmv_count > 0 ? result.solve_seconds / static_cast<double>(result.spmv_count) : 0.0;
 
-      std::printf("%s %s n=%d nnz=%lld %s spmv=%lld res=%.3e true=%.3e solve=%.6fs per_spmv=%.3eus\n", name.c_str(),
+      std::printf("%s %s n=%d nnz=%lld %s spmv=%lld res=%.3e true=%.3e solve=%.6fs per_iter=%.3eus\n", name.c_str(),
                   solver.name.c_str(), a.n_rows, static_cast<long long>(a.nnz()), to_string(result.status),
                   static_cast<long long>(result.spmv_count), result.recursive_residual, true_residual,
                   result.solve_seconds, per_spmv * 1e6);
@@ -105,13 +126,23 @@ int main(int argc, char** argv) {
                                                  fmt_double(result.setup_seconds),
                                                  fmt_double(result.solve_seconds),
                                                  fmt_double(per_spmv),
-                                                 args.get("label", "")};
+                                                 args.get("label", ""),
+                                                 mode, std::to_string(warmups), std::to_string(repeats),
+                                                 fmt_double(preparation_seconds),
+                                                 fmt_double(result.verification_seconds), fmt_double(end_to_end),
+                                                 eigen_version(), spec, fingerprint, run_id};
         row.insert(row.end(), values.begin(), values.end());
         csv->write_row(row);
       }
+      if ((mode == "solve" && result.status != SolveStatus::Converged) ||
+          result.status == SolveStatus::Breakdown || result.status == SolveStatus::ResidualFailure) {
+        report_failure(solver.name, std::string(to_string(result.status)) + ": " + result.detail);
+      }
     };
 
-    for (int repeat = 0; repeat < repeats; ++repeat) {
+    if (solvers.empty()) throw std::runtime_error("no valid solvers selected");
+    for (std::int64_t round = -static_cast<std::int64_t>(warmups); round < repeats; ++round) {
+      const int repeat = static_cast<int>(round);
       // Rotate who goes first, because the first run in a round is measurably slower.
       if (repeat > 0 && !solvers.empty()) std::rotate(solvers.begin(), solvers.begin() + 1, solvers.end());
       for (auto solver = solvers.begin(); solver != solvers.end();) {

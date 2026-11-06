@@ -38,11 +38,15 @@ SolveResult cg_loop(const Backend& backend, const double* inv_diag, const double
   double rr = backend.dot(r, r);
 
   SolveResult result;
-  const auto finish = [&](SolveStatus status) {
+  const auto finish = [&](SolveStatus status, const char* detail = "") {
     result.status = status;
+    result.detail = detail;
     result.recursive_residual = std::sqrt(rr / rhs_squared);
     return result;
   };
+  if (!std::isfinite(rhs_squared) || !std::isfinite(rr) || !std::isfinite(threshold)) {
+    return finish(SolveStatus::Breakdown, "non-finite initial norm or stopping threshold");
+  }
   if (rr < threshold) return finish(SolveStatus::Converged);
 
   double rz = rr;
@@ -57,8 +61,11 @@ SolveResult cg_loop(const Backend& backend, const double* inv_diag, const double
   while (result.spmv_count < limit) {
     const double pq = backend.spmv_dot(p, q);
     ++result.spmv_count;
-    if (!(pq > 0.0)) return finish(SolveStatus::Breakdown);  // also catches NaN
+    if (!(pq > 0.0) || !std::isfinite(pq) || !(rz > 0.0) || !std::isfinite(rz)) {
+      return finish(SolveStatus::Breakdown, "invalid curvature or preconditioned residual product");
+    }
     const double alpha = rz / pq;
+    if (!std::isfinite(alpha)) return finish(SolveStatus::Breakdown, "non-finite CG step");
 
     double rz_new = 0.0;
     if (inv_diag == nullptr) {
@@ -69,9 +76,14 @@ SolveResult cg_loop(const Backend& backend, const double* inv_diag, const double
       rr = sums.rr;
       rz_new = sums.rz;
     }
+    if (!std::isfinite(rr) || !std::isfinite(rz_new)) {
+      return finish(SolveStatus::Breakdown, "non-finite residual update");
+    }
     if (rr < threshold) return finish(SolveStatus::Converged);
+    if (!(rz_new > 0.0)) return finish(SolveStatus::Breakdown, "nonpositive preconditioned residual product");
 
     const double beta = rz_new / rz;
+    if (!std::isfinite(beta)) return finish(SolveStatus::Breakdown, "non-finite direction coefficient");
     if (inv_diag == nullptr) {
       backend.xpby(r, beta, p);
     } else {
@@ -85,24 +97,41 @@ SolveResult cg_loop(const Backend& backend, const double* inv_diag, const double
 }  // namespace
 
 SolveResult cg(const Backend& backend, const double* inv_diag, const double* b, double* x, const SolveOptions& options) {
+  validate_options(options);
+  if (inv_diag != nullptr) {
+    for (Index i = 0; i < backend.n(); ++i) {
+      if (!std::isfinite(inv_diag[i]) || inv_diag[i] <= 0.0) {
+        throw std::runtime_error("Jacobi inverse diagonal must be finite and positive");
+      }
+    }
+  }
   const double start = wall_seconds();
   SolveResult result = with_rhs_scaling(static_cast<std::size_t>(backend.n()), b, x, options,
                                         [&](const double* rhs, double* solution) {
                                           return cg_loop(backend, inv_diag, rhs, solution, options);
                                         });
   result.solve_seconds = wall_seconds() - start;
+  const double verification_start = wall_seconds();
+  accept_verified_residual(result, backend.true_residual(b, x), options);
+  result.verification_seconds = wall_seconds() - verification_start;
   return result;
 }
 
 AlignedArray<double> jacobi_inverse_diagonal(const CsrMatrix& a) {
   AlignedArray<double> inv_diag(static_cast<std::size_t>(a.n_rows));
   for (Index i = 0; i < a.n_rows; ++i) {
-    double value = 1.0;
+    double value = 0.0;
     for (std::int64_t k = a.row_ptr[i]; k < a.row_ptr[i + 1]; ++k) {
       if (a.col[k] == i) {
-        if (a.val[k] != 0.0) value = 1.0 / a.val[k];
+        if (!std::isfinite(a.val[k]) || a.val[k] <= 0.0) {
+          throw std::runtime_error("Jacobi requires a finite positive diagonal in every row");
+        }
+        value = 1.0 / a.val[k];
         break;
       }
+    }
+    if (!std::isfinite(value) || value <= 0.0) {
+      throw std::runtime_error("Jacobi requires a finite positive inverse diagonal in every row");
     }
     inv_diag[i] = value;
   }

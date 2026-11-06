@@ -135,7 +135,7 @@ TEST(jacobi_direction_matches_hand_computation) {
   CHECK_EQ(p[2], 17.0);
 }
 
-TEST(jacobi_uses_one_for_a_zero_or_missing_diagonal) {
+TEST(jacobi_rejects_invalid_diagonals) {
   Coo coo;
   coo.n_rows = 4;
   coo.n_cols = 4;
@@ -143,15 +143,16 @@ TEST(jacobi_uses_one_for_a_zero_or_missing_diagonal) {
   coo.add(1, 1, 0.0);   // stored zero
   coo.add(2, 0, -1.0);  // no diagonal entry in this row
   coo.add(3, 3, -8.0);  // a negative diagonal keeps its sign
-  const AlignedArray<double> inv_diag = jacobi_inverse_diagonal(csr_from_coo(coo));
-  CHECK_EQ(inv_diag[0], 0.25);
-  CHECK_EQ(inv_diag[1], 1.0);
-  CHECK_EQ(inv_diag[2], 1.0);
-  CHECK_EQ(inv_diag[3], -0.125);
+  CHECK_THROWS_WITH(jacobi_inverse_diagonal(csr_from_coo(coo)), "positive");
+  for (const double value : {0.0, -1.0, std::numeric_limits<double>::infinity()}) {
+    Coo diagonal;
+    diagonal.n_rows = diagonal.n_cols = 1;
+    diagonal.add(0, 0, value);
+    CHECK_THROWS_WITH(jacobi_inverse_diagonal(csr_from_coo(diagonal)), "positive");
+  }
 }
 
-TEST(jacobi_solves_a_system_with_a_zero_diagonal_entry_without_infinity) {
-  // [[2, 1], [1, 0]] is indefinite, so CG may stop with Breakdown, but x must stay finite.
+TEST(jacobi_rejects_a_system_with_a_zero_diagonal_entry) {
   Coo coo;
   coo.n_rows = 2;
   coo.n_cols = 2;
@@ -160,13 +161,7 @@ TEST(jacobi_solves_a_system_with_a_zero_diagonal_entry_without_infinity) {
   coo.add(1, 0, 1.0);
   coo.add(1, 1, 0.0);
   const CsrMatrix a = csr_from_coo(coo);
-  const AlignedArray<double> inv_diag = jacobi_inverse_diagonal(a);
-  const double b[] = {3.0, 1.0};
-  double x[] = {0.0, 0.0};
-  const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
-  cg(*backend, inv_diag.data(), b, x, SolveOptions{});
-  CHECK(std::isfinite(x[0]));
-  CHECK(std::isfinite(x[1]));
+  CHECK_THROWS_WITH(jacobi_inverse_diagonal(a), "positive");
 }
 
 TEST(empty_matrix_backend_does_nothing) {

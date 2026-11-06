@@ -10,6 +10,8 @@
 
 namespace ssolve_bench {
 
+std::string eigen_version();
+
 using SolverFunction = std::function<ssolve::SolveResult(const ssolve::CsrMatrix& a, const double* b, double* x,
                                                          const ssolve::SolveOptions& options)>;
 

@@ -17,6 +17,7 @@ namespace ssolve {
 // A NaN or infinity in b also passes through, and the iteration reports Breakdown.
 template <class Solve>
 SolveResult with_rhs_scaling(std::size_t n, const double* b, double* x, const SolveOptions& options, Solve solve) {
+  validate_options(options);
   double largest = 0.0;
   double probe = 0.0;  // becomes NaN if any entry is NaN or infinite, because inf * 0 is NaN
   for (std::size_t i = 0; i < n; ++i) {
