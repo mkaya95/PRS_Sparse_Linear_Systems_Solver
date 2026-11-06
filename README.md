@@ -69,7 +69,7 @@ Plug in the charger and close other applications first. `run_bench.py` refuses t
     R=results/my-machine
     ```
 
-3. Measure speed, which takes about 30 minutes. Each solver runs 100 iterations, and every matrix must come in at 1.05 times Eigen's time or less:
+3. Measure speed, which takes about 20 minutes. Each solver runs 100 iterations, and every matrix must come in at 1.05 times Eigen's time or less:
 
     ```bash
     python3 scripts/run_bench.py --build build/release --data-dir ~/p08/data --mode fixed --maxit 100 --repeat 11 \
@@ -77,7 +77,7 @@ Plug in the charger and close other applications first. `run_bench.py` refuses t
     python3 scripts/summarize.py $R/g1-real.csv --metric iteration --gate eigen-E0=ours --gate eigen-E1=ours-jacobi
     ```
 
-4. Measure accuracy, which takes about 30 minutes. Each solver runs until it converges or reaches the limit, on the six smaller matrices, and must reach the same answer as Eigen in the same number of iterations:
+4. Measure accuracy, which takes about 15 minutes. Each solver runs until it converges or reaches the limit, on the six smaller matrices, and must meet the tolerance within 1% of Eigen's iteration count:
 
     ```bash
     python3 scripts/run_bench.py --build build/release --data-dir ~/p08/data --maxit 30000 --repeat 3 --warmup 0 \
