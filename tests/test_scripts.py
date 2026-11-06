@@ -256,6 +256,21 @@ class PowerGuard(unittest.TestCase):
         self.assertEqual(run_bench_script.power_from_sysfs(base), "ac")
         self.assertEqual(run_bench_script.power_from_sysfs(base / "missing"), "unknown")
 
+    def test_a_linux_mains_supply_without_an_online_file_is_unknown(self):
+        base = pathlib.Path(self.dir.name) / "supply"
+        (base / "AC").mkdir(parents=True)
+        (base / "AC" / "type").write_text("Mains\n", encoding="ascii")
+        self.assertEqual(run_bench_script.power_from_sysfs(base), "unknown")
+
+    def test_a_linux_battery_decides_only_when_it_is_discharging(self):
+        base = pathlib.Path(self.dir.name) / "supply"
+        (base / "BAT0").mkdir(parents=True)
+        (base / "BAT0" / "type").write_text("Battery\n", encoding="ascii")
+        (base / "BAT0" / "status").write_text("Discharging\n", encoding="ascii")
+        self.assertEqual(run_bench_script.power_from_sysfs(base), "battery")
+        (base / "BAT0" / "status").write_text("Charging\n", encoding="ascii")
+        self.assertEqual(run_bench_script.power_from_sysfs(base), "unknown")
+
     def test_the_summary_warns_about_battery_results(self):
         done = run_bench("--solvers", "ours", "--repeat", "1", "--power", "battery", "--allow-battery",
                          "--out", self.out, suite=self.suite)

@@ -62,23 +62,24 @@ def power_from_pmset(text):
     return "battery" if "Battery Power" in text else "unknown"
 
 
+def read_supply_file(path):
+    try:
+        return path.read_text(encoding="ascii").strip()
+    except OSError:
+        return ""
+
+
 def power_from_sysfs(base):
-    """Reads Linux's power supply directories: a mains supply decides, otherwise a battery's status."""
+    """Reads Linux's power supply directories: a mains supply decides, otherwise a discharging battery."""
     base = pathlib.Path(base)
     if not base.is_dir():
         return "unknown"
-    mains_seen = battery_discharging = False
-    for supply in base.iterdir():
-        kind = (supply / "type").read_text(encoding="ascii").strip() if (supply / "type").exists() else ""
-        if kind == "Mains":
-            mains_seen = True
-            if (supply / "online").read_text(encoding="ascii").strip() == "1":
-                return "ac"
-        elif kind == "Battery" and (supply / "status").exists():
-            battery_discharging = battery_discharging or (supply / "status").read_text(encoding="ascii").strip() == "Discharging"
-    if mains_seen or battery_discharging:
-        return "battery"
-    return "unknown"
+    supplies = list(base.iterdir())
+    online = [read_supply_file(s / "online") for s in supplies if read_supply_file(s / "type") == "Mains"]
+    status = [read_supply_file(s / "status") for s in supplies if read_supply_file(s / "type") == "Battery"]
+    if "1" in online:
+        return "ac"
+    return "battery" if "0" in online or "Discharging" in status else "unknown"
 
 
 def command_output(command):
