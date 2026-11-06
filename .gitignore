@@ -1,6 +1,3 @@
-# Papers kept locally
-docs/papers/*.pdf
-
 # Build trees and downloaded data
 /build/
 /data/
