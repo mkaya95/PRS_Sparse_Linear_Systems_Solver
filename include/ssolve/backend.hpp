@@ -21,7 +21,6 @@ class Backend {
   virtual ~Backend() = default;
 
   virtual Index n() const = 0;
-  virtual double true_residual(const double* b, const double* x) const = 0;
 
   // Basic operations
   virtual void set_zero(double* x) const = 0;

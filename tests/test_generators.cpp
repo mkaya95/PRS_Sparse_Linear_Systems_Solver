@@ -124,4 +124,26 @@ TEST(unit_solution_rhs_equals_row_sums) {
   CHECK_EQ(b[4], 0.0);  // center: 4 - 4
 }
 
+TEST(random_solution_is_reproducible_and_spread_over_the_interval) {
+  const AlignedArray<double> first = random_solution(1000);
+  const AlignedArray<double> second = random_solution(1000);
+  double total_magnitude = 0.0;
+  for (std::size_t i = 0; i < 1000; ++i) {
+    CHECK_EQ(first[i], second[i]);
+    CHECK(first[i] >= -1.0 && first[i] < 1.0);
+    total_magnitude += std::fabs(first[i]);
+  }
+  CHECK(total_magnitude > 400.0 && total_magnitude < 600.0);  // the mean of |x| is about 0.5
+}
+
+TEST(random_solution_rhs_equals_the_matrix_times_that_solution) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 6);
+  const std::size_t n = static_cast<std::size_t>(a.n_rows);
+  const AlignedArray<double> x = random_solution(a.n_rows);
+  const AlignedArray<double> b = rhs_for_random_solution(a);
+  std::vector<double> expected(n);
+  spmv_reference(a, x.data(), expected.data());
+  for (std::size_t i = 0; i < n; ++i) CHECK_NEAR(b[i], expected[i], 1e-14);
+}
+
 TEST_MAIN()

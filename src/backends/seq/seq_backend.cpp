@@ -9,7 +9,6 @@
 
 #include "ssolve/backend.hpp"
 #include "ssolve/kernels_common.hpp"
-#include "ssolve/verify.hpp"
 
 namespace ssolve {
 
@@ -21,9 +20,6 @@ class SeqBackend final : public Backend {
   explicit SeqBackend(CsrMatrixT<Ptr> a) : a_(std::move(a)), size_(static_cast<std::size_t>(a_.n_rows)) {}
 
   Index n() const override { return a_.n_rows; }
-  double true_residual(const double* b, const double* x) const override {
-    return true_relative_residual(a_, b, x);
-  }
 
   void set_zero(double* SSOLVE_RESTRICT x) const override {
 #pragma omp simd

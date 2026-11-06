@@ -24,4 +24,12 @@ Index n_for_target_bytes(Stencil stencil, std::int64_t bytes);
 // b = A·1, so the exact solution is the vector of ones.
 AlignedArray<double> rhs_for_unit_solution(const CsrMatrix& a);
 
+// A fixed pseudo-random vector in [-1, 1). The generator's output is defined by the C++ standard
+// and the conversion is ours, so every machine and standard library gets the same vector.
+AlignedArray<double> random_solution(Index n);
+
+// b = A·x for x = random_solution. The rows of A·1 can nearly cancel, leaving a b close to rounding
+// noise that no solver can reach tol against, while this b stays well above it.
+AlignedArray<double> rhs_for_random_solution(const CsrMatrix& a);
+
 }  // namespace ssolve

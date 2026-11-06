@@ -2,12 +2,15 @@
 """Summarizes bench_cg CSV files as Markdown tables and checks gates.
 
 Examples:
-  python3 scripts/summarize.py results/my-laptop/g1.csv --gate eigen-E0=ours --gate eigen-E1=ours-jacobi
+  python3 scripts/summarize.py results/my-laptop/fixed.csv --metric iteration --gate eigen-E0=ours
+  python3 scripts/summarize.py results/my-laptop/solve.csv --gate eigen-E0=ours --gate eigen-E1=ours-jacobi
   python3 scripts/summarize.py results/my-laptop/kernels.csv --kernel-baseline eigen
 
-Gates require converged, independently verified solves. Time ratios use complete
-solve time by default; --metric iteration is a diagnostic, not an SpMV timer.
-An optional --time-ratio sets an explicit performance acceptance limit.
+G1 has two gates, because a complete solve on every real matrix with many repeats takes days:
+  Speed (--metric iteration): fixed-iteration runs, at most 1.05x the base time per iteration
+      and the same iteration count within 1% or 1 iteration. --time-ratio changes the limit.
+  Accuracy (the default metric): complete solves, with every true residual within the
+      tolerance and the same iteration count rule. --time-ratio adds a limit on solve time.
 Medians and 95% nonparametric confidence intervals follow Hoefler and Belli (SC15).
 """
 import argparse
@@ -81,7 +84,7 @@ def record_round(entry, row, value):
 
 def new_entry():
     return {"times": [], "spmv": [], "status": set(), "rounds": {}, "seen": collections.Counter(),
-            "verified": [], "precond": set()}
+            "verified": [], "fixed_ok": [], "precond": set(), "power": set()}
 
 
 def load_groups(paths, metric="solve_s"):
@@ -92,7 +95,7 @@ def load_groups(paths, metric="solve_s"):
         with open(path, newline="", encoding="utf-8") as f:
             for row in csv.DictReader(f):
                 check_configuration(configurations, ("platform", row["matrix"], row.get("maxit", "")), row,
-                                    ("n", "nnz", "matrix_id", "input", "tol", "mode", "cpu_model",
+                                    ("n", "nnz", "matrix_id", "input", "problem", "tol", "mode", "cpu_model",
                                      "hostname", "affinity", "mem_bytes", "logical_cpus", "l3_bytes"))
                 check_configuration(configurations, ("build", row["matrix"], row.get("maxit", ""), row.get("label", "")), row)
                 # A label separates the same solver measured from different builds, as solver@label.
@@ -113,6 +116,11 @@ def load_groups(paths, metric="solve_s"):
                     and metric in row and math.isfinite(residual) and math.isfinite(tolerance)
                     and tolerance > 0 and 0 <= residual <= tolerance
                 )
+                entry["fixed_ok"].append(
+                    row.get("mode", "solve") == "fixed" and row["status"] in ("Converged", "MaxIterations")
+                    and math.isfinite(residual)
+                )
+                entry["power"].add(row.get("power", "unknown"))
                 record_round(entry, row, time)
     return groups
 
@@ -129,7 +137,7 @@ def ratio_with_ci(base_entry, our_entry):
 
 def check_configuration(configurations, key, row, fields=None):
     if fields is None:
-        fields = ("n", "nnz", "matrix_id", "input", "tol", "mode", "cpu_model", "compiler", "flags",
+        fields = ("n", "nnz", "matrix_id", "input", "problem", "tol", "mode", "cpu_model", "compiler", "flags",
                   "git_commit", "eigen_commit", "eigen_version", "affinity", "warmup", "repeats",
                   "logical_cpus", "physical_cores", "l3_bytes", "mem_bytes", "hostname")
     signature = tuple(row.get(field, "") for field in fields)
@@ -138,8 +146,12 @@ def check_configuration(configurations, key, row, fields=None):
     configurations[key] = signature
 
 
-def print_gate(groups, base, ours, time_ratio=None):
-    print(f"\n### Gate: {ours} against {base}\n")
+def print_gate(groups, base, ours, time_ratio=None, speed=False):
+    """A speed gate reads fixed-iteration runs and always has a limit. An accuracy gate reads complete solves."""
+    print(f"\n### {'Speed' if speed else 'Accuracy'} gate: {ours} against {base}\n")
+    if speed and time_ratio is None:
+        time_ratio = TIME_RATIO_LIMIT
+    evidence = "fixed_ok" if speed else "verified"
     print("| Matrix | Limit | Base (us) | Ours (us) | Ratio | Ratio 95% CI | Base iterations | Our iterations | Result |")
     print("| --- | --- | --- | --- | --- | --- | --- | --- | --- |")
     passed = total = 0
@@ -158,8 +170,9 @@ def print_gate(groups, base, ours, time_ratio=None):
             noisy.append(matrix)
         base_spmv = median(solvers[base]["spmv"])
         our_spmv = median(solvers[ours]["spmv"])
-        ok = (all(solvers[base]["verified"]) and all(solvers[ours]["verified"])
-              and solvers[base]["precond"] == solvers[ours]["precond"])
+        ok = (all(solvers[base][evidence]) and all(solvers[ours][evidence])
+              and solvers[base]["precond"] == solvers[ours]["precond"]
+              and spmv_passes(base_spmv, our_spmv))
         if time_ratio is not None:
             ok = ok and ratio <= time_ratio
         total += 1
@@ -277,17 +290,17 @@ def main():
     if not groups:
         print("No benchmark rows found.")
         return 1
+    if any("battery" in entry["power"] for solvers in groups.values() for entry in solvers.values()):
+        print("WARNING: some of these results were measured on battery, so their timings are not reliable.")
     if args.ladder:
         print_ladder(groups, args.ladder.split(","))
     elif args.gate:
-        if args.metric == "iteration":
-            parser.error("iteration timings are diagnostic; use solve or end-to-end for gates")
         passed = True
         for gate in args.gate:
             if "=" not in gate:
                 parser.error(f"--gate needs BASE=OURS, got '{gate}'")
             base, ours = gate.split("=", 1)
-            passed = print_gate(groups, base, ours, args.time_ratio) and passed
+            passed = print_gate(groups, base, ours, args.time_ratio, speed=args.metric == "iteration") and passed
         return 0 if passed else 2
     else:
         print_all(groups)

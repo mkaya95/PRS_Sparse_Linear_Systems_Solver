@@ -1,13 +1,15 @@
 // Times named solvers on one matrix and appends one CSV row per repeat.
 //
 // Usage: bench_cg --matrix SPEC --solver NAME[,NAME...] [--tol 1e-8] [--maxit N] [--repeat 10]
-//                 [--warmup 1] [--mode solve|fixed] [--csv FILE] [--label TEXT]
+//                 [--warmup 1] [--mode solve|fixed] [--problem random|a1|unit] [--power TEXT]
+//                 [--csv FILE] [--label TEXT]
 //
 // Solvers take turns round by round (A, B, then B, A, ...), so a machine that slows down
 // mid-run affects them equally and none always goes first. A solver that fails is reported
 // and dropped, the others continue, and the exit status is then 1.
 //
-// The right-hand side is b = A·1, so the exact solution is the vector of ones.
+// The problem sets the right-hand side: b = A·x for a fixed random x (the default), b = A·1, or b = 1.
+// The rows of A·1 can nearly cancel, which puts the tolerance out of reach on some real matrices.
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
@@ -32,14 +34,30 @@
 using namespace ssolve;
 using namespace ssolve_bench;
 
+namespace {
+
+AlignedArray<double> make_rhs(const std::string& problem, const CsrMatrix& a) {
+  if (problem == "random") return rhs_for_random_solution(a);
+  if (problem == "a1") return rhs_for_unit_solution(a);
+  if (problem == "unit") {
+    AlignedArray<double> b(static_cast<std::size_t>(a.n_rows));
+    b.fill(1.0);
+    return b;
+  }
+  throw std::runtime_error("--problem must be random, a1 or unit");
+}
+
+}  // namespace
+
 int main(int argc, char** argv) {
   try {
-    const ssolve_cli::Args args(argc, argv,
-                               {"matrix", "solver", "tol", "maxit", "repeat", "warmup", "mode", "csv", "label"});
+    const ssolve_cli::Args args(argc, argv, {"matrix", "solver", "tol", "maxit", "repeat", "warmup", "mode", "problem",
+                                             "power", "csv", "label"});
     const std::string spec = args.required("matrix");
     const std::string solver_list = args.required("solver");
     const int repeats = args.get_count("repeat", 10, 1);
     const int warmups = args.get_count("warmup", 1);
+    const std::string problem = args.get("problem", "random");
     const std::string mode = args.get("mode", "solve");
     if (mode != "solve" && mode != "fixed") throw std::runtime_error("--mode must be solve or fixed");
 
@@ -53,7 +71,7 @@ int main(int argc, char** argv) {
     const CsrMatrix a = load_matrix_spec(spec);
     validate_cg_matrix(a);
     const std::string fingerprint = matrix_fingerprint(a);
-    const AlignedArray<double> b = rhs_for_unit_solution(a);
+    const AlignedArray<double> b = make_rhs(problem, a);
     AlignedArray<double> x(static_cast<std::size_t>(a.n_rows));
     const double preparation_seconds = wall_seconds() - preparation_start;
     const std::string run_id = std::to_string(std::chrono::system_clock::now().time_since_epoch().count()) + "-" +
@@ -64,7 +82,7 @@ int main(int argc, char** argv) {
          {"matrix", "n", "nnz", "solver", "precond", "tol", "maxit", "repeat", "status", "spmv_count",
           "rel_res_recursive", "rel_res_true", "setup_s", "solve_s", "per_spmv_s", "label",
           "mode", "warmup", "repeats", "preparation_s", "verification_s", "end_to_end_s", "eigen_version",
-          "input", "matrix_id", "run_id"}) {
+          "input", "matrix_id", "run_id", "problem", "power"}) {
       columns.push_back(column);
     }
     std::unique_ptr<CsvWriter> csv;
@@ -130,7 +148,8 @@ int main(int argc, char** argv) {
                                                  mode, std::to_string(warmups), std::to_string(repeats),
                                                  fmt_double(preparation_seconds),
                                                  fmt_double(result.verification_seconds), fmt_double(end_to_end),
-                                                 eigen_version(), spec, fingerprint, run_id};
+                                                 eigen_version(), spec, fingerprint, run_id, problem,
+                                                 args.get("power", "unknown")};
         row.insert(row.end(), values.begin(), values.end());
         csv->write_row(row);
       }

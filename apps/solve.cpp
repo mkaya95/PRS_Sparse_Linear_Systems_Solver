@@ -51,7 +51,8 @@ int main(int argc, char** argv) {
     const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
     const double setup_seconds = wall_seconds() - setup_start;
 
-    const SolveResult result = cg(*backend, precond == "jacobi" ? inv_diag.data() : nullptr, b.data(), x.data(), options);
+    const SolveResult result =
+        verified_cg(a, *backend, precond == "jacobi" ? inv_diag.data() : nullptr, b.data(), x.data(), options);
     const double end_to_end_seconds = wall_seconds() - end_to_end_start;
 
     std::printf("matrix         %s\n", spec.c_str());
