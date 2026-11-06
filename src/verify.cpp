@@ -6,6 +6,8 @@
 #include <stdexcept>
 #include <vector>
 
+#include "ssolve/timer.hpp"
+
 namespace ssolve {
 
 namespace {
@@ -28,6 +30,20 @@ double scaled_norm(const std::vector<double>& v) {
 
 }  // namespace
 
+void validate_cg_matrix(const CsrMatrix& a) {
+  if (a.n_rows <= 0 || a.n_rows != a.n_cols) throw std::runtime_error("CG needs a nonempty square matrix");
+  for (Index i = 0; i < a.n_rows; ++i) {
+    bool positive_diagonal = false;
+    for (std::int64_t k = a.row_ptr[i]; k < a.row_ptr[i + 1]; ++k) {
+      if (!std::isfinite(a.val[k])) throw std::runtime_error("CG matrix values must be finite");
+      if (a.col[k] == i) positive_diagonal = a.val[k] > 0.0;
+    }
+    if (!positive_diagonal) throw std::runtime_error("CG requires a positive diagonal in every row");
+  }
+  const double defect = symmetry_defect(a);
+  if (!std::isfinite(defect) || defect > 1e-8) throw std::runtime_error("matrix is not symmetric (CG symmetry check)");
+}
+
 void spmv_reference(const CsrMatrix& a, const double* x, double* y) {
   for (Index i = 0; i < a.n_rows; ++i) {
     double sum = 0.0;
@@ -36,15 +52,38 @@ void spmv_reference(const CsrMatrix& a, const double* x, double* y) {
   }
 }
 
-double true_relative_residual(const CsrMatrix& a, const double* b, const double* x) {
+template <class Ptr>
+double residual_impl(const CsrMatrixT<Ptr>& a, const double* b, const double* x) {
+  for (Index j = 0; j < a.n_cols; ++j) {
+    if (!std::isfinite(x[j])) return std::numeric_limits<double>::quiet_NaN();
+  }
   const std::size_t n = static_cast<std::size_t>(a.n_rows);
   std::vector<double> residual(n);
-  spmv_reference(a, x, residual.data());
+  for (Index i = 0; i < a.n_rows; ++i) {
+    double sum = 0.0;
+    for (std::int64_t k = a.row_ptr[i]; k < a.row_ptr[i + 1]; ++k) sum += a.val[k] * x[a.col[k]];
+    residual[i] = sum;
+  }
   for (std::size_t i = 0; i < n; ++i) residual[i] = b[i] - residual[i];
   const double residual_norm = scaled_norm(residual);
   const double rhs_norm = scaled_norm(std::vector<double>(b, b + n));
   if (rhs_norm == 0.0) return residual_norm;
   return residual_norm / rhs_norm;
+}
+
+double true_relative_residual(const CsrMatrix& a, const double* b, const double* x) {
+  return residual_impl(a, b, x);
+}
+
+double true_relative_residual(const CsrMatrix32& a, const double* b, const double* x) {
+  return residual_impl(a, b, x);
+}
+
+void verify_result(const CsrMatrix& a, const double* b, const double* x, const SolveOptions& options,
+                   SolveResult& result) {
+  const double start = wall_seconds();
+  accept_verified_residual(result, true_relative_residual(a, b, x), options);
+  result.verification_seconds = wall_seconds() - start;
 }
 
 double symmetry_defect(const CsrMatrix& a) {

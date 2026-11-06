@@ -12,6 +12,7 @@
 #include "registry.hpp"
 #include "ssolve/aligned_array.hpp"
 #include "ssolve/timer.hpp"
+#include "ssolve/verify.hpp"
 
 using namespace ssolve;
 
@@ -24,6 +25,7 @@ using ColMajorMatrix = Eigen::SparseMatrix<double, Eigen::ColMajor, int>;
 
 template <class Sparse, int UpLo, class Preconditioner>
 SolveResult run_eigen(const CsrMatrix& a, const double* b, double* x, const SolveOptions& options) {
+  validate_options(options);
   if (a.n_rows != a.n_cols) throw std::runtime_error("Eigen conjugate gradient needs a square matrix");
   if (a.nnz() > std::numeric_limits<int>::max()) {
     throw std::runtime_error("Eigen driver supports at most 2^31 - 1 non-zeros");
@@ -68,6 +70,7 @@ SolveResult run_eigen(const CsrMatrix& a, const double* b, double* x, const Solv
   } else {
     result.spmv_count = cg.iterations() + (result.status == SolveStatus::Converged ? 1 : 0);
   }
+  verify_result(a, b, x, options, result);
   return result;
 }
 

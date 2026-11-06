@@ -19,6 +19,7 @@
 #include "ssolve/cg_common.hpp"
 #include "ssolve/kernels_common.hpp"
 #include "ssolve/timer.hpp"
+#include "ssolve/verify.hpp"
 
 using namespace ssolve;
 
@@ -216,6 +217,7 @@ SolveResult cg_passes(const CsrMatrix& a, const double* b, double* x, const Solv
     return finish(SolveStatus::MaxIterations);
   });
   result.solve_seconds = wall_seconds() - start;
+  verify_result(a, b, x, options, result);
   return result;
 }
 
@@ -280,6 +282,7 @@ SolveResult jacobi_passes(const CsrMatrix& a, const double* b, double* x, const 
   });
   result.setup_seconds = setup_seconds;
   result.solve_seconds = wall_seconds() - start;
+  verify_result(a, b, x, options, result);
   return result;
 }
 

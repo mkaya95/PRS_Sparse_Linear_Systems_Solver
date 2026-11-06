@@ -3,6 +3,7 @@ import csv
 import json
 import os
 import pathlib
+import random
 import subprocess
 import sys
 import tempfile
@@ -307,6 +308,25 @@ class SolveCommand(unittest.TestCase):
         done = self.run_solve("--matrix", "poisson2d:5", "--precond", "ilu")
         self.assertEqual(done.returncode, 1)
         self.assertIn("ilu", done.stderr)
+
+    def test_recursive_convergence_is_not_accepted_without_true_accuracy(self):
+        rng = random.Random(31)
+        n = 20
+        a = [[0.0] * n for _ in range(n)]
+        for i in range(n):
+            for j in range(i):
+                a[i][j] = a[j][i] = -rng.uniform(0.5, 2.0)
+        for i in range(n):
+            a[i][i] = -sum(a[i]) + 1e-9  # symmetric, positive, strictly diagonally dominant
+        with tempfile.TemporaryDirectory() as d:
+            matrix = pathlib.Path(d) / "spd.mtx"
+            matrix.write_text(
+                f"%%MatrixMarket matrix coordinate real general\n{n} {n} {n*n}\n"
+                + "".join(f"{i+1} {j+1} {a[i][j]:.17g}\n" for i in range(n) for j in range(n)),
+                encoding="ascii")
+            done = self.run_solve("--matrix", str(matrix))
+            self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
+            self.assertIn("ResidualFailure", done.stdout)
 
     def test_a_nonsymmetric_matrix_file_is_rejected_before_iterating(self):
         with tempfile.TemporaryDirectory() as d:

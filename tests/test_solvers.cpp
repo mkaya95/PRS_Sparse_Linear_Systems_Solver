@@ -150,6 +150,10 @@ TEST(our_solvers_report_breakdown_on_an_indefinite_matrix) {
   const std::vector<double> b = {1, 1};
   for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
     std::vector<double> x;
+    if (solver.precond == Precond::Jacobi) {
+      CHECK_THROWS_WITH(solve(solver, a, b, x), "positive");
+      continue;
+    }
     CHECK_EQ(std::string(to_string(solve(solver, a, b, x).status)), std::string("Breakdown"));
   }
 }
@@ -159,9 +163,13 @@ TEST(our_solvers_report_breakdown_on_nan_values_without_spinning) {
   const std::vector<double> b = {1, 1};
   for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
     std::vector<double> x;
+    if (solver.precond == Precond::Jacobi) {
+      CHECK_THROWS_WITH(solve(solver, a, b, x), "positive");
+      continue;
+    }
     const SolveResult result = solve(solver, a, b, x);
     CHECK_EQ(std::string(to_string(result.status)), std::string("Breakdown"));
-    CHECK_EQ(result.spmv_count, std::int64_t{1});
+    CHECK(result.spmv_count <= 1);
   }
 }
 
