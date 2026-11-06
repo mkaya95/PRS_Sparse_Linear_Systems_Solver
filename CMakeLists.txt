@@ -47,6 +47,7 @@ add_library(ssolve STATIC
   src/formats/csr.cpp
   src/io/generators.cpp
   src/io/mtx_reader.cpp
+  src/io/matrix_spec.cpp
   src/solvers/cg.cpp
   src/verify.cpp
 )
@@ -66,7 +67,6 @@ add_library(ssolve_bench STATIC
   bench/eigen_kernels.cpp
   bench/eigen_solvers.cpp
   bench/ladder.cpp
-  bench/matrix_spec.cpp
   bench/registry.cpp
 )
 target_include_directories(ssolve_bench PUBLIC bench)
@@ -78,7 +78,7 @@ target_link_libraries(bench_cg PRIVATE ssolve_bench)
 add_executable(bench_kernels apps/bench_kernels.cpp)
 target_link_libraries(bench_kernels PRIVATE ssolve_bench)
 add_executable(solve apps/solve.cpp)
-target_link_libraries(solve PRIVATE ssolve_bench)
+target_link_libraries(solve PRIVATE ssolve)
 
 enable_testing()
 

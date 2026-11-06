@@ -1,7 +1,10 @@
 // Command-line parsing shared by the apps: only "--name value" pairs.
 #pragma once
 
+#include <cerrno>
+#include <cmath>
 #include <cstdlib>
+#include <limits>
 #include <map>
 #include <set>
 #include <stdexcept>
@@ -40,17 +43,31 @@ class Args {
     const auto it = values_.find(key);
     if (it == values_.end()) return fallback;
     char* end = nullptr;
+    errno = 0;
     const long long value = std::strtoll(it->second.c_str(), &end, 10);
-    if (it->second.empty() || *end != '\0') throw std::runtime_error("--" + key + " needs an integer");
+    if (end == it->second.c_str() || *end != '\0' || errno == ERANGE) {
+      throw std::runtime_error("--" + key + " needs an in-range integer");
+    }
     return value;
+  }
+
+  int get_count(const std::string& key, int fallback, int minimum = 0) const {
+    const long long value = get_int(key, fallback);
+    if (value < minimum || value > std::numeric_limits<int>::max()) {
+      throw std::runtime_error("--" + key + " is out of range");
+    }
+    return static_cast<int>(value);
   }
 
   double get_double(const std::string& key, double fallback) const {
     const auto it = values_.find(key);
     if (it == values_.end()) return fallback;
     char* end = nullptr;
+    errno = 0;
     const double value = std::strtod(it->second.c_str(), &end);
-    if (it->second.empty() || *end != '\0') throw std::runtime_error("--" + key + " needs a number");
+    if (end == it->second.c_str() || *end != '\0' || errno == ERANGE || !std::isfinite(value)) {
+      throw std::runtime_error("--" + key + " needs a finite, in-range number");
+    }
     return value;
   }
 

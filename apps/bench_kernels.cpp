@@ -19,7 +19,7 @@
 
 #include "cli.hpp"
 #include "kernels.hpp"
-#include "matrix_spec.hpp"
+#include "ssolve/matrix_spec.hpp"
 #include "ssolve/aligned_array.hpp"
 #include "ssolve/csv.hpp"
 #include "ssolve/manifest.hpp"

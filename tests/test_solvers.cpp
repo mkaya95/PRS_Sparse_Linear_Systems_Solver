@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "kernels.hpp"
-#include "matrix_spec.hpp"
+#include "ssolve/matrix_spec.hpp"
 #include "registry.hpp"
 #include "ssolve/generators.hpp"
 #include "ssolve/verify.hpp"
@@ -342,14 +342,14 @@ TEST(unknown_solver_name_lists_the_valid_ones) {
 }
 
 TEST(matrix_specs_build_generated_matrices) {
-  CHECK_EQ(ssolve_bench::load_matrix_spec("poisson2d:4").n_rows, 16);
-  CHECK_EQ(ssolve_bench::load_matrix_spec("poisson3d:3").n_rows, 27);
-  CHECK_EQ(ssolve_bench::load_matrix_spec("point27:3").nnz(), std::int64_t{343});
+  CHECK_EQ(load_matrix_spec("poisson2d:4").n_rows, 16);
+  CHECK_EQ(load_matrix_spec("poisson3d:3").n_rows, 27);
+  CHECK_EQ(load_matrix_spec("point27:3").nnz(), std::int64_t{343});
 }
 
 TEST(matrix_specs_size_to_the_last_level_cache) {
-  const CsrMatrix small = ssolve_bench::load_matrix_spec("poisson3d:llc=0.5");
-  const CsrMatrix large = ssolve_bench::load_matrix_spec("poisson3d:llc=4");
+  const CsrMatrix small = load_matrix_spec("poisson3d:llc=0.5");
+  const CsrMatrix large = load_matrix_spec("poisson3d:llc=4");
   CHECK(large.nnz() > small.nnz());
   // A factor of 8 in bytes, within the rounding of N to a whole number.
   const double ratio = static_cast<double>(large.nnz()) / static_cast<double>(small.nnz());
@@ -357,14 +357,14 @@ TEST(matrix_specs_size_to_the_last_level_cache) {
 }
 
 TEST(bad_matrix_specs_are_rejected) {
-  CHECK_THROWS_WITH(ssolve_bench::load_matrix_spec("poisson3d:abc"), "poisson3d:abc");
-  CHECK_THROWS_WITH(ssolve_bench::load_matrix_spec("poisson3d:llc=-1"), "llc");
-  CHECK_THROWS_WITH(ssolve_bench::load_matrix_spec("cubic:5.mtx"), "cubic:5.mtx");
+  CHECK_THROWS_WITH(load_matrix_spec("poisson3d:abc"), "poisson3d:abc");
+  CHECK_THROWS_WITH(load_matrix_spec("poisson3d:llc=-1"), "llc");
+  CHECK_THROWS_WITH(load_matrix_spec("cubic:5.mtx"), "cubic:5.mtx");
 }
 
 TEST(display_names_are_short) {
-  CHECK_EQ(ssolve_bench::matrix_display_name("poisson3d:llc=4"), std::string("poisson3d:llc=4"));
-  CHECK_EQ(ssolve_bench::matrix_display_name("/data/x/ldoor.mtx"), std::string("ldoor"));
+  CHECK_EQ(matrix_display_name("poisson3d:llc=4"), std::string("poisson3d:llc=4"));
+  CHECK_EQ(matrix_display_name("/data/x/ldoor.mtx"), std::string("ldoor"));
 }
 
 TEST_MAIN()

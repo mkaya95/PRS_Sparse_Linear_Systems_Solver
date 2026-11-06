@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "cli.hpp"
-#include "matrix_spec.hpp"
+#include "ssolve/matrix_spec.hpp"
 #include "registry.hpp"
 #include "ssolve/aligned_array.hpp"
 #include "ssolve/csv.hpp"

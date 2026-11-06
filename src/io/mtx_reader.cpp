@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -100,7 +101,7 @@ bool parse_real(std::string_view token, double& value) {
   buffer[token.size()] = '\0';
   char* end = nullptr;
   value = std::strtod(buffer, &end);
-  return end == buffer + token.size();
+  return end == buffer + token.size() && std::isfinite(value);
 }
 
 void parse_banner(LineReader& lines, Field& field, Structure& structure) {

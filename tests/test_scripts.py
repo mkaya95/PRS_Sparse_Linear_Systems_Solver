@@ -309,6 +309,23 @@ class SolveCommand(unittest.TestCase):
         self.assertEqual(done.returncode, 1)
         self.assertIn("ilu", done.stderr)
 
+    def test_invalid_options_are_rejected(self):
+        for option, value in (("--tol", "inf"), ("--tol", "nan"), ("--tol", "-1"),
+                              ("--maxit", "-1"), ("--maxit", "999999999999999999999999")):
+            done = self.run_solve("--matrix", "poisson2d:5", option, value)
+            self.assertEqual(done.returncode, 1, done.stdout + done.stderr)
+
+    def test_supplied_rhs_and_its_dimension_are_checked(self):
+        with tempfile.TemporaryDirectory() as d:
+            rhs = pathlib.Path(d) / "b.txt"
+            out = pathlib.Path(d) / "x.txt"
+            rhs.write_text("8\n", encoding="ascii")
+            done = self.run_solve("--matrix", "poisson2d:1", "--rhs", str(rhs), "--out", str(out))
+            self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+            self.assertAlmostEqual(float(out.read_text()), 2.0)
+            rhs.write_text("8\n9\n", encoding="ascii")
+            self.assertEqual(self.run_solve("--matrix", "poisson2d:1", "--rhs", str(rhs)).returncode, 1)
+
     def test_recursive_convergence_is_not_accepted_without_true_accuracy(self):
         rng = random.Random(31)
         n = 20
