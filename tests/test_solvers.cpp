@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "kernel_timing.hpp"
 #include "kernels.hpp"
 #include "ssolve/matrix_spec.hpp"
 #include "registry.hpp"
@@ -88,7 +89,7 @@ TEST(plain_solvers_count_two_spmvs_with_two_distinct_eigenvalues) {
   const CsrMatrix a = diagonal_matrix({1, 2});
   const std::vector<double> b = {1, 1};
   for (const NamedSolver& solver : ssolve_bench::all_solvers()) {
-    if (solver.precond != Precond::None || solver.name == "eigen-E3") continue;
+    if (solver.precond != Precond::None) continue;
     std::vector<double> x;
     const SolveResult result = solve(solver, a, b, x);
     CHECK_EQ(result.spmv_count, std::int64_t{2});
@@ -328,6 +329,49 @@ TEST(every_ladder_spmv_matches_the_reference_on_all_short_row_lengths) {
       }
     }
   }
+}
+
+TEST(kernel_timing_starts_every_sample_from_the_same_vectors) {
+  // Four calls, with the vectors swapped between them, leave A^4 x0 in x. A second sample must give the same.
+  const std::size_t n = 3;
+  const CsrMatrix a = diagonal_matrix({1e-3, 1.0, 1e3});
+  const ssolve_bench::KernelSet kernels = ssolve_bench::ladder_kernels("L2", a);
+  ssolve_bench::Vectors vectors(n);
+  for (int sample = 0; sample < 2; ++sample) {
+    CHECK_EQ(ssolve_bench::measure_kernel("spmv", kernels, vectors, 1e-12).calls, 4LL);
+  }
+  CHECK_NEAR(vectors.x[0], 1e-12, 1e-24);
+  CHECK_NEAR(vectors.x[1], 8.0 / 7.0, 1e-14);
+  CHECK_NEAR(vectors.x[2] / 1e12, 9.0 / 7.0, 1e-14);
+}
+
+TEST(kernels_after_spmv_see_fresh_vectors_not_a_power_iteration) {
+  const std::size_t n = 3;
+  const CsrMatrix a = diagonal_matrix({1e-3, 1.0, 1e3});
+  const ssolve_bench::KernelSet kernels = ssolve_bench::ladder_kernels("L2", a);
+  ssolve_bench::Vectors vectors(n);
+  ssolve_bench::measure_kernel("spmv", kernels, vectors, 1e-12);
+  ssolve_bench::measure_kernel("norm2", kernels, vectors, 1e-12);
+  CHECK_EQ(vectors.x[0], 1.0);
+  CHECK_NEAR(vectors.x[2], 9.0 / 7.0, 1e-15);
+}
+
+TEST(kernel_timing_keeps_values_finite_when_samples_are_short) {
+  // On a large matrix a sample ends after a few calls, and real matrices have large entries.
+  const std::size_t n = 8;
+  const CsrMatrix a = diagonal_matrix(std::vector<double>(n, 1e30));
+  const ssolve_bench::KernelSet kernels = ssolve_bench::ladder_kernels("L2", a);
+  ssolve_bench::Vectors vectors(n);
+  for (int sample = 0; sample < 20; ++sample) ssolve_bench::measure_kernel("spmv", kernels, vectors, 1e-12);
+  for (std::size_t i = 0; i < n; ++i) CHECK(std::isfinite(vectors.x[i]));
+}
+
+TEST(kernel_timing_refuses_values_that_overflow) {
+  const std::size_t n = 2;
+  const CsrMatrix a = diagonal_matrix({1e300, 1e300});
+  const ssolve_bench::KernelSet kernels = ssolve_bench::ladder_kernels("L2", a);
+  ssolve_bench::Vectors vectors(n);
+  CHECK_THROWS_WITH(ssolve_bench::measure_kernel("spmv", kernels, vectors, 1e-12), "non-finite");
 }
 
 TEST(the_ladder_has_every_rung) {

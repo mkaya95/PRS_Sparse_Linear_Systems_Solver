@@ -103,7 +103,7 @@ std::vector<NamedSolver> eigen_solvers() {
       {"eigen-E0", Precond::None, run_eigen<RowMajorMatrix, Lower | Upper, IdentityPreconditioner>},
       {"eigen-E1", Precond::Jacobi, run_eigen<RowMajorMatrix, Lower | Upper, DiagonalPreconditioner<double>>},
       {"eigen-E2", Precond::Jacobi, run_eigen<ColMajorMatrix, Lower, DiagonalPreconditioner<double>>},
-      {"eigen-E3", Precond::None, run_eigen<RowMajorMatrix, Lower | Upper, IncompleteCholesky<double>>},
+      {"eigen-E3", Precond::IncompleteCholesky, run_eigen<RowMajorMatrix, Lower | Upper, IncompleteCholesky<double>>},
   };
 }
 

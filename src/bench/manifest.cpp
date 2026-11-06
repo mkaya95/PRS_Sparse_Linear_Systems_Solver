@@ -109,9 +109,15 @@ void read_caches(Manifest& m) {
   }
 }
 
+// WSL2 shows a virtual CPU layout, so its core count does not describe the hardware.
+bool cpu_layout_is_virtual() {
+  const std::string release = read_line("/proc/sys/kernel/osrelease");
+  return release.find("microsoft") != std::string::npos || release.find("WSL") != std::string::npos;
+}
+
 void read_platform(Manifest& m) {
   m.cpu_model = read_cpu_model();
-  m.physical_cores = count_physical_cores(m.logical_cpus);
+  m.physical_cores = cpu_layout_is_virtual() ? 0 : count_physical_cores(m.logical_cpus);
   read_caches(m);
   const long pages = sysconf(_SC_PHYS_PAGES);
   const long page_size = sysconf(_SC_PAGESIZE);

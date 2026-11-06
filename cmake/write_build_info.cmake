@@ -11,7 +11,7 @@ if(GIT_EXECUTABLE)
   if(head_result EQUAL 0)
     set(commit "${head}")
     execute_process(
-      COMMAND "${GIT_EXECUTABLE}" -c safe.directory=* -C "${SOURCE_DIR}" status --porcelain --ignore-submodules=dirty
+      COMMAND "${GIT_EXECUTABLE}" -c safe.directory=* -C "${SOURCE_DIR}" status --porcelain --ignore-submodules=dirty --untracked-files=no
       OUTPUT_VARIABLE changes OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
     if(changes)
       string(APPEND commit "-dirty")

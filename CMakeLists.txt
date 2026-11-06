@@ -55,6 +55,17 @@ add_library(ssolve STATIC
 add_dependencies(ssolve ssolve_build_info)
 set_source_files_properties(src/bench/manifest.cpp PROPERTIES INCLUDE_DIRECTORIES "${build_info_dir}")
 
+# Compiler remarks showing which solver kernel loops were vectorized, and why others were not.
+option(SSOLVE_VEC_REPORT "Print vectorization remarks while compiling the solver kernels" OFF)
+if(SSOLVE_VEC_REPORT)
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(vec_report_flags -fopt-info-vec-optimized -fopt-info-vec-missed)
+  elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(vec_report_flags -Rpass=loop-vectorize -Rpass-missed=loop-vectorize -Rpass-analysis=loop-vectorize)
+  endif()
+  set_source_files_properties(src/backends/seq/seq_backend.cpp PROPERTIES COMPILE_OPTIONS "${vec_report_flags}")
+endif()
+
 # STREAM measures the machine's memory bandwidth, so it alone uses threads for now.
 find_package(OpenMP)
 add_executable(stream apps/stream.cpp)

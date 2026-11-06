@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Downloads the benchmark matrices from the SuiteSparse Matrix Collection.
 
-Each matrix ends up as DATA_DIR/NAME.mtx. If an automated download is refused, this
-prints a FAILED line with the page to download the file from by browser.
+Each matrix ends up as DATA_DIR/NAME.mtx. The main host may refuse scripted downloads, so
+each file is tried there and then on the collection's University of Florida mirror. If both
+refuse, this prints a FAILED line with the page to download the file from by browser.
 
 Example: python3 scripts/download_matrices.py --data-dir ~/p08/data --only thermal2,G3_circuit
 """
@@ -18,7 +19,10 @@ import urllib.error
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-BASE_URL = "https://sparse.tamu.edu/MM/{group}/{name}.tar.gz"
+BASE_URLS = [
+    "https://sparse.tamu.edu/MM/{group}/{name}.tar.gz",
+    "https://www.cise.ufl.edu/research/sparse/MM/{group}/{name}.tar.gz",
+]
 
 
 def declared_rows(path):
@@ -31,15 +35,27 @@ def declared_rows(path):
     return None
 
 
+def download_archive(entry, archive):
+    """Saves the archive from the first host that serves it, or raises the last host's error."""
+    last_error = None
+    for template in BASE_URLS:
+        url = template.format(group=entry["group"], name=entry["name"])
+        request = urllib.request.Request(url, headers={"User-Agent": "p08-matrix-download/1.0"})
+        try:
+            with urllib.request.urlopen(request, timeout=300) as response, open(archive, "wb") as out:
+                shutil.copyfileobj(response, out)
+            return
+        except urllib.error.URLError as error:
+            last_error = error
+    raise last_error
+
+
 def fetch(entry, data_dir):
-    name, group = entry["name"], entry["group"]
+    name = entry["name"]
     target = os.path.join(data_dir, name + ".mtx")
-    url = BASE_URL.format(group=group, name=name)
-    request = urllib.request.Request(url, headers={"User-Agent": "p08-matrix-download/1.0"})
     with tempfile.TemporaryDirectory(dir=data_dir) as work:
         archive = os.path.join(work, name + ".tar.gz")
-        with urllib.request.urlopen(request, timeout=300) as response, open(archive, "wb") as out:
-            shutil.copyfileobj(response, out)
+        download_archive(entry, archive)
         # Copy the one expected member by name, so paths inside the archive are never used.
         member_name = f"{name}/{name}.mtx"
         extracted = os.path.join(work, name + ".mtx")

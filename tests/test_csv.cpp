@@ -73,6 +73,16 @@ TEST(manifest_describes_this_machine) {
   CHECK(!m.git_commit.empty());
 }
 
+TEST(manifest_does_not_trust_the_core_count_under_wsl) {
+  // WSL2 shows a virtual layout: an i5-1335U with 10 cores appears as 6 cores with 2 threads each.
+  std::ifstream release("/proc/sys/kernel/osrelease");
+  std::string text;
+  std::getline(release, text);
+  if (text.find("microsoft") != std::string::npos || text.find("WSL") != std::string::npos) {
+    CHECK_EQ(collect_manifest().physical_cores, 0);
+  }
+}
+
 TEST(manifest_columns_and_values_line_up) {
   CHECK_EQ(manifest_columns().size(), manifest_values(collect_manifest()).size());
 }
