@@ -1,15 +1,17 @@
-#include "matrix_spec.hpp"
+#include "ssolve/matrix_spec.hpp"
 
+#include <cerrno>
+#include <cmath>
 #include <cstdlib>
+#include <fstream>
+#include <limits>
 #include <stdexcept>
 
 #include "ssolve/generators.hpp"
 #include "ssolve/manifest.hpp"
 #include "ssolve/mtx_reader.hpp"
 
-using namespace ssolve;
-
-namespace ssolve_bench {
+namespace ssolve {
 
 namespace {
 
@@ -45,16 +47,23 @@ CsrMatrix load_matrix_spec(const std::string& spec) {
     const std::string factor_text = size.substr(4);
     char* end = nullptr;
     const double factor = std::strtod(factor_text.c_str(), &end);
-    if (factor_text.empty() || *end != '\0' || !(factor > 0.0)) {
+    if (factor_text.empty() || *end != '\0' || !(factor > 0.0) || !std::isfinite(factor)) {
       throw std::runtime_error("bad llc factor in matrix spec '" + spec + "': it must be a positive number");
     }
-    const auto bytes = static_cast<std::int64_t>(factor * static_cast<double>(last_level_cache_bytes()));
+    const double requested = factor * static_cast<double>(last_level_cache_bytes());
+    if (!std::isfinite(requested) || requested >= static_cast<double>(std::numeric_limits<std::int64_t>::max())) {
+      throw std::runtime_error("llc size is out of range");
+    }
+    const auto bytes = static_cast<std::int64_t>(requested);
     return make_stencil(stencil, n_for_target_bytes(stencil, bytes));
   }
 
   char* end = nullptr;
+  errno = 0;
   const long long N = std::strtoll(size.c_str(), &end, 10);
-  if (size.empty() || *end != '\0') throw std::runtime_error("bad grid size in matrix spec '" + spec + "'");
+  if (size.empty() || *end != '\0' || errno == ERANGE) {
+    throw std::runtime_error("bad grid size in matrix spec '" + spec + "'");
+  }
   if (N <= 0 || N > 2147483647LL) throw std::runtime_error("grid side out of range in matrix spec '" + spec + "'");
   return make_stencil(stencil, static_cast<Index>(N));
 }
@@ -70,4 +79,19 @@ std::string matrix_display_name(const std::string& spec) {
   return name;
 }
 
-}  // namespace ssolve_bench
+AlignedArray<double> read_rhs(const std::string& path, Index n) {
+  if (n < 0) throw std::runtime_error("RHS dimension must be nonnegative");
+  std::ifstream input(path);
+  if (!input) throw std::runtime_error("cannot open RHS file: " + path);
+  AlignedArray<double> rhs(static_cast<std::size_t>(n));
+  for (Index i = 0; i < n; ++i) {
+    if (!(input >> rhs[i]) || !std::isfinite(rhs[i])) {
+      throw std::runtime_error("RHS must contain exactly n finite values: " + path);
+    }
+  }
+  std::string extra;
+  if (input >> extra || !input.eof()) throw std::runtime_error("RHS has extra data or a read error: " + path);
+  return rhs;
+}
+
+}  // namespace ssolve

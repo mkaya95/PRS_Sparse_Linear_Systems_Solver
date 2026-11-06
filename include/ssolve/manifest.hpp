@@ -12,6 +12,9 @@ struct Manifest {
   std::string cpu_model;
   std::string compiler;
   std::string flags;
+  std::string eigen_commit;
+  std::string affinity = "unavailable";
+  std::string hostname;
   int logical_cpus = 0;
   int physical_cores = 0;  // 0 if unknown
   std::int64_t l1d_bytes = 0;
