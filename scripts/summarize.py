@@ -146,28 +146,23 @@ def check_configuration(configurations, key, row, fields=None):
     configurations[key] = signature
 
 
-def print_gate(groups, base, ours, time_ratio=None, speed=False):
-    """A speed gate reads fixed-iteration runs and always has a limit. An accuracy gate reads complete solves."""
-    print(f"\n### {'Speed' if speed else 'Accuracy'} gate: {ours} against {base}\n")
+def evaluate_gate(groups, base, ours, time_ratio=None, speed=False):
+    """Returns one dict per matrix, with "ok" saying whether it passes, and the limit applied.
+
+    A speed gate reads fixed-iteration runs and always has a limit. An accuracy gate reads complete solves.
+    A row whose "missing" is True has only one of the two solvers.
+    """
     if speed and time_ratio is None:
         time_ratio = TIME_RATIO_LIMIT
     evidence = "fixed_ok" if speed else "verified"
-    print("| Matrix | Limit | Base (us) | Ours (us) | Ratio | Ratio 95% CI | Base iterations | Our iterations | Result |")
-    print("| --- | --- | --- | --- | --- | --- | --- | --- | --- |")
-    passed = total = 0
-    noisy = []
+    rows = []
     for (matrix, maxit), solvers in sorted(groups.items()):
+        limit = maxit if maxit not in ("", "0") else "default"
         if base not in solvers or ours not in solvers:
             if base in solvers or ours in solvers:
-                total += 1
-                print(f"| {matrix} | {maxit or 'default'} | - | - | - | - | - | - | FAIL (missing solver) |")
+                rows.append(dict(matrix=matrix, maxit=maxit, limit=limit, missing=True, ok=False))
             continue
-        base_time = median(solvers[base]["times"])
-        our_time = median(solvers[ours]["times"])
         ratio, low, high = ratio_with_ci(solvers[base], solvers[ours])
-        interval = f"{low:.3f} to {high:.3f}" if low is not None else "not paired"
-        if low is not None and high - low > NOISY_CI_FRACTION:
-            noisy.append(matrix)
         base_spmv = median(solvers[base]["spmv"])
         our_spmv = median(solvers[ours]["spmv"])
         ok = (all(solvers[base][evidence]) and all(solvers[ours][evidence])
@@ -175,18 +170,34 @@ def print_gate(groups, base, ours, time_ratio=None, speed=False):
               and spmv_passes(base_spmv, our_spmv))
         if time_ratio is not None:
             ok = ok and ratio <= time_ratio
-        total += 1
-        passed += 1 if ok else 0
-        limit = maxit if maxit not in ("", "0") else "default"
+        rows.append(dict(matrix=matrix, maxit=maxit, limit=limit, missing=False, ok=ok,
+                         base_time=median(solvers[base]["times"]), our_time=median(solvers[ours]["times"]),
+                         ratio=ratio, ci_low=low, ci_high=high, base_spmv=base_spmv, our_spmv=our_spmv,
+                         noisy=low is not None and high - low > NOISY_CI_FRACTION))
+    return rows, time_ratio
+
+
+def print_gate(groups, base, ours, time_ratio=None, speed=False):
+    print(f"\n### {'Speed' if speed else 'Accuracy'} gate: {ours} against {base}\n")
+    rows, time_ratio = evaluate_gate(groups, base, ours, time_ratio, speed)
+    print("| Matrix | Limit | Base (us) | Ours (us) | Ratio | Ratio 95% CI | Base iterations | Our iterations | Result |")
+    print("| --- | --- | --- | --- | --- | --- | --- | --- | --- |")
+    for row in rows:
+        if row["missing"]:
+            print(f"| {row['matrix']} | {row['maxit'] or 'default'} | - | - | - | - | - | - | FAIL (missing solver) |")
+            continue
+        interval = f"{row['ci_low']:.3f} to {row['ci_high']:.3f}" if row["ci_low"] is not None else "not paired"
         print(
-            f"| {matrix} | {limit} | {base_time * 1e6:.2f} | {our_time * 1e6:.2f} | {ratio:.3f} | "
-            f"{interval} | {base_spmv:g} | {our_spmv:g} | "
-            f"{('PASS' if time_ratio is not None else 'VERIFIED') if ok else 'FAIL'} |"
+            f"| {row['matrix']} | {row['limit']} | {row['base_time'] * 1e6:.2f} | {row['our_time'] * 1e6:.2f} | "
+            f"{row['ratio']:.3f} | {interval} | {row['base_spmv']:g} | {row['our_spmv']:g} | "
+            f"{('PASS' if time_ratio is not None else 'VERIFIED') if row['ok'] else 'FAIL'} |"
         )
-    print(f"\n{passed} of {total} matrices pass.")
+    passed = sum(row["ok"] for row in rows)
+    print(f"\n{passed} of {len(rows)} matrices pass.")
+    noisy = sorted({row["matrix"] for row in rows if row.get("noisy")})
     if noisy:
-        print(f"WARNING: ratio interval wider than 0.10 on: {', '.join(sorted(set(noisy)))}. Rerun on a quiet machine.")
-    return total > 0 and passed == total
+        print(f"WARNING: ratio interval wider than 0.10 on: {', '.join(noisy)}. Rerun on a quiet machine.")
+    return len(rows) > 0 and passed == len(rows)
 
 
 def geometric_mean_ratio(groups, base, ours):
