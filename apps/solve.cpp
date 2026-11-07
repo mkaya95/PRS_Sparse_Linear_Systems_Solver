@@ -2,7 +2,7 @@
 //
 // Usage: solve --matrix SPEC [--rhs b.txt] [--precond none|jacobi] [--tol 1e-8] [--maxit N] [--out x.txt]
 //
-// SPEC is poisson2d:N, poisson3d:N, point27:N, poisson3d:llc=4 or a Matrix Market file.
+// SPEC is poisson2d:N, poisson3d:N, point27:N or a Matrix Market file.
 // Without --rhs, b = A·1 is a manufactured/demo problem.
 //
 // Exit status: 0 converged, 2 not converged or breakdown, 1 input error.

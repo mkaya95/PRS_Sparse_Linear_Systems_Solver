@@ -15,9 +15,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 option(SSOLVE_NATIVE "Compile for this machine's CPU with -march=native" ON)
-set(SSOLVE_EIGEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/eigen" CACHE PATH "Eigen checkout to benchmark against")
-
-# Same flags for our code and Eigen, so comparisons are fair.
 # -fopenmp-simd enables `omp simd` without threads or the OpenMP runtime.
 add_compile_options(-Wall -Wextra -Wpedantic -fopenmp-simd)
 if(SSOLVE_NATIVE)
@@ -26,24 +23,7 @@ endif()
 
 include_directories(include)
 
-# Build information for the benchmark manifest, refreshed on every build.
-string(TOUPPER "${CMAKE_BUILD_TYPE}" build_type_upper)
-string(STRIP "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${build_type_upper}} -fopenmp-simd" build_flags)
-if(SSOLVE_NATIVE)
-  string(APPEND build_flags " -march=native")
-endif()
-set(build_info_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
-set(build_info_header "${build_info_dir}/ssolve_build_info.h")
-add_custom_target(ssolve_build_info
-  BYPRODUCTS "${build_info_header}"
-  COMMAND "${CMAKE_COMMAND}" "-DSOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}" "-DOUTPUT=${build_info_header}"
-          "-DFLAGS=${build_flags}" "-DEIGEN_DIR=${SSOLVE_EIGEN_DIR}"
-          -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/write_build_info.cmake"
-  VERBATIM)
-
 add_library(ssolve STATIC
-  src/bench/csv.cpp
-  src/bench/manifest.cpp
   src/backends/seq/seq_backend.cpp
   src/formats/csr.cpp
   src/io/generators.cpp
@@ -52,8 +32,6 @@ add_library(ssolve STATIC
   src/solvers/cg.cpp
   src/verify.cpp
 )
-add_dependencies(ssolve ssolve_build_info)
-set_source_files_properties(src/bench/manifest.cpp PROPERTIES INCLUDE_DIRECTORIES "${build_info_dir}")
 
 # Compiler remarks showing which solver kernel loops were vectorized, and why others were not.
 option(SSOLVE_VEC_REPORT "Print vectorization remarks while compiling the solver kernels" OFF)
@@ -66,30 +44,6 @@ if(SSOLVE_VEC_REPORT)
   set_source_files_properties(src/backends/seq/seq_backend.cpp PROPERTIES COMPILE_OPTIONS "${vec_report_flags}")
 endif()
 
-# STREAM measures the machine's memory bandwidth, so it alone uses threads for now.
-find_package(OpenMP)
-add_executable(stream apps/stream.cpp)
-target_link_libraries(stream PRIVATE ssolve)
-if(OpenMP_CXX_FOUND)
-  target_link_libraries(stream PRIVATE OpenMP::OpenMP_CXX)
-endif()
-
-# Benchmark fixtures: the Eigen baselines and the optimization ladder.
-add_library(ssolve_bench STATIC
-  bench/eigen_kernels.cpp
-  bench/eigen_solvers.cpp
-  bench/ladder.cpp
-  bench/registry.cpp
-)
-target_include_directories(ssolve_bench PUBLIC bench)
-target_include_directories(ssolve_bench SYSTEM PRIVATE "${SSOLVE_EIGEN_DIR}")
-target_compile_definitions(ssolve_bench PRIVATE EIGEN_DONT_PARALLELIZE)
-target_link_libraries(ssolve_bench PUBLIC ssolve)
-
-add_executable(bench_cg apps/bench_cg.cpp)
-target_link_libraries(bench_cg PRIVATE ssolve_bench)
-add_executable(bench_kernels apps/bench_kernels.cpp)
-target_link_libraries(bench_kernels PRIVATE ssolve_bench)
 add_executable(solve apps/solve.cpp)
 target_link_libraries(solve PRIVATE ssolve)
 
@@ -106,16 +60,5 @@ ssolve_test(test_aligned_array)
 ssolve_test(test_matrix)
 ssolve_test(test_mtx_reader)
 ssolve_test(test_generators)
-ssolve_test(test_csv)
 ssolve_test(test_backend)
-
-add_executable(test_solvers tests/test_solvers.cpp)
-target_include_directories(test_solvers PRIVATE tests)
-target_link_libraries(test_solvers PRIVATE ssolve_bench)
-add_test(NAME test_solvers COMMAND test_solvers)
-
-find_package(Python3 COMPONENTS Interpreter)
-if(Python3_Interpreter_FOUND)
-  add_test(NAME test_scripts
-    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_scripts.py" "$<TARGET_FILE_DIR:bench_cg>")
-endif()
+ssolve_test(test_solvers)

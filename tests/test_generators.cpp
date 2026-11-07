@@ -1,5 +1,4 @@
 #include <cmath>
-#include <vector>
 
 #include "ssolve/generators.hpp"
 #include "ssolve/verify.hpp"
@@ -104,46 +103,12 @@ TEST(invalid_grid_sizes_throw) {
   CHECK_THROWS_WITH(make_stencil(Stencil::Poisson2D, 50000), "too large");
 }
 
-TEST(target_bytes_picks_the_smallest_sufficient_grid) {
-  for (Stencil s : kAll) {
-    for (std::int64_t bytes : {std::int64_t{1000}, std::int64_t{84000000}, std::int64_t{1} << 30}) {
-      const Index N = n_for_target_bytes(s, bytes);
-      CHECK(12 * stencil_nnz(s, N) >= bytes);
-      if (N > 1) CHECK(12 * stencil_nnz(s, N - 1) < bytes);
-    }
-  }
-}
-
-TEST(target_bytes_of_zero_gives_the_smallest_grid) { CHECK_EQ(n_for_target_bytes(Stencil::Poisson3D, 0), 1); }
-
 TEST(unit_solution_rhs_equals_row_sums) {
   const CsrMatrix a = make_stencil(Stencil::Poisson2D, 3);
   const AlignedArray<double> b = rhs_for_unit_solution(a);
   CHECK_EQ(b[0], 2.0);  // corner: 4 - 2
   CHECK_EQ(b[1], 1.0);  // edge: 4 - 3
   CHECK_EQ(b[4], 0.0);  // center: 4 - 4
-}
-
-TEST(random_solution_is_reproducible_and_spread_over_the_interval) {
-  const AlignedArray<double> first = random_solution(1000);
-  const AlignedArray<double> second = random_solution(1000);
-  double total_magnitude = 0.0;
-  for (std::size_t i = 0; i < 1000; ++i) {
-    CHECK_EQ(first[i], second[i]);
-    CHECK(first[i] >= -1.0 && first[i] < 1.0);
-    total_magnitude += std::fabs(first[i]);
-  }
-  CHECK(total_magnitude > 400.0 && total_magnitude < 600.0);  // the mean of |x| is about 0.5
-}
-
-TEST(random_solution_rhs_equals_the_matrix_times_that_solution) {
-  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 6);
-  const std::size_t n = static_cast<std::size_t>(a.n_rows);
-  const AlignedArray<double> x = random_solution(a.n_rows);
-  const AlignedArray<double> b = rhs_for_random_solution(a);
-  std::vector<double> expected(n);
-  spmv_reference(a, x.data(), expected.data());
-  for (std::size_t i = 0; i < n; ++i) CHECK_NEAR(b[i], expected[i], 1e-14);
 }
 
 TEST_MAIN()
