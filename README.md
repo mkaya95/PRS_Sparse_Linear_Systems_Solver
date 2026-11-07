@@ -49,9 +49,19 @@ build/release/solve --matrix path/to/ldoor.mtx --tol 1e-8 --maxit 5000 --out x.t
 build/release/solve --matrix path/to/A.mtx --rhs b.txt --out x.txt
 ```
 
-The matrix must be symmetric positive definite. Without `--rhs`, the solver uses b = A·1. A `--rhs` file holds exactly n numbers separated by whitespace.
+The matrix must be symmetric positive definite. Without `--rhs`, the solver uses b = A·1. A `--rhs` file holds exactly n numbers separated by whitespace. `--problem random` instead uses the right-hand side the benchmarks use. `--history h.txt` writes ‖r‖ / ‖b‖ before the first iteration and after each one, one value per line.
 
 The exit status is 0 if the solve converged and its true residual was verified, 2 if it did not converge, and 1 for invalid input.
+
+## Run everything from the browser
+
+Start the page where the solver builds, on Linux, WSL2 or macOS, and open the address it prints, http://localhost:8008/ by default. On WSL2, open it in your Windows browser.
+
+```bash
+python3 ui/server.py
+```
+
+The Run tab runs the steps below with your settings and shows each exact command. The Results tab charts every machine in `results/`, and the Demo tab solves one problem with our solver and with Eigen. Use `--port` to pick another port. The page answers only on this computer.
 
 ## Run the benchmarks
 

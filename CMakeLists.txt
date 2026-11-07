@@ -119,4 +119,6 @@ find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
   add_test(NAME test_scripts
     COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_scripts.py" "$<TARGET_FILE_DIR:bench_cg>")
+  add_test(NAME test_ui
+    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ui.py" "$<TARGET_FILE_DIR:bench_cg>")
 endif()

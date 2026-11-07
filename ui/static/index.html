@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Training log · P08</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header class="masthead">
+    <h1>Training log <span class="dash">&mdash;</span> P08</h1>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="run">Run</button>
+      <button role="tab" data-tab="results">Results</button>
+      <button role="tab" data-tab="demo">Demo</button>
+    </nav>
+    <span class="machine-tag" id="machine-tag"></span>
+  </header>
+
+  <main>
+    <!-- RUN -->
+    <section id="tab-run" class="tab-panel" role="tabpanel" hidden>
+      <form class="settings" id="settings" autocomplete="off">
+        <label>Machine name <input name="machine" spellcheck="false" required></label>
+        <label>Build folder <input name="build" spellcheck="false" required></label>
+        <label>Matrices in <input name="data" spellcheck="false" required></label>
+        <label>Compiler <input name="compiler" spellcheck="false" required></label>
+      </form>
+      <p class="note" id="settings-error" role="alert"></p>
+
+      <div class="actions">
+        <button class="btn go" id="run-all">Run all</button>
+        <button class="btn" id="stop" disabled>Stop</button>
+        <span class="status" id="run-status"></span>
+      </div>
+
+      <div class="run-grid">
+        <ol class="steps" id="steps"></ol>
+        <div class="detail">
+          <div class="label" id="cmd-label">The exact command</div>
+          <pre class="cmd" id="cmd"></pre>
+          <div class="label">Output</div>
+          <pre class="out" id="out" tabindex="0">Nothing has run yet.</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="tab-results" class="tab-panel" role="tabpanel" hidden>
+      <table class="gates" id="gates"></table>
+      <p class="note" id="gates-note"></p>
+
+      <div class="controls" id="result-controls">
+        <label class="pick" id="machine-pick-wrap">Machine <select id="machine-pick"></select></label>
+        <span class="seg" id="pair-seg"><button data-pair="0" class="on">Plain CG</button><button data-pair="1">Jacobi</button></span>
+        <span class="seg" id="kind-seg"><button data-kind="real" class="on">Real matrices</button><button data-kind="generated">Generated</button></span>
+      </div>
+
+      <div class="chart-grid">
+        <figure>
+          <figcaption>Our time / Eigen's, per iteration</figcaption>
+          <div id="ratio-chart"></div>
+          <p class="note">Dot: median of the paired rounds. Line: 95% interval. Left of the blue line is faster than Eigen.</p>
+        </figure>
+        <figure>
+          <figcaption>Time per iteration</figcaption>
+          <div id="time-chart"></div>
+        </figure>
+      </div>
+
+      <div class="chart-grid" id="ladder-grid">
+        <figure>
+          <figcaption>What each change was worth</figcaption>
+          <div id="ladder-chart"></div>
+          <p class="note" id="ladder-note"></p>
+        </figure>
+        <figure>
+          <figcaption>Accuracy: complete solves to 1e-8</figcaption>
+          <table class="plain" id="accuracy"></table>
+        </figure>
+      </div>
+
+      <figure id="machines-figure" hidden>
+        <figcaption>Machines side by side</figcaption>
+        <div id="machines-chart"></div>
+      </figure>
+    </section>
+
+    <!-- DEMO -->
+    <section id="tab-demo" class="tab-panel" role="tabpanel" hidden>
+      <div class="actions">
+        <label class="pick">Matrix <select id="demo-matrix"></select></label>
+        <span class="seg" id="precond-seg"><button data-precond="jacobi" class="on">Jacobi</button><button data-precond="none">None</button></span>
+        <button class="btn go" id="solve-live">Solve live</button>
+        <span class="status" id="demo-status"></span>
+      </div>
+
+      <div class="label">1 &middot; What the solver does</div>
+      <div class="flow" id="flow">
+        <div class="box" data-phase="read">Read matrix<small>.mtx or generated</small></div><span class="arr">&rarr;</span>
+        <div class="box" data-phase="read">Store as CSR<small>rows, columns, values</small></div><span class="arr">&rarr;</span>
+        <div class="box" data-phase="race" id="jacobi-box">Jacobi<small>scale by 1/diagonal</small></div><span class="arr">&rarr;</span>
+        <div class="box" data-phase="race">CG loop<small>multiply, dot, update</small></div><span class="arr">&rarr;</span>
+        <div class="box" data-phase="check">Check answer<small>true error &le; 1e-8</small></div>
+      </div>
+
+      <div class="label">2 &middot; Head to head on the same problem</div>
+      <div class="lane"><b>ours</b><div class="track"><div class="fill ours" id="lane-ours"></div></div><span id="time-ours"></span></div>
+      <div class="lane"><b>Eigen</b><div class="track"><div class="fill eigen" id="lane-eigen"></div></div><span id="time-eigen"></span></div>
+      <p class="note">One warm-up each, then two timed rounds that take turns going first. They never run at the same time, so neither slows the other down.</p>
+
+      <div class="demo-grid">
+        <div>
+          <div class="label">3 &middot; Result</div>
+          <div class="big" id="verdict">&nbsp;</div>
+          <div class="stamps" id="demo-stamps"></div>
+          <p class="note" id="demo-facts"></p>
+        </div>
+        <div>
+          <div class="label">4 &middot; How the error falls</div>
+          <div id="curve"></div>
+          <p class="note">Drawn from a separate, untimed run on the same problem, so recording it never touches the timed numbers.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="confirm">
+    <form method="dialog">
+      <h2>Replace the earlier result?</h2>
+      <p>This machine already has:</p>
+      <ul id="confirm-files"></ul>
+      <p>Running again deletes it and measures from scratch.</p>
+      <div class="actions">
+        <button class="btn go" value="replace">Replace and run</button>
+        <button class="btn" value="cancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="tip" role="tooltip" hidden></div>
+  <script src="charts.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
