@@ -50,6 +50,7 @@ add_library(ssolve STATIC
   src/io/mtx_reader.cpp
   src/io/matrix_spec.cpp
   src/solvers/cg.cpp
+  src/solvers/cg_history.cpp
   src/verify.cpp
 )
 add_dependencies(ssolve ssolve_build_info)

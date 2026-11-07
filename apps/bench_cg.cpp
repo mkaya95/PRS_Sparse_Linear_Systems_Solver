@@ -22,6 +22,7 @@
 #include <unistd.h>
 
 #include "cli.hpp"
+#include "problem.hpp"
 #include "ssolve/matrix_spec.hpp"
 #include "registry.hpp"
 #include "ssolve/aligned_array.hpp"
@@ -33,21 +34,6 @@
 
 using namespace ssolve;
 using namespace ssolve_bench;
-
-namespace {
-
-AlignedArray<double> make_rhs(const std::string& problem, const CsrMatrix& a) {
-  if (problem == "random") return rhs_for_random_solution(a);
-  if (problem == "a1") return rhs_for_unit_solution(a);
-  if (problem == "unit") {
-    AlignedArray<double> b(static_cast<std::size_t>(a.n_rows));
-    b.fill(1.0);
-    return b;
-  }
-  throw std::runtime_error("--problem must be random, a1 or unit");
-}
-
-}  // namespace
 
 int main(int argc, char** argv) {
   try {
@@ -71,7 +57,7 @@ int main(int argc, char** argv) {
     const CsrMatrix a = load_matrix_spec(spec);
     validate_cg_matrix(a);
     const std::string fingerprint = matrix_fingerprint(a);
-    const AlignedArray<double> b = make_rhs(problem, a);
+    const AlignedArray<double> b = ssolve_cli::rhs_for_problem(problem, a);
     AlignedArray<double> x(static_cast<std::size_t>(a.n_rows));
     const double preparation_seconds = wall_seconds() - preparation_start;
     const std::string run_id = std::to_string(std::chrono::system_clock::now().time_since_epoch().count()) + "-" +

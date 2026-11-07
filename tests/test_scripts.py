@@ -722,6 +722,41 @@ class SolveCommand(unittest.TestCase):
             self.assertEqual(done.returncode, 1)
             self.assertIn("symmetric", done.stderr)
 
+    def test_history_records_the_residual_before_and_after_each_iteration(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "h.txt")
+            done = self.run_solve("--matrix", "poisson2d:30", "--precond", "jacobi", "--history", path)
+            self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+            spmv = int(next(l for l in done.stdout.splitlines() if l.startswith("spmv count")).split()[-1])
+            with open(path, encoding="ascii") as f:
+                values = [float(line) for line in f]
+        self.assertEqual(len(values), spmv + 1)
+        self.assertEqual(values[0], 1.0)
+        self.assertLess(values[-1], 1e-8)
+
+    def test_the_random_problem_takes_the_same_iterations_as_bench_cg(self):
+        # The demo times bench_cg and plots solve's history, so both must solve the same system.
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "r.csv")
+            bench = subprocess.run(
+                [os.path.join(BUILD_DIR, "bench_cg"), "--matrix", "poisson2d:30", "--solver", "ours-jacobi",
+                 "--repeat", "1", "--warmup", "0", "--problem", "random", "--csv", out],
+                capture_output=True, text=True)
+            self.assertEqual(bench.returncode, 0, bench.stderr)
+            with open(out, newline="", encoding="utf-8") as f:
+                expected = next(csv.DictReader(f))["spmv_count"]
+        done = self.run_solve("--matrix", "poisson2d:30", "--precond", "jacobi", "--problem", "random")
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertIn(f"spmv count     {expected}\n", done.stdout)
+
+    def test_a_problem_and_an_rhs_file_together_are_rejected(self):
+        with tempfile.TemporaryDirectory() as d:
+            rhs = pathlib.Path(d) / "b.txt"
+            rhs.write_text("1\n" * 25, encoding="ascii")
+            done = self.run_solve("--matrix", "poisson2d:5", "--rhs", str(rhs), "--problem", "random")
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("--problem", done.stderr)
+
     def test_the_solution_can_be_written_to_a_file(self):
         with tempfile.TemporaryDirectory() as d:
             path = os.path.join(d, "x.txt")
