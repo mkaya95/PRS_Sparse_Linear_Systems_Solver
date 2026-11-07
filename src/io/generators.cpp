@@ -1,6 +1,7 @@
 #include "ssolve/generators.hpp"
 
 #include <limits>
+#include <random>
 #include <stdexcept>
 #include <vector>
 
@@ -144,6 +145,24 @@ AlignedArray<double> rhs_for_unit_solution(const CsrMatrix& a) {
   for (Index i = 0; i < a.n_rows; ++i) {
     double sum = 0.0;
     for (std::int64_t k = a.row_ptr[i]; k < a.row_ptr[i + 1]; ++k) sum += a.val[k];
+    b[i] = sum;
+  }
+  return b;
+}
+
+AlignedArray<double> random_solution(Index n) {
+  AlignedArray<double> x(static_cast<std::size_t>(n));
+  std::mt19937_64 generator(20261106);
+  for (Index i = 0; i < n; ++i) x[i] = static_cast<double>(generator() >> 11) * 0x1.0p-53 * 2.0 - 1.0;
+  return x;
+}
+
+AlignedArray<double> rhs_for_random_solution(const CsrMatrix& a) {
+  const AlignedArray<double> x = random_solution(a.n_cols);
+  AlignedArray<double> b(static_cast<std::size_t>(a.n_rows));
+  for (Index i = 0; i < a.n_rows; ++i) {
+    double sum = 0.0;
+    for (std::int64_t k = a.row_ptr[i]; k < a.row_ptr[i + 1]; ++k) sum += a.val[k] * x[a.col[k]];
     b[i] = sum;
   }
   return b;

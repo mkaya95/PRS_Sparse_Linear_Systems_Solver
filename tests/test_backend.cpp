@@ -189,4 +189,32 @@ TEST(cg_on_the_backend_solves_a_poisson_system) {
   CHECK(true_relative_residual(a, b.data(), x.data()) < 1e-7);
 }
 
+TEST(verification_uses_the_given_matrix_so_a_wrong_kernel_cannot_hide) {
+  // The backend holds a different matrix, which is how a buggy kernel would behave.
+  Coo truth, wrong;
+  truth.n_rows = truth.n_cols = wrong.n_rows = wrong.n_cols = 2;
+  truth.add(0, 0, 1.0);
+  truth.add(1, 1, 2.0);
+  wrong.add(0, 0, 1.0);
+  wrong.add(1, 1, 2.5);
+  const CsrMatrix a = csr_from_coo(truth);
+  const std::unique_ptr<Backend> backend = make_seq_backend(csr_from_coo(wrong));
+  const double b[] = {1.0, 1.0};
+  double x[] = {0.0, 0.0};
+  const SolveResult result = verified_cg(a, *backend, nullptr, b, x, SolveOptions{});
+  CHECK(result.status == SolveStatus::ResidualFailure);
+  // x = (1, 0.4), so b - A x = (0, 0.2), and the relative residual is 0.2 / sqrt(2).
+  CHECK_NEAR(result.true_residual, 0.2 / std::sqrt(2.0), 1e-6);
+}
+
+TEST(verified_cg_accepts_a_correct_answer) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson3D, 8);
+  const AlignedArray<double> b = rhs_for_unit_solution(a);
+  AlignedArray<double> x(static_cast<std::size_t>(a.n_rows));
+  const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
+  const SolveResult result = verified_cg(a, *backend, nullptr, b.data(), x.data(), SolveOptions{});
+  CHECK(result.status == SolveStatus::Converged);
+  CHECK(result.true_residual <= 1e-8);
+}
+
 TEST_MAIN()

@@ -16,7 +16,7 @@ struct Manifest {
   std::string affinity = "unavailable";
   std::string hostname;
   int logical_cpus = 0;
-  int physical_cores = 0;  // 0 if unknown
+  int physical_cores = 0;  // 0 if unknown, as under WSL2
   std::int64_t l1d_bytes = 0;
   std::int64_t l2_bytes = 0;
   std::int64_t l3_bytes = 0;

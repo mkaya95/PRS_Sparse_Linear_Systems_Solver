@@ -5,15 +5,15 @@
     {"stencil": "point27", "llc": [0.5, 4]}
   ],
   "files": [
-    {"name": "ecology2", "group": "McRae", "rows": 999999, "nnz": 4995991},
-    {"name": "apache2", "group": "GHS_psdef", "rows": 715176, "nnz": 4817870},
-    {"name": "tmt_sym", "group": "CEMW", "rows": 726713, "nnz": 5080961},
-    {"name": "G3_circuit", "group": "AMD", "rows": 1585478, "nnz": 7660826},
-    {"name": "thermal2", "group": "Schmid", "rows": 1228045, "nnz": 8580313},
-    {"name": "hood", "group": "GHS_psdef", "rows": 220542, "nnz": 9895422},
-    {"name": "inline_1", "group": "GHS_psdef", "rows": 503712, "nnz": 36816170},
-    {"name": "Emilia_923", "group": "Janna", "rows": 923136, "nnz": 40373538},
-    {"name": "ldoor", "group": "GHS_psdef", "rows": 952203, "nnz": 42493817},
-    {"name": "audikw_1", "group": "GHS_psdef", "rows": 943695, "nnz": 77651847}
+    {"name": "ecology2", "group": "McRae", "rows": 999999, "nnz": 4995991, "stored": 4995991},
+    {"name": "apache2", "group": "GHS_psdef", "rows": 715176, "nnz": 4817870, "stored": 4817870},
+    {"name": "tmt_sym", "group": "CEMW", "rows": 726713, "nnz": 5080961, "stored": 5080961},
+    {"name": "G3_circuit", "group": "AMD", "rows": 1585478, "nnz": 7660826, "stored": 7660826},
+    {"name": "thermal2", "group": "Schmid", "rows": 1228045, "nnz": 8580313, "stored": 8580313},
+    {"name": "hood", "group": "GHS_psdef", "rows": 220542, "nnz": 9895422, "stored": 10768436},
+    {"name": "inline_1", "group": "GHS_psdef", "rows": 503712, "nnz": 36816170, "stored": 36816342},
+    {"name": "Emilia_923", "group": "Janna", "rows": 923136, "nnz": 40373538, "stored": 41005206},
+    {"name": "ldoor", "group": "GHS_psdef", "rows": 952203, "nnz": 42493817, "stored": 46522475},
+    {"name": "audikw_1", "group": "GHS_psdef", "rows": 943695, "nnz": 77651847, "stored": 77651847}
   ]
 }

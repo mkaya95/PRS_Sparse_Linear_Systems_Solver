@@ -1,8 +1,6 @@
 # Sequential Solver Flow
 
-This document describes the current sequential FP64 CG implementation. The
-current delivery uses CSR; SELL storage and OpenMP solver parallelism are
-deferred to the next delivery.
+This document describes the current sequential FP64 CG implementation. It uses CSR. SELL storage and OpenMP solver parallelism are not part of the current delivery.
 
 ```mermaid
 flowchart TD
@@ -48,14 +46,18 @@ flowchart TD
 6. **Run CG.** The normal CLI path starts with `x = 0`. Invalid curvature or
    non-finite intermediate arithmetic returns `Breakdown`. Reaching the
    iteration limit returns `MaxIterations`; neither indicates success.
-7. **Verify convergence independently.** After the iteration loop, recompute
-   `b - A*x` and its relative 2-norm. For zero `b`, use the absolute residual.
-   A non-finite result or a residual above tolerance cannot return
-   `Converged`; it reports `Breakdown` or `ResidualFailure`, respectively.
+7. **Verify convergence independently.** `verified_cg` calls `cg`, then recomputes
+   `b - A*x` and its relative 2-norm with a separate reference SpMV, using the CSR
+   matrix the caller wanted solved rather than whatever the backend holds. A wrong
+   kernel or format therefore cannot hide itself, and future backends need no CSR
+   copy. For zero `b`, it uses the absolute residual. A non-finite result or a
+   residual above tolerance cannot return `Converged`; it reports `Breakdown` or
+   `ResidualFailure`, respectively.
 8. **Report timing and status.** Preparation, setup, solve, verification, and
-   end-to-end times are printed separately. The exit status is `0` only for
-   verified convergence, `2` for a numerical or convergence failure, and `1`
-   for invalid input.
+   end-to-end times are printed separately. Solve time includes initialization
+   and workspace allocation, but excludes verification, printing and file output.
+   The exit status is `0` only for verified convergence, `2` for a numerical or
+   convergence failure, and `1` for invalid input.
 
 ## Relevant Code
 

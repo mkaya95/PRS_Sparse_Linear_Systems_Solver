@@ -1,8 +1,7 @@
-# Papers kept locally
-docs/papers/*.pdf
-
 # Build trees and downloaded data
 /build/
 /data/
 /third_party/eigen-master/
+# The professor's lab code, not ours to publish
+/lab1/
 __pycache__/

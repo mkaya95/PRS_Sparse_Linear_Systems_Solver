@@ -1,17 +1,25 @@
 """Tests for the benchmark scripts. Usage: test_scripts.py BUILD_DIR"""
 import csv
+import http.server
+import io
 import json
 import os
 import pathlib
 import random
+import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
+import threading
 import unittest
+import urllib.error
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import download_matrices  # noqa: E402
+import run_bench as run_bench_script  # noqa: E402
 import summarize  # noqa: E402
 
 BUILD_DIR = None  # set in __main__
@@ -20,7 +28,8 @@ BUILD_DIR = None  # set in __main__
 def run_bench(*extra, suite):
     """Runs run_bench.py and returns the finished process."""
     return subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "run_bench.py"), "--build", BUILD_DIR, "--suite", suite, *extra],
+        [sys.executable, str(ROOT / "scripts" / "run_bench.py"), "--build", BUILD_DIR, "--suite", suite,
+         "--power", "ac", *extra],
         capture_output=True,
         text=True,
     )
@@ -144,6 +153,219 @@ class RunBench(unittest.TestCase):
         self.assertNotIn("PASS", report.stdout)
 
 
+class TestProblem(unittest.TestCase):
+    def setUp(self):
+        self.dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self.dir.cleanup)
+        self.out = os.path.join(self.dir.name, "out.csv")
+
+    def run_cg(self, *extra):
+        return subprocess.run(
+            [os.path.join(BUILD_DIR, "bench_cg"), "--matrix", "poisson2d:12", "--solver", "ours", "--repeat", "1",
+             "--csv", self.out, *extra],
+            capture_output=True,
+            text=True,
+        )
+
+    def rows(self):
+        with open(self.out, newline="", encoding="utf-8") as f:
+            return list(csv.DictReader(f))
+
+    def test_the_default_problem_is_a_random_solution(self):
+        done = self.run_cg()
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(self.rows()[0]["problem"], "random")
+
+    def test_each_problem_is_a_different_right_hand_side_and_is_recorded(self):
+        counts = {}
+        for problem in ("a1", "random", "unit"):
+            with self.subTest(problem=problem):
+                if os.path.exists(self.out):
+                    os.remove(self.out)
+                done = self.run_cg("--problem", problem)
+                self.assertEqual(done.returncode, 0, done.stderr)
+                row = self.rows()[0]
+                self.assertEqual(row["problem"], problem)
+                self.assertLessEqual(float(row["rel_res_true"]), 1e-8)
+                counts[problem] = int(row["spmv_count"])
+        self.assertGreater(len(set(counts.values())), 1, counts)
+
+    def test_an_unknown_problem_is_rejected(self):
+        done = self.run_cg("--problem", "nonsense")
+        self.assertNotEqual(done.returncode, 0)
+        self.assertIn("--problem", done.stderr)
+
+    def test_run_bench_passes_the_problem_on(self):
+        suite = os.path.join(self.dir.name, "suite.json")
+        with open(suite, "w", encoding="utf-8") as f:
+            json.dump({"generated": [{"stencil": "poisson2d", "n": [8]}]}, f)
+        done = run_bench("--solvers", "ours", "--repeat", "1", "--problem", "unit", "--out", self.out, suite=suite)
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertEqual(self.rows()[0]["problem"], "unit")
+
+    def test_results_from_different_problems_are_not_pooled(self):
+        self.assertEqual(self.run_cg("--problem", "a1").returncode, 0)
+        self.assertEqual(self.run_cg("--problem", "random").returncode, 0)
+        done = subprocess.run([sys.executable, str(ROOT / "scripts/summarize.py"), self.out],
+                              capture_output=True, text=True)
+        self.assertNotEqual(done.returncode, 0)
+        self.assertIn("incompatible", done.stderr)
+
+
+class PowerGuard(unittest.TestCase):
+    def setUp(self):
+        self.dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self.dir.cleanup)
+        self.out = os.path.join(self.dir.name, "out.csv")
+        self.suite = os.path.join(self.dir.name, "suite.json")
+        with open(self.suite, "w", encoding="utf-8") as f:
+            json.dump({"generated": [{"stencil": "poisson2d", "n": [8]}]}, f)
+
+    def test_it_refuses_to_measure_on_battery(self):
+        done = run_bench("--solvers", "ours", "--repeat", "1", "--power", "battery", "--out", self.out, suite=self.suite)
+        self.assertNotEqual(done.returncode, 0)
+        self.assertIn("battery", done.stdout)
+        self.assertFalse(os.path.exists(self.out))
+
+    def test_battery_can_be_allowed_and_is_recorded(self):
+        done = run_bench("--solvers", "ours", "--repeat", "1", "--power", "battery", "--allow-battery",
+                         "--out", self.out, suite=self.suite)
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        with open(self.out, newline="", encoding="utf-8") as f:
+            self.assertEqual(next(csv.DictReader(f))["power"], "battery")
+
+    def test_windows_battery_status_codes(self):
+        self.assertEqual(run_bench_script.power_from_windows("1\r\n"), "battery")
+        self.assertEqual(run_bench_script.power_from_windows("2\r\n"), "ac")
+        self.assertEqual(run_bench_script.power_from_windows("3\r\n"), "ac")
+        self.assertEqual(run_bench_script.power_from_windows("5\r\n"), "battery")
+        self.assertEqual(run_bench_script.power_from_windows(""), "ac")  # a desktop has no battery
+
+    def test_macos_power_source(self):
+        self.assertEqual(run_bench_script.power_from_pmset("Now drawing from 'AC Power'\n"), "ac")
+        self.assertEqual(run_bench_script.power_from_pmset("Now drawing from 'Battery Power'\n"), "battery")
+        self.assertEqual(run_bench_script.power_from_pmset("nothing useful"), "unknown")
+
+    def test_linux_power_supply_directories(self):
+        base = pathlib.Path(self.dir.name) / "supply"
+        (base / "AC").mkdir(parents=True)
+        (base / "AC" / "type").write_text("Mains\n", encoding="ascii")
+        (base / "AC" / "online").write_text("0\n", encoding="ascii")
+        self.assertEqual(run_bench_script.power_from_sysfs(base), "battery")
+        (base / "AC" / "online").write_text("1\n", encoding="ascii")
+        self.assertEqual(run_bench_script.power_from_sysfs(base), "ac")
+        self.assertEqual(run_bench_script.power_from_sysfs(base / "missing"), "unknown")
+
+    def test_a_linux_mains_supply_without_an_online_file_is_unknown(self):
+        base = pathlib.Path(self.dir.name) / "supply"
+        (base / "AC").mkdir(parents=True)
+        (base / "AC" / "type").write_text("Mains\n", encoding="ascii")
+        self.assertEqual(run_bench_script.power_from_sysfs(base), "unknown")
+
+    def test_a_linux_battery_decides_only_when_it_is_discharging(self):
+        base = pathlib.Path(self.dir.name) / "supply"
+        (base / "BAT0").mkdir(parents=True)
+        (base / "BAT0" / "type").write_text("Battery\n", encoding="ascii")
+        (base / "BAT0" / "status").write_text("Discharging\n", encoding="ascii")
+        self.assertEqual(run_bench_script.power_from_sysfs(base), "battery")
+        (base / "BAT0" / "status").write_text("Charging\n", encoding="ascii")
+        self.assertEqual(run_bench_script.power_from_sysfs(base), "unknown")
+
+    def test_the_summary_warns_about_battery_results(self):
+        done = run_bench("--solvers", "ours", "--repeat", "1", "--power", "battery", "--allow-battery",
+                         "--out", self.out, suite=self.suite)
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        report = subprocess.run([sys.executable, str(ROOT / "scripts/summarize.py"), self.out],
+                                capture_output=True, text=True)
+        self.assertEqual(report.returncode, 0, report.stderr)
+        self.assertIn("battery", report.stdout)
+
+
+class ScipyCheck(unittest.TestCase):
+    def setUp(self):
+        try:
+            import scipy  # noqa: F401
+        except ImportError:
+            self.skipTest("needs SciPy")
+        self.dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self.dir.cleanup)
+        self.matrix = os.path.join(self.dir.name, "poisson.mtx")
+        side = 12
+        entries = []
+        for i in range(side * side):
+            entries.append((i, i, 4.0))
+            if (i + 1) % side != 0:
+                entries.append((i + 1, i, -1.0))
+            if i + side < side * side:
+                entries.append((i + side, i, -1.0))
+        with open(self.matrix, "w", encoding="ascii") as f:
+            f.write("%%MatrixMarket matrix coordinate real symmetric\n")
+            f.write(f"{side * side} {side * side} {len(entries)}\n")
+            for row, col, value in entries:
+                f.write(f"{row + 1} {col + 1} {value}\n")
+
+    def check(self, build, *extra):
+        return subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "check_against_scipy.py"), "--build", build, "--matrix", self.matrix,
+             *extra],
+            capture_output=True,
+            text=True,
+        )
+
+    def test_the_solver_agrees_with_scipy(self):
+        done = self.check(BUILD_DIR)
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertIn("PASS", done.stdout)
+        self.assertIn("direct", done.stdout)
+
+    def test_the_iteration_count_matches_scipy_cg(self):
+        done = self.check(BUILD_DIR, "--reference", "cg")
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertRegex(done.stdout, r"CG, \d+ iterations")
+        self.assertIn("PASS", done.stdout)
+
+    def test_a_different_iteration_count_is_caught(self):
+        fake = pathlib.Path(self.dir.name) / "solve"
+        fake.write_text(
+            f"#!/bin/sh\n{os.path.abspath(BUILD_DIR)}/solve \"$@\" | sed 's/spmv count .*/spmv count 100000/'\n",
+            encoding="ascii",
+        )
+        fake.chmod(0o755)
+        done = self.check(self.dir.name, "--reference", "cg")
+        self.assertNotEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertIn("FAIL", done.stdout)
+
+    def test_older_scipy_spelling_of_the_tolerance_works(self):
+        # SciPy before 1.12 calls rtol "tol", and Ubuntu 24.04 packages 1.11.
+        sys.path.insert(0, str(ROOT / "scripts"))
+        import check_against_scipy as script
+        import scipy.sparse
+        real_cg = script.sla.cg
+
+        def old_cg(a, b, tol, atol, maxiter, M, callback):
+            return real_cg(a, b, rtol=tol, atol=atol, maxiter=maxiter, M=M, callback=callback)
+
+        script.sla.cg = old_cg
+        self.addCleanup(setattr, script.sla, "cg", real_cg)
+        x, count = script.scipy_cg(scipy.sparse.identity(3, format="csr"), [1.0, 2.0, 3.0], 1e-8, 10)
+        self.assertEqual(list(x), [1.0, 2.0, 3.0])
+        self.assertEqual(count, 1)
+
+    def test_a_wrong_answer_is_caught(self):
+        fake = pathlib.Path(self.dir.name) / "solve"
+        fake.write_text(
+            "#!/bin/sh\n"
+            "while [ $# -gt 0 ]; do [ \"$1\" = --out ] && out=$2; shift; done\n"
+            "i=0; while [ $i -lt 144 ]; do echo 0.5; i=$((i+1)); done > \"$out\"\n"
+            "echo 'spmv count     1'\n",
+            encoding="ascii",
+        )
+        fake.chmod(0o755)
+        done = self.check(self.dir.name)
+        self.assertNotEqual(done.returncode, 0)
+        self.assertIn("FAIL", done.stdout)
+
+
 class BenchKernels(unittest.TestCase):
     def run_kernels(self, impl, out):
         return subprocess.run(
@@ -209,6 +431,135 @@ class BenchKernels(unittest.TestCase):
             self.assertEqual(done.returncode, 0, done.stderr)
             line = next(l for l in done.stdout.splitlines() if l.startswith("| m | dot | L0"))
             self.assertIn("1.500", line)
+
+
+class Stream(unittest.TestCase):
+    def test_it_reports_a_read_only_kernel(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "s.csv")
+            done = subprocess.run(
+                [os.path.join(BUILD_DIR, "stream"), "--array-mb", "8", "--repeat", "2", "--csv", out],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(done.returncode, 0, done.stderr)
+            with open(out, newline="", encoding="utf-8") as f:
+                rates = {r["kernel"]: float(r["best_gb_per_s"]) for r in csv.DictReader(f)}
+        self.assertEqual(set(rates), {"read", "copy", "scale", "add", "triad"})
+        self.assertGreater(rates["read"], 0.0)
+
+
+class DownloadFallback(unittest.TestCase):
+    """A local server stands in for the matrix hosts: /denied refuses, as the main host does."""
+
+    ENTRY = {"name": "tiny", "group": "Test", "rows": 2, "nnz": 2}
+    MTX = b"%%MatrixMarket matrix coordinate real general\n2 2 2\n1 1 1\n2 2 1\n"
+
+    def setUp(self):
+        buffer = io.BytesIO()
+        with tarfile.open(fileobj=buffer, mode="w:gz") as tar:
+            info = tarfile.TarInfo("tiny/tiny.mtx")
+            info.size = len(self.MTX)
+            tar.addfile(info, io.BytesIO(self.MTX))
+        archive = buffer.getvalue()
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self):
+                if self.path.startswith("/mirror/"):
+                    self.send_response(200)
+                    self.end_headers()
+                    self.wfile.write(archive)
+                else:
+                    self.send_error(403)
+
+            def log_message(self, *args):
+                pass
+
+        self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        self.addCleanup(self.server.server_close)
+        self.addCleanup(self.server.shutdown)
+        self.base = f"http://127.0.0.1:{self.server.server_address[1]}"
+        self.addCleanup(setattr, download_matrices, "BASE_URLS", download_matrices.BASE_URLS)
+
+    def test_a_refused_download_falls_back_to_the_next_host(self):
+        download_matrices.BASE_URLS = [
+            self.base + "/denied/{group}/{name}.tar.gz",
+            self.base + "/mirror/{group}/{name}.tar.gz",
+        ]
+        with tempfile.TemporaryDirectory() as d:
+            download_matrices.fetch(self.ENTRY, d)
+            self.assertEqual(pathlib.Path(d, "tiny.mtx").read_bytes(), self.MTX)
+
+    def test_it_fails_when_every_host_refuses(self):
+        download_matrices.BASE_URLS = [self.base + "/denied/{group}/{name}.tar.gz"]
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(urllib.error.URLError):
+                download_matrices.fetch(self.ENTRY, d)
+            self.assertFalse(pathlib.Path(d, "tiny.mtx").exists())
+
+
+class BuildInfo(unittest.TestCase):
+    """Runs cmake/write_build_info.cmake on a small git repository."""
+
+    def setUp(self):
+        if shutil.which("git") is None or shutil.which("cmake") is None:
+            self.skipTest("needs git and cmake")
+        work = tempfile.TemporaryDirectory()
+        self.addCleanup(work.cleanup)
+        self.repo = pathlib.Path(work.name)
+        (self.repo / "tracked.txt").write_text("one\n", encoding="utf-8")
+        self.git("init", "-q")
+        self.git("add", "tracked.txt")
+        self.git("-c", "user.name=test", "-c", "user.email=test@example.com", "commit", "-q", "-m", "first")
+
+    def git(self, *args):
+        subprocess.run(["git", "-C", str(self.repo), *args], check=True, capture_output=True)
+
+    def is_dirty(self):
+        output = self.repo / "info.h"
+        subprocess.run(
+            ["cmake", f"-DSOURCE_DIR={self.repo}", f"-DOUTPUT={output}", "-DFLAGS=x", "-P",
+             str(ROOT / "cmake" / "write_build_info.cmake")],
+            check=True,
+            capture_output=True,
+        )
+        text = output.read_text(encoding="utf-8")
+        output.unlink()
+        return "-dirty" in text
+
+    def test_an_untracked_file_does_not_mark_the_build_dirty(self):
+        (self.repo / "lab_notes.txt").write_text("not part of the build\n", encoding="utf-8")
+        self.assertFalse(self.is_dirty())
+
+    def test_a_changed_tracked_file_marks_the_build_dirty(self):
+        (self.repo / "tracked.txt").write_text("two\n", encoding="utf-8")
+        self.assertTrue(self.is_dirty())
+
+
+class PreconditionerColumn(unittest.TestCase):
+    def test_the_csv_names_the_preconditioner_each_solver_really_uses(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "r.csv")
+            done = subprocess.run(
+                [os.path.join(BUILD_DIR, "bench_cg"), "--matrix", "poisson2d:5", "--solver",
+                 "ours,ours-jacobi,eigen-E0,eigen-E1,eigen-E3", "--repeat", "1", "--csv", out],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(done.returncode, 0, done.stderr)
+            with open(out, newline="", encoding="utf-8") as f:
+                labels = {r["solver"]: r["precond"] for r in csv.DictReader(f)}
+        self.assertEqual(
+            labels,
+            {
+                "ours": "none",
+                "ours-jacobi": "jacobi",
+                "eigen-E0": "none",
+                "eigen-E1": "jacobi",
+                "eigen-E3": "incomplete-cholesky",
+            },
+        )
 
 
 class PairedRatios(unittest.TestCase):
@@ -426,6 +777,65 @@ class Summarize(unittest.TestCase):
                     capture_output=True, text=True)
                 self.assertNotEqual(done.returncode, 0)
                 self.assertNotIn("PASS", done.stdout)
+
+    def test_a_verified_solve_with_a_different_iteration_count_fails(self):
+        def row(solver, spmv):
+            return dict(matrix="m", solver=solver, spmv_count=spmv, per_spmv_s="1", solve_s="1",
+                        status="Converged", tol="1e-8", rel_res_true="1e-9")
+        with tempfile.TemporaryDirectory() as d:
+            path = pathlib.Path(d) / "r.csv"
+            rows = [row("base", 100), row("ours", 110)]
+            with path.open("w", newline="", encoding="ascii") as f:
+                writer = csv.DictWriter(f, fieldnames=list(rows[0]))
+                writer.writeheader()
+                writer.writerows(rows)
+            done = subprocess.run(
+                [sys.executable, str(ROOT / "scripts/summarize.py"), str(path), "--gate", "base=ours"],
+                capture_output=True, text=True)
+            self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
+            self.assertNotIn("VERIFIED", done.stdout)
+
+
+class SpeedGate(unittest.TestCase):
+    """The gate real matrices can pass: time per iteration on fixed-iteration runs."""
+
+    def gate(self, ours_time=1.0, ours_spmv=100, ours_status="MaxIterations", mode="fixed", extra=()):
+        def row(solver, time, spmv, status):
+            return dict(matrix="m", solver=solver, spmv_count=spmv, per_spmv_s=time, solve_s=time * spmv,
+                        status=status, tol="1e-8", rel_res_true="0.5", mode=mode, precond="jacobi", repeat=0)
+        with tempfile.TemporaryDirectory() as d:
+            path = pathlib.Path(d) / "r.csv"
+            rows = [row("base", 1.0, 100, "MaxIterations"), row("ours", ours_time, ours_spmv, ours_status)]
+            with path.open("w", newline="", encoding="ascii") as f:
+                writer = csv.DictWriter(f, fieldnames=list(rows[0]))
+                writer.writeheader()
+                writer.writerows(rows)
+            return subprocess.run(
+                [sys.executable, str(ROOT / "scripts/summarize.py"), str(path), "--metric", "iteration",
+                 "--gate", "base=ours", *extra],
+                capture_output=True, text=True)
+
+    def test_a_run_within_the_limit_passes(self):
+        done = self.gate(ours_time=1.04)
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertIn("PASS", done.stdout)
+
+    def test_a_run_over_the_limit_fails(self):
+        done = self.gate(ours_time=1.5)
+        self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
+        self.assertIn("FAIL", done.stdout)
+
+    def test_an_explicit_ratio_replaces_the_limit(self):
+        self.assertEqual(self.gate(ours_time=1.5, extra=("--time-ratio", "2")).returncode, 0)
+
+    def test_different_iteration_counts_fail(self):
+        self.assertEqual(self.gate(ours_spmv=110).returncode, 2)
+
+    def test_a_breakdown_fails_however_fast_it_was(self):
+        self.assertEqual(self.gate(ours_status="Breakdown").returncode, 2)
+
+    def test_complete_solves_are_not_accepted_as_speed_evidence(self):
+        self.assertEqual(self.gate(mode="solve").returncode, 2)
 
 
 if __name__ == "__main__":

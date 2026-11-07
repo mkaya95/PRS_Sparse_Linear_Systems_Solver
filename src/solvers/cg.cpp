@@ -6,6 +6,7 @@
 
 #include "ssolve/cg_common.hpp"
 #include "ssolve/timer.hpp"
+#include "ssolve/verify.hpp"
 
 namespace ssolve {
 
@@ -111,9 +112,13 @@ SolveResult cg(const Backend& backend, const double* inv_diag, const double* b, 
                                           return cg_loop(backend, inv_diag, rhs, solution, options);
                                         });
   result.solve_seconds = wall_seconds() - start;
-  const double verification_start = wall_seconds();
-  accept_verified_residual(result, backend.true_residual(b, x), options);
-  result.verification_seconds = wall_seconds() - verification_start;
+  return result;
+}
+
+SolveResult verified_cg(const CsrMatrix& a, const Backend& backend, const double* inv_diag, const double* b, double* x,
+                        const SolveOptions& options) {
+  SolveResult result = cg(backend, inv_diag, b, x, options);
+  verify_result(a, b, x, options, result);
   return result;
 }
 

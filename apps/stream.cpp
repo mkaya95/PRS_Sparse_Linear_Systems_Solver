@@ -1,11 +1,13 @@
-// STREAM memory bandwidth benchmark (Copy, Scale, Add, Triad).
+// STREAM memory bandwidth benchmark (Copy, Scale, Add, Triad), plus a read-only sum.
 //
 // Usage: stream [--threads N] [--csv FILE] [--array-mb M] [--repeat 10]
 //
 // Arrays default to at least 4x the last-level cache, so the numbers describe
 // main memory. The threads first-touch their pages with the same static schedule
-// as the kernels.
+// as the kernels. SpMV mostly reads, so the read-only rate is its upper bound
+// (Kreutzer et al. 2014, Listing 1).
 #include <algorithm>
+#include <cmath>
 #include <cstdio>
 #include <exception>
 #include <memory>
@@ -29,8 +31,10 @@ namespace {
 
 #ifdef _OPENMP
 #define SSOLVE_PARALLEL_FOR _Pragma("omp parallel for schedule(static)")
+#define SSOLVE_PARALLEL_SUM _Pragma("omp parallel for simd schedule(static) reduction(+ : sum)")
 #else
 #define SSOLVE_PARALLEL_FOR
+#define SSOLVE_PARALLEL_SUM _Pragma("omp simd reduction(+ : sum)")
 #endif
 
 struct Kernel {
@@ -71,38 +75,49 @@ int main(int argc, char** argv) {
     }
 
     const double s = 3.0;
-    std::vector<Kernel> kernels = {{"copy", 2, 1e30}, {"scale", 2, 1e30}, {"add", 3, 1e30}, {"triad", 3, 1e30}};
+    std::vector<Kernel> kernels = {
+        {"read", 1, 1e30}, {"copy", 2, 1e30}, {"scale", 2, 1e30}, {"add", 3, 1e30}, {"triad", 3, 1e30}};
+    double last_sum = 0.0;
     for (int r = 0; r < repeats; ++r) {
       double start = wall_seconds();
-      SSOLVE_PARALLEL_FOR
-      for (std::int64_t i = 0; i < n; ++i) c[i] = a[i];
+      double sum = 0.0;
+      SSOLVE_PARALLEL_SUM
+      for (std::int64_t i = 0; i < n; ++i) sum += a[i];
       kernels[0].best_seconds = std::min(kernels[0].best_seconds, wall_seconds() - start);
+      last_sum = sum;
 
       start = wall_seconds();
       SSOLVE_PARALLEL_FOR
-      for (std::int64_t i = 0; i < n; ++i) b[i] = s * c[i];
+      for (std::int64_t i = 0; i < n; ++i) c[i] = a[i];
       kernels[1].best_seconds = std::min(kernels[1].best_seconds, wall_seconds() - start);
 
       start = wall_seconds();
       SSOLVE_PARALLEL_FOR
-      for (std::int64_t i = 0; i < n; ++i) c[i] = a[i] + b[i];
+      for (std::int64_t i = 0; i < n; ++i) b[i] = s * c[i];
       kernels[2].best_seconds = std::min(kernels[2].best_seconds, wall_seconds() - start);
 
       start = wall_seconds();
       SSOLVE_PARALLEL_FOR
-      for (std::int64_t i = 0; i < n; ++i) a[i] = b[i] + s * c[i];
+      for (std::int64_t i = 0; i < n; ++i) c[i] = a[i] + b[i];
       kernels[3].best_seconds = std::min(kernels[3].best_seconds, wall_seconds() - start);
+
+      start = wall_seconds();
+      SSOLVE_PARALLEL_FOR
+      for (std::int64_t i = 0; i < n; ++i) a[i] = b[i] + s * c[i];
+      kernels[4].best_seconds = std::min(kernels[4].best_seconds, wall_seconds() - start);
     }
 
     // Standard STREAM validation: after `repeats` rounds the values are known in closed form.
-    double expected_a = 1.0, expected_b = 2.0, expected_c = 0.0;
+    double expected_a = 1.0, expected_b = 2.0, expected_c = 0.0, expected_sum = 0.0;
     for (int r = 0; r < repeats; ++r) {
+      expected_sum = static_cast<double>(n) * expected_a;
       expected_c = expected_a;
       expected_b = s * expected_c;
       expected_c = expected_a + expected_b;
       expected_a = expected_b + s * expected_c;
     }
-    if (a[n - 1] != expected_a || b[n - 1] != expected_b || c[n - 1] != expected_c) {
+    if (a[n - 1] != expected_a || b[n - 1] != expected_b || c[n - 1] != expected_c ||
+        std::fabs(last_sum - expected_sum) > 1e-8 * expected_sum) {
       throw std::runtime_error("STREAM results failed validation");
     }
 

@@ -6,6 +6,9 @@ that slows down mid-run affects them equally. A missing matrix file prints SKIP 
 failed or killed run prints FAILED. Either way the remaining matrices still run. The
 exit status is non-zero if any run failed or nothing ran.
 
+It refuses to run on battery, because that once made timings about twice as slow and far
+noisier. Pass --allow-battery to measure anyway. The power source is recorded in the CSV.
+
 Example:
   python3 scripts/run_bench.py --build ~/p08/build/release --solvers eigen-E0,ours \\
       --data-dir ~/p08/data --maxit 200 --out results/my-laptop/g1.csv
@@ -14,6 +17,7 @@ import argparse
 import json
 import os
 import pathlib
+import platform
 import shutil
 import subprocess
 import sys
@@ -44,6 +48,58 @@ def pin_prefix(pin):
     return ["taskset", "-c", pin]
 
 
+def power_from_windows(text):
+    """Maps Win32_Battery.BatteryStatus output to a power source. No output means no battery."""
+    words = text.split()
+    if not words:
+        return "ac"
+    return "battery" if words[0] in ("1", "4", "5") else "ac"
+
+
+def power_from_pmset(text):
+    if "AC Power" in text:
+        return "ac"
+    return "battery" if "Battery Power" in text else "unknown"
+
+
+def read_supply_file(path):
+    try:
+        return path.read_text(encoding="ascii").strip()
+    except OSError:
+        return ""
+
+
+def power_from_sysfs(base):
+    """Reads Linux's power supply directories: a mains supply decides, otherwise a discharging battery."""
+    base = pathlib.Path(base)
+    if not base.is_dir():
+        return "unknown"
+    supplies = list(base.iterdir())
+    online = [read_supply_file(s / "online") for s in supplies if read_supply_file(s / "type") == "Mains"]
+    status = [read_supply_file(s / "status") for s in supplies if read_supply_file(s / "type") == "Battery"]
+    if "1" in online:
+        return "ac"
+    return "battery" if "0" in online or "Discharging" in status else "unknown"
+
+
+def command_output(command):
+    try:
+        return subprocess.run(command, capture_output=True, text=True, timeout=30, check=True).stdout
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def detect_power():
+    if platform.system() == "Darwin":
+        output = command_output(["pmset", "-g", "ps"])
+        return "unknown" if output is None else power_from_pmset(output)
+    if "microsoft" in platform.release().lower():
+        windows = shutil.which("powershell.exe") or "/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
+        output = command_output([windows, "-NoProfile", "-Command", "(Get-CimInstance Win32_Battery).BatteryStatus"])
+        return "unknown" if output is None else power_from_windows(output)
+    return power_from_sysfs("/sys/class/power_supply")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--build", required=True, help="build directory holding bench_cg")
@@ -55,12 +111,24 @@ def main():
     parser.add_argument("--repeat", default="10")
     parser.add_argument("--warmup", default="1")
     parser.add_argument("--mode", choices=("solve", "fixed"), default="solve")
+    parser.add_argument("--problem", choices=("random", "a1", "unit"), default=None,
+                        help="right-hand side, passed to bench_cg, which defaults to random")
+    parser.add_argument("--power", choices=("auto", "ac", "battery", "unknown"), default="auto",
+                        help="power source to record; auto detects it")
+    parser.add_argument("--allow-battery", action="store_true", help="measure even on battery")
     parser.add_argument("--maxit", default=None)
     parser.add_argument("--tol", default=None)
     parser.add_argument("--matrices", default=None, help="comma-separated names; default is the whole suite")
     parser.add_argument("--timeout", type=float, default=None, help="seconds per matrix")
     parser.add_argument("--label", default=None)
     args = parser.parse_args()
+
+    power = detect_power() if args.power == "auto" else args.power
+    if power == "battery" and not args.allow_battery:
+        print("REFUSED: this machine is on battery. Plug in the charger, or pass --allow-battery.")
+        return 3
+    if power == "unknown":
+        print("NOTE: could not read the power source, so check that the charger is connected")
 
     with open(args.suite, encoding="utf-8") as f:
         suite = json.load(f)
@@ -78,7 +146,9 @@ def main():
             skipped += 1
             continue
         command = [*prefix, binary, "--matrix", spec, "--solver", args.solvers, "--repeat", args.repeat, "--csv", args.out]
-        command += ["--warmup", args.warmup, "--mode", args.mode]
+        command += ["--warmup", args.warmup, "--mode", args.mode, "--power", power]
+        if args.problem is not None:
+            command += ["--problem", args.problem]
         if args.maxit is not None:
             command += ["--maxit", args.maxit]
         if args.tol is not None:

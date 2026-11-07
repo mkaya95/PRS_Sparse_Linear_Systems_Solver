@@ -77,31 +77,18 @@ void spmv_reference(const CsrMatrix& a, const double* x, double* y) {
   }
 }
 
-template <class Ptr>
-double residual_impl(const CsrMatrixT<Ptr>& a, const double* b, const double* x) {
+double true_relative_residual(const CsrMatrix& a, const double* b, const double* x) {
   for (Index j = 0; j < a.n_cols; ++j) {
     if (!std::isfinite(x[j])) return std::numeric_limits<double>::quiet_NaN();
   }
   const std::size_t n = static_cast<std::size_t>(a.n_rows);
   std::vector<double> residual(n);
-  for (Index i = 0; i < a.n_rows; ++i) {
-    double sum = 0.0;
-    for (std::int64_t k = a.row_ptr[i]; k < a.row_ptr[i + 1]; ++k) sum += a.val[k] * x[a.col[k]];
-    residual[i] = sum;
-  }
+  spmv_reference(a, x, residual.data());
   for (std::size_t i = 0; i < n; ++i) residual[i] = b[i] - residual[i];
   const double residual_norm = scaled_norm(residual);
   const double rhs_norm = scaled_norm(std::vector<double>(b, b + n));
   if (rhs_norm == 0.0) return residual_norm;
   return residual_norm / rhs_norm;
-}
-
-double true_relative_residual(const CsrMatrix& a, const double* b, const double* x) {
-  return residual_impl(a, b, x);
-}
-
-double true_relative_residual(const CsrMatrix32& a, const double* b, const double* x) {
-  return residual_impl(a, b, x);
 }
 
 void verify_result(const CsrMatrix& a, const double* b, const double* x, const SolveOptions& options,

@@ -4,10 +4,9 @@
 //
 // Implementations take turns, kernel by kernel, and rotate who goes first each round, so
 // a machine that slows down mid-run affects them equally. SpMV swaps its input and output vectors between calls (Asudeh
-// et al. 2025), because a fixed x stays in cache in a way it never does inside CG. The
-// output is rescaled outside the timed region every 8 calls, so values stay finite.
+// et al. 2025), because a fixed x stays in cache in a way it never does inside CG. Outside the
+// timed region, each sample starts from the same vectors and SpMV output is rescaled every 8 calls.
 #include <algorithm>
-#include <cmath>
 #include <cstdio>
 #include <exception>
 #include <memory>
@@ -18,12 +17,12 @@
 #include <vector>
 
 #include "cli.hpp"
+#include "kernel_timing.hpp"
 #include "kernels.hpp"
 #include "ssolve/matrix_spec.hpp"
 #include "ssolve/aligned_array.hpp"
 #include "ssolve/csv.hpp"
 #include "ssolve/manifest.hpp"
-#include "ssolve/timer.hpp"
 #include "ssolve/verify.hpp"
 
 using namespace ssolve;
@@ -35,86 +34,6 @@ struct Implementation {
   std::string name;
   KernelSet kernels;
 };
-
-struct Vectors {
-  AlignedArray<double> x, y;
-  explicit Vectors(std::size_t n) : x(n), y(n) {
-    reset();
-  }
-  void reset() {
-    const std::size_t n = x.size();
-    for (std::size_t i = 0; i < n; ++i) {
-      x[i] = 1.0 + static_cast<double>(i % 7) / 7.0;
-      y[i] = 2.0 - static_cast<double>(i % 5) / 5.0;
-    }
-  }
-};
-
-void rescale(double* v, std::size_t n) {
-  double largest = 0.0;
-  for (std::size_t i = 0; i < n; ++i) {
-    if (!std::isfinite(v[i])) throw std::runtime_error("non-finite kernel output");
-    largest = std::fmax(largest, std::fabs(v[i]));
-  }
-  if (largest == 0.0) return;
-  for (std::size_t i = 0; i < n; ++i) v[i] /= largest;
-}
-
-struct Sample {
-  double seconds_per_call;
-  long long calls;
-};
-
-// Times only `call`, until min_seconds have been timed and at least kMinCalls calls were made.
-// `between` runs untimed after each call.
-constexpr long long kMinCalls = 4;
-
-template <class Call, class Between>
-Sample timed_calls(double min_seconds, Call call, Between between) {
-  double timed = 0.0;
-  long long calls = 0;
-  do {
-    const double start = wall_seconds();
-    call(calls);
-    timed += wall_seconds() - start;
-    ++calls;
-    between(calls);
-  } while (timed < min_seconds || calls < kMinCalls);
-  return {timed / static_cast<double>(calls), calls};
-}
-
-template <class Call>
-Sample timed_calls(double min_seconds, Call call) {
-  return timed_calls(min_seconds, call, [](long long) {});
-}
-
-volatile double sink;  // keeps the compiler from removing kernels whose result is unused
-
-Sample measure(const std::string& kernel, const KernelSet& k, Vectors& v, std::size_t n, double min_seconds) {
-  double* x = v.x.data();
-  double* y = v.y.data();
-  if (kernel == "spmv") {
-    return timed_calls(
-        min_seconds, [&](long long) { k.spmv(x, y); },
-        [&](long long calls) {
-          std::swap(x, y);
-          if (calls % 8 == 0) rescale(x, n);
-        });
-  }
-  if (kernel == "dot") {
-    return timed_calls(min_seconds, [&](long long) { sink = k.dot(x, y); });
-  }
-  if (kernel == "axpy") {
-    return timed_calls(min_seconds, [&](long long call) { k.axpy(call % 2 == 0 ? 1e-3 : -1e-3, x, y); });
-  }
-  if (kernel == "norm2") {
-    return timed_calls(min_seconds, [&](long long) { sink = k.norm2(x); });
-  }
-  if (kernel == "xpby") {
-    return timed_calls(min_seconds, [&](long long) { k.xpby(x, 0.5, y); });
-  }
-  throw std::logic_error("unknown kernel " + kernel);
-}
 
 // Bytes each kernel must move at minimum, the same for every implementation.
 double kernel_bytes(const std::string& kernel, double n, double nnz) {
@@ -165,13 +84,7 @@ int main(int argc, char** argv) {
       if (repeat > 0) std::rotate(implementations.begin(), implementations.begin() + 1, implementations.end());
       for (const char* kernel : {"spmv", "dot", "axpy", "norm2", "xpby"}) {
         for (const Implementation& impl : implementations) {
-          vectors.reset();
-          const Sample sample = measure(kernel, impl.kernels, vectors, n, min_seconds);
-          for (std::size_t i = 0; i < n; ++i) {
-            if (!std::isfinite(vectors.x[i]) || !std::isfinite(vectors.y[i])) {
-              throw std::runtime_error("non-finite kernel output");
-            }
-          }
+          const Sample sample = measure_kernel(kernel, impl.kernels, vectors, min_seconds);
           if (repeat < 0) continue;
           const double bytes = kernel_bytes(kernel, static_cast<double>(n), static_cast<double>(a.nnz()));
           const double gb_per_s = bytes / 1e9 / sample.seconds_per_call;

@@ -8,7 +8,7 @@
 namespace ssolve {
 
 enum class SolveStatus {
-  Converged,      // true residual verified against tolerance
+  Converged,      // recursive residual met tol, and the true residual too once verified
   MaxIterations,  // ran out of iterations
   Breakdown,      // invalid curvature or non-finite arithmetic
   ResidualFailure // recursive convergence failed independent verification
@@ -28,9 +28,19 @@ inline const char* to_string(SolveStatus status) {
   return "Unknown";
 }
 
-enum class Precond { None, Jacobi };
+enum class Precond { None, Jacobi, IncompleteCholesky };
 
-inline const char* to_string(Precond precond) { return precond == Precond::None ? "none" : "jacobi"; }
+inline const char* to_string(Precond precond) {
+  switch (precond) {
+    case Precond::None:
+      return "none";
+    case Precond::Jacobi:
+      return "jacobi";
+    case Precond::IncompleteCholesky:
+      return "incomplete-cholesky";
+  }
+  return "unknown";
+}
 
 struct SolveOptions {
   double tol = 1e-8;

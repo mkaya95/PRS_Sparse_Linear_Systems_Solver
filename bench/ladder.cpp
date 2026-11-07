@@ -302,7 +302,7 @@ SolveResult run_backend(const CsrMatrix& a, const double* b, double* x, const So
     backend->set_zero(x);
     used.use_initial_guess = true;
   }
-  SolveResult result = cg(*backend, P == Precond::Jacobi ? inv_diag.data() : nullptr, b, x, used);
+  SolveResult result = verified_cg(a, *backend, P == Precond::Jacobi ? inv_diag.data() : nullptr, b, x, used);
   result.setup_seconds = setup_seconds;
   return result;
 }
