@@ -550,18 +550,19 @@ function readProgress(lines) {
   }
 }
 
-// Lights the flow for what is happening now: ink while reading, orange while our solver runs,
-// blue while Eigen's does. Earlier stages get a double border. null clears it.
+// Lights the stages happening now in ink, with a pulsing ring: orange on the solve stages while our
+// solver runs, blue while Eigen's does, ink elsewhere. Earlier stages get a double border. null clears it.
 function setFlow(now) {
   const order = ["read", "solve", "check"];
   const at = now ? order.indexOf(now.stage) : -1;
   $$("#flow .box").forEach((box) => {
     const phase = order.indexOf(box.dataset.phase);
-    // Recording the curve runs our solver again, so the solve boxes stay lit during the check.
-    const active = at >= 0 && (phase === at || (now.stage === "check" && phase === 1));
-    box.classList.toggle("on", active && now.stage === "read");
-    box.classList.toggle("ours", active && now.who === "ours");
-    box.classList.toggle("eigen", active && now.who === "eigen");
+    // Recording the curve runs our solver again, so the solve stages stay lit during the check.
+    const active = at >= 0 && !box.classList.contains("skip") && (phase === at || (now.stage === "check" && phase === 1));
+    const accent = active && phase === 1 ? now.who : null;
+    box.classList.toggle("on", active);
+    box.classList.toggle("ours", accent === "ours");
+    box.classList.toggle("eigen", accent === "eigen");
     box.classList.toggle("done", Boolean(now) && (now.stage === "done" || (at >= 0 && phase < at && !active)));
   });
   const live = at >= 0;
