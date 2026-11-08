@@ -550,26 +550,23 @@ function readProgress(lines) {
   }
 }
 
-// Lights the stages happening now in ink, with a pulsing ring: orange on the solve stages while our
-// solver runs, blue while Eigen's does, ink elsewhere. Earlier stages get a double border. null clears it.
+// Marks the stages happening now: the solve stages get a pulsing border in the running solver's
+// colour, orange for ours and blue for Eigen; reading and checking are filled in ink. Earlier stages
+// get a double border. null clears it.
 function setFlow(now) {
   const order = ["read", "solve", "check"];
   const at = now ? order.indexOf(now.stage) : -1;
   $$("#flow .box").forEach((box) => {
     const phase = order.indexOf(box.dataset.phase);
-    // Recording the curve runs our solver again, so the solve stages stay lit during the check.
+    // Recording the curve runs our solver again, so the solve stages stay marked during the check.
     const active = at >= 0 && !box.classList.contains("skip") && (phase === at || (now.stage === "check" && phase === 1));
-    const accent = active && phase === 1 ? now.who : null;
-    box.classList.toggle("on", active);
-    box.classList.toggle("ours", accent === "ours");
-    box.classList.toggle("eigen", accent === "eigen");
+    const solver = active && phase === 1 ? now.who : null;
+    box.classList.toggle("on", active && !solver);
+    box.classList.toggle("ours", solver === "ours");
+    box.classList.toggle("eigen", solver === "eigen");
     box.classList.toggle("done", Boolean(now) && (now.stage === "done" || (at >= 0 && phase < at && !active)));
   });
-  const live = at >= 0;
-  $("#flow-now").innerHTML = live ? `<span class="sw ${now.who || "read"}"></span>Now: ${esc(now.text)}` : "";
-  ["ours", "eigen"].forEach((who) => {
-    if (live) $(`#lane-${who}`).classList.toggle("waiting", now.stage === "solve" && now.who === who);
-  });
+  $("#flow-now").innerHTML = at >= 0 ? `<span class="sw ${now.who || "read"}"></span>Now: ${esc(now.text)}` : "";
 }
 
 function clearDemo() {
@@ -603,8 +600,8 @@ function renderDemoProgress(job) {
   if (race && race.state === "running") {
     setFlow(ui.demoNow || { stage: "read", who: null, text: "starting" });
     $("#demo-status").textContent = `Warm-up, then two timed rounds each · ${clock(race.elapsed)}`;
+    ["#lane-ours", "#lane-eigen"].forEach((id) => $(id).classList.add("waiting"));
   } else if (curve && curve.state === "running") {
-    ["ours", "eigen"].forEach((who) => $(`#lane-${who}`).classList.remove("waiting"));
     setFlow({ stage: "check", who: "ours", text: "our solver again, recording the error curve and checking the answer, untimed" });
     $("#demo-status").textContent = `Timed. Now recording the error curve · ${clock(curve.elapsed)}`;
   }
