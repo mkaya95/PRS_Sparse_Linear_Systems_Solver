@@ -1,8 +1,9 @@
 """The live demo: our solver and Eigen on the same problem, then our convergence curve.
 
 The timed part is bench_cg exactly as the benchmarks use it: one warm-up, then two measured rounds
-that take turns going first, compared by summarize.py's paired ratio. The curve comes from a
-separate, untimed solve run on the same right-hand side, so recording it never touches the timing.
+that take turns going first, compared by summarize.py's paired ratio. Its --progress lines, printed
+outside the timed regions, tell the page which solver is running. The curve comes from a separate,
+untimed solve run on the same right-hand side, so recording it never touches the timing.
 """
 import csv
 import json
@@ -59,7 +60,7 @@ def plan(release, spec, precond):
     steps = [
         {"id": "race", "title": "Head to head", "commands": [command([
             release / "bench_cg", "--matrix", spec, "--solver", f"{ours},{eigen}", "--tol", TOL,
-            "--warmup", "1", "--repeat", "2", "--problem", "random", "--csv", csv_path])]},
+            "--warmup", "1", "--repeat", "2", "--problem", "random", "--csv", csv_path, "--progress", "1"])]},
         {"id": "curve", "title": "Error curve", "commands": [command([
             release / "solve", "--matrix", spec, "--precond", precond, "--problem", "random", "--tol", TOL,
             "--history", history_path])]},

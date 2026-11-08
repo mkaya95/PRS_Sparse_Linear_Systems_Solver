@@ -93,6 +93,8 @@ add_executable(bench_kernels apps/bench_kernels.cpp)
 target_link_libraries(bench_kernels PRIVATE ssolve_bench)
 add_executable(solve apps/solve.cpp)
 target_link_libraries(solve PRIVATE ssolve)
+add_executable(matrix_preview apps/matrix_preview.cpp)
+target_link_libraries(matrix_preview PRIVATE ssolve)
 
 enable_testing()
 

@@ -122,3 +122,39 @@ def all_machines(results_dir=None):
         return []
     return [machine(folder) for folder in sorted(base.iterdir())
             if folder.is_dir() and any((folder / name).exists() for name in (SPEED_CSV, ACCURACY_CSV, LADDER_CSV))]
+
+
+def one_matrix_run(path):
+    """A one-MATRIX-TEST.csv from the Run tab, judged by the same gate as the full step."""
+    test = path.stem.rsplit("-", 1)[1]
+    if test == "speed":
+        groups = summarize.load_groups([str(path)], "per_spmv_s")
+        pairs = [(name, base, ours, True) for base, ours, name in SPEED_PAIRS]
+    else:
+        groups = summarize.load_groups([str(path)], "solve_s")
+        pairs = [("Jacobi", *ACCURACY_PAIR, False)]
+    out = []
+    for name, base, ours, speed in pairs:
+        rows, _ = gate_rows(groups, base, ours, speed)
+        if rows:
+            out.append({"name": name, "ratio": rows[0].get("ratio"), "ok": rows[0]["ok"]})
+    matrices = [m for m, _ in groups]
+    return {"matrix": matrices[0] if matrices else path.stem, "pairs": out,
+            "passed": bool(out) and all(p["ok"] for p in out)}
+
+
+def one_matrix_runs(results_dir=None):
+    """Every results/<name>/one-*.csv, newest first. These never count towards the G1 gates."""
+    base = results_dir or ROOT / "results"
+    runs = []
+    for path in sorted(base.glob("*/one-*-*.csv"), key=lambda p: p.stat().st_mtime, reverse=True):
+        test = path.stem.rsplit("-", 1)[1]
+        if test not in ("speed", "accuracy"):
+            continue
+        entry = {"results": path.parent.name, "file": path.name, "test": test, "matrix": path.stem}
+        try:
+            entry.update(one_matrix_run(path))
+        except (ValueError, KeyError, OSError, IndexError) as error:
+            entry.update(error=str(error), pairs=[], passed=False)
+        runs.append(entry)
+    return runs

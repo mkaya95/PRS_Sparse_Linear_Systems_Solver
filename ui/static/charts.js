@@ -1,4 +1,4 @@
-// Hand-drawn SVG charts for the training log. Each function returns an SVG string.
+// Hand-drawn SVG charts for the SM Solver page. Each function returns an SVG string.
 // Marks carry data-tip text, which the page shows as a tooltip on hover.
 "use strict";
 
@@ -206,5 +206,56 @@ const Charts = (() => {
     return svg(W, H, s, label);
   }
 
-  return { ratioDots, timeBars, ladder, machines, residual, colors: C };
+  // One-hue magenta ramp, light to dark, for "how much": kept apart from the orange and blue that
+  // mean ours and Eigen everywhere else. The light end still stands out from the paper.
+  const RAMP = ["#efc6db", "#e39cc2", "#d670a7", "#c7438d", "#b31f78", "#8a135c", "#5c0b3d"];
+  const RAMP_RGB = RAMP.map((h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)));
+
+  function ramp(t) {
+    const x = Math.min(1, Math.max(0, t)) * (RAMP_RGB.length - 1);
+    const i = Math.min(RAMP_RGB.length - 2, Math.floor(x)), f = x - i;
+    return RAMP_RGB[i].map((v, k) => Math.round(v + (RAMP_RGB[i + 1][k] - v) * f));
+  }
+
+  // Paints the block counts onto a canvas, one pixel per block (CSS scales it up). Empty blocks stay
+  // clear, so the paper shows through; the shade grows with the log of the count.
+  function paintDensity(canvas, drawing) {
+    const g = drawing.grid;
+    canvas.width = g;
+    canvas.height = g;
+    const ctx = canvas.getContext("2d");
+    const image = ctx.createImageData(g, g);
+    const max = drawing.cells.reduce((m, c) => Math.max(m, c), 1);
+    drawing.cells.forEach((count, k) => {
+      if (!count) return;
+      const [r, gr, b] = ramp(max > 1 ? Math.log(count) / Math.log(max) : 1);
+      image.data.set([r, gr, b, 255], k * 4);
+    });
+    ctx.putImageData(image, 0, 0);
+  }
+
+  // The rows and columns a block covers: block b holds every i with floor(i * g / n) = b.
+  function blockRange(b, g, n) {
+    return [Math.ceil((b * n) / g), Math.ceil(((b + 1) * n) / g) - 1];
+  }
+
+  // The top-left corner entry by entry, shaded by |value|, with each entry's value as its tooltip.
+  function zoom(drawing, label) {
+    const k = drawing.zoom.size, S = 400, cell = S / k, P = 26;
+    const big = drawing.zoom.entries.reduce((m, e) => Math.max(m, Math.abs(e[2] ?? 0)), 0) || 1;
+    let s = `<rect x="${P}" y="${P}" width="${S}" height="${S}" fill="#f3ede0" stroke="${C.ink}"/>`;
+    for (const t of [0, k - 1]) {
+      s += text(P + (t + 0.5) * cell, P - 8, String(t), `class="tick" text-anchor="middle"`);
+      s += text(P - 6, P + (t + 0.5) * cell + 3, String(t), `class="tick" text-anchor="end"`);
+    }
+    s += text(P + S / 2, P - 8, "column", `class="axis" text-anchor="middle"`);
+    for (const [i, j, v] of drawing.zoom.entries) {
+      const [r, g, b] = ramp(v == null ? 0 : Math.abs(v) / big);
+      const gap = cell > 6 ? 1 : 0;
+      s += `<rect x="${(P + j * cell + gap / 2).toFixed(2)}" y="${(P + i * cell + gap / 2).toFixed(2)}" width="${(cell - gap).toFixed(2)}" height="${(cell - gap).toFixed(2)}" rx="${cell > 8 ? 1.5 : 0}" fill="rgb(${r},${g},${b})" data-tip="${esc(`row ${i}, column ${j}: ${v == null ? "not finite" : +v.toPrecision(6)}`)}"/>`;
+    }
+    return svg(S + P + 4, S + P + 4, s, label);
+  }
+
+  return { ratioDots, timeBars, ladder, machines, residual, paintDensity, blockRange, zoom, ramp: RAMP, colors: C };
 })();

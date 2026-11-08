@@ -24,6 +24,8 @@ SINGLE_TESTS = {"speed": "Speed", "accuracy": "Accuracy"}
 
 MACHINE_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 COMPILER_PATTERN = re.compile(r"^[A-Za-z0-9._+/-]{1,200}$")
+# The page's names for the settings. "machine" names the results/ folder, so the page calls it that.
+LABELS = {"machine": "results name", "build": "build folder", "data": "matrices folder", "compiler": "compiler"}
 
 
 class SettingsError(ValueError):
@@ -90,13 +92,13 @@ def validate(settings):
     for key in ("machine", "build", "data", "compiler"):
         value = settings.get(key, "")
         if not isinstance(value, str) or not value.strip():
-            raise SettingsError(f"{key} is empty")
+            raise SettingsError(f"{LABELS[key]} is empty")
         value = value.strip()
         if "\x00" in value or "\n" in value:
-            raise SettingsError(f"{key} contains a control character")
+            raise SettingsError(f"{LABELS[key]} contains a control character")
         clean[key] = value
     if not MACHINE_PATTERN.match(clean["machine"]):
-        raise SettingsError("machine name may use letters, digits, '.', '_' and '-' only")
+        raise SettingsError("results name may use letters, digits, '.', '_' and '-' only")
     if not COMPILER_PATTERN.match(clean["compiler"]):
         raise SettingsError("compiler must be a program name or path, such as g++ or g++-14")
     return clean
@@ -110,7 +112,6 @@ def paths(settings):
         "data": resolve(settings["data"]),
         "results": ROOT / "results" / settings["machine"],
         "last_demo": build / "ui-last-demo.json",
-        "single": build / "ui-single",
     }
 
 
@@ -181,13 +182,18 @@ def single_choices(settings):
         suite = json.load(f)
     files = {entry["name"] for entry in suite.get("files", [])}
     accuracy = ACCURACY_MATRICES.split(",")
-    return [{"name": name, "generated": name not in files, "available": spec is not None,
+    return [{"name": name, "spec": spec, "generated": name not in files, "available": spec is not None,
              "tests": ["speed", "accuracy"] if name in accuracy else ["speed"]}
             for name, spec in run_bench.matrix_specs(suite, str(paths(settings)["data"]))]
 
 
+def single_out(results, name, test):
+    """results/<name>/one-MATRIX-TEST.csv: beside the full results, never one of their files."""
+    return results / f"one-{re.sub(r'[^A-Za-z0-9._-]', '_', name)}-{test}.csv"
+
+
 def single_step(settings, name, test):
-    """The Speed or Accuracy step on one matrix, writing to a scratch file outside results/.
+    """The Speed or Accuracy step on one matrix, saved in this results folder under its own name.
     The choice is checked here; whether the file is downloaded is left to the caller."""
     choice = next((c for c in single_choices(settings) if c["name"] == name), None)
     if choice is None:
@@ -197,10 +203,10 @@ def single_step(settings, name, test):
     if test not in choice["tests"]:
         raise SettingsError("accuracy runs only on the six matrices the Accuracy step uses")
     p = paths(settings)
-    out = p["single"] / f"{re.sub(r'[^A-Za-z0-9._-]', '_', name)}-{test}.csv"
+    out = single_out(p["results"], name, test)
     build = speed_commands if test == "speed" else accuracy_commands
     return {"id": "single", "title": f"{SINGLE_TESTS[test]} on {name}",
-            "commands": build(p["release"], p["data"], out, name), "replaces": [], "scratch": out,
+            "commands": build(p["release"], p["data"], out, name), "replaces": [out],
             "available": choice["available"]}
 
 

@@ -61,7 +61,7 @@ Start the page where the solver builds, on Linux, WSL2 or macOS, and open the ad
 python3 ui/server.py
 ```
 
-The Run tab runs the steps below with your settings and shows each exact command. Its One matrix box runs the speed or accuracy step on a single matrix and saves the CSV in the build folder, not in `results/`. The Results tab charts every machine in `results/`, and the Demo tab solves one problem with our solver and with Eigen. Use `--port` to pick another port. The page answers only on this computer.
+The Run tab runs the steps below with your settings and shows each exact command. Its One matrix box runs the speed or accuracy step on a single matrix and saves the CSV as `results/NAME/one-MATRIX-TEST.csv`, apart from the full results. The Results tab charts every machine in `results/`, the Matrices tab draws the non-zero pattern of each test matrix, and the Demo tab solves one problem with our solver and with Eigen. Use `--port` to pick another port. The page answers only on this computer.
 
 ## Run the benchmarks
 

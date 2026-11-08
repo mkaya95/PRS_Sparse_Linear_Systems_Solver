@@ -20,6 +20,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
 import demo  # noqa: E402
+import matrices  # noqa: E402
 import results  # noqa: E402
 import steps  # noqa: E402
 from jobs import Busy, Job, Runner  # noqa: E402
@@ -50,16 +51,31 @@ def preview(data):
         out.append({"id": step["id"], "title": step["title"], "about": step["about"], "minutes": step["minutes"],
                     "commands": [steps.display(c["argv"]) for c in step["commands"]],
                     "existing": [steps.display([str(p)]) for p in step["replaces"] if p.exists()]})
-    single = {"choices": steps.single_choices(settings), "commands": [], "scratch": None}
+    single = {"choices": steps.single_choices(settings), "commands": [], "out": None, "exists": False}
     wanted = data.get("single")
     if isinstance(wanted, dict):
         try:
             step = steps.single_step(settings, wanted.get("matrix"), wanted.get("test"))
             single.update(commands=[steps.display(c["argv"]) for c in step["commands"]],
-                          scratch=steps.display([str(step["scratch"])]))
+                          out=steps.display([str(step["replaces"][0])]), exists=step["replaces"][0].exists())
         except steps.SettingsError as error:
             single["error"] = str(error)
     return {"steps": out, "single": single}
+
+
+def confirm_replacing(paths, data):
+    """Refuses to overwrite earlier results unless the page confirmed it; returns the removal to run."""
+    existing = [p for p in paths if p.exists()]
+    if existing and not data.get("replace"):
+        raise ClientError("these results already exist", HTTPStatus.CONFLICT,
+                          {"existing": [steps.display([str(p)]) for p in existing]})
+
+    def before(job):
+        for path in existing:
+            job.say(f"Removing the earlier result {steps.display([str(path)])}, as confirmed")
+            path.unlink()
+
+    return before if existing else None
 
 
 def start_run(data):
@@ -70,22 +86,13 @@ def start_run(data):
     if not isinstance(wanted, list) or not wanted or any(w not in ids for w in wanted):
         raise ClientError("unknown step")
     chosen = [s for s in every if s["id"] in wanted]
-    existing = [p for s in chosen for p in s["replaces"] if p.exists()]
-    if existing and not data.get("replace"):
-        raise ClientError("these results already exist", HTTPStatus.CONFLICT,
-                          {"existing": [steps.display([str(p)]) for p in existing]})
-
-    def before(job):
-        for path in existing:
-            job.say(f"Removing the earlier result {steps.display([str(path)])}, as confirmed")
-            path.unlink()
-
-    return RUNNER.start(Job("run", chosen, before=before if existing else None))
+    before = confirm_replacing([p for s in chosen for p in s["replaces"]], data)
+    return RUNNER.start(Job("run", chosen, before=before))
 
 
 def start_single(data):
-    """One matrix through the Speed or Accuracy step. Its scratch file is started afresh each time,
-    because a CSV from an earlier commit would be rejected rather than pooled."""
+    """One matrix through the Speed or Accuracy step, into results/<name>/one-MATRIX-TEST.csv. An
+    earlier file is replaced only when confirmed, as for the full steps."""
     settings = settings_from(data)
     try:
         step = steps.single_step(settings, data.get("matrix"), data.get("test"))
@@ -98,12 +105,7 @@ def start_single(data):
     if not (paths["release"] / "bench_cg").exists():
         raise ClientError(f"bench_cg is not built in {steps.display([str(paths['release'])])}. "
                           "Run the Build step first.")
-    scratch = step["scratch"]
-
-    def before(job):
-        job.say(f"Scratch file, outside results/: {steps.display([str(scratch)])}")
-        scratch.unlink(missing_ok=True)
-
+    before = confirm_replacing(step["replaces"], data)
     return RUNNER.start(Job("single", [step], before=before))
 
 
@@ -134,8 +136,33 @@ def start_demo(data):
     return RUNNER.start(Job("demo", plan_steps, finish=finish_and_record, cleanup=cleanup))
 
 
+def settings_from_query(query):
+    return settings_from({"settings": {k: query.get(k, [""])[0] for k in ("machine", "build", "data", "compiler")}})
+
+
+def matrix_list(query):
+    settings = settings_from_query(query)
+    return {"matrices": matrices.listing(settings),
+            "tool": (steps.paths(settings)["release"] / "matrix_preview").exists()}
+
+
+def start_drawings(data):
+    settings = settings_from(data)
+    release = steps.paths(settings)["release"]
+    if not (release / "matrix_preview").exists():
+        raise ClientError(f"matrix_preview is not built in {steps.display([str(release)])}. Run the Build step first.")
+    names = data.get("names")
+    if names is not None and not (isinstance(names, list) and all(isinstance(n, str) for n in names)):
+        raise ClientError("names must be a list of matrix names")
+    plan_steps = matrices.plan(settings, names)
+    if not plan_steps:
+        raise ClientError("every downloaded matrix is already drawn")
+    matrices.drawings_dir(settings).mkdir(parents=True, exist_ok=True)
+    return RUNNER.start(Job("drawings", plan_steps))
+
+
 def last_demo(query):
-    settings = settings_from({"settings": {k: query.get(k, [""])[0] for k in ("machine", "build", "data", "compiler")}})
+    settings = settings_from_query(query)
     path = steps.paths(settings)["last_demo"]
     try:
         return {"last": json.loads(path.read_text(encoding="utf-8"))}
@@ -187,11 +214,13 @@ class Handler(BaseHTTPRequestHandler):
                 offset = int(query.get("offset", ["0"])[0])
                 return self.send_json({"job": job.snapshot(offset) if job else None})
             if url.path == "/api/results":
-                return self.send_json({"machines": results.all_machines()})
+                return self.send_json({"machines": results.all_machines(), "single": results.one_matrix_runs()})
             if url.path == "/api/demo/choices":
                 return self.send_json(demo_choices(query))
             if url.path == "/api/demo/last":
                 return self.send_json(last_demo(query))
+            if url.path == "/api/matrices":
+                return self.send_json(matrix_list(query))
         except ClientError as error:
             return self.send_error_json(str(error), error.status, error.extra)
         except ValueError as error:
@@ -219,6 +248,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json({"job": job.snapshot()})
             if path == "/api/demo":
                 job = start_demo(data)
+                return self.send_json({"job": job.snapshot()})
+            if path == "/api/drawings":
+                job = start_drawings(data)
                 return self.send_json({"job": job.snapshot()})
             if path == "/api/stop":
                 return self.send_json({"stopping": RUNNER.stop()})
@@ -261,7 +293,7 @@ def main():
     except OSError as error:
         print(f"Cannot listen on port {args.port}: {error.strerror}. Try --port {args.port + 1}.")
         return 1
-    print(f"P08 UI running. Open http://localhost:{server.server_address[1]}/ in your browser. Ctrl+C stops it.",
+    print(f"SM Solver UI running. Open http://localhost:{server.server_address[1]}/ in your browser. Ctrl+C stops it.",
           flush=True)
     try:
         server.serve_forever()

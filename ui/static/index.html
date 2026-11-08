@@ -3,15 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Training log · P08</title>
+  <title>SM Solver</title>
   <link rel="stylesheet" href="app.css">
 </head>
 <body>
   <header class="masthead">
-    <h1>Training log <span class="dash">&mdash;</span> P08</h1>
+    <h1>SM Solver</h1>
     <nav class="tabs" role="tablist">
       <button role="tab" data-tab="run">Run</button>
       <button role="tab" data-tab="results">Results</button>
+      <button role="tab" data-tab="matrices">Matrices</button>
       <button role="tab" data-tab="demo">Demo</button>
     </nav>
     <span class="machine-tag" id="machine-tag"></span>
@@ -21,7 +22,7 @@
     <!-- RUN -->
     <section id="tab-run" class="tab-panel" role="tabpanel" hidden>
       <form class="settings" id="settings" autocomplete="off">
-        <label>Machine name <input name="machine" spellcheck="false" required></label>
+        <label>Results name <input name="machine" spellcheck="false" required></label>
         <label>Build folder <input name="build" spellcheck="false" required></label>
         <label>Matrices in <input name="data" spellcheck="false" required></label>
         <label>Compiler <input name="compiler" spellcheck="false" required></label>
@@ -96,6 +97,41 @@
         <figcaption>Machines side by side</figcaption>
         <div id="machines-chart"></div>
       </figure>
+
+      <figure id="single-figure" hidden>
+        <figcaption>One-matrix runs</figcaption>
+        <table class="plain" id="single-runs"></table>
+        <p class="note">From the One matrix box on the Run tab. They use the same gate as the full step but never count towards G1.</p>
+      </figure>
+    </section>
+
+    <!-- MATRICES -->
+    <section id="tab-matrices" class="tab-panel" role="tabpanel" hidden>
+      <div class="actions">
+        <button class="btn go" id="draw-all">Draw matrices</button>
+        <span class="status" id="matrices-status"></span>
+      </div>
+      <p class="note">The real matrices have up to 78 million non-zeros, too many to draw one by one. Each picture cuts the matrix into 160 &times; 160 blocks and shades every block by how many non-zeros it holds. The close-up shows the top-left corner entry by entry.</p>
+
+      <div class="matrix-detail" id="matrix-detail" hidden>
+        <h2 class="matrix-name" id="matrix-name"></h2>
+        <p class="matrix-about" id="matrix-about"></p>
+        <div class="matrix-pictures">
+          <figure>
+            <figcaption>Whole matrix, by block</figcaption>
+            <div class="density-frame"><canvas id="density" class="density" aria-label="non-zero pattern of the whole matrix"></canvas></div>
+            <div class="ramp-legend"><span>1 non-zero</span><i class="ramp"></i><span id="density-max"></span></div>
+          </figure>
+          <figure>
+            <figcaption id="zoom-caption">Top-left corner, entry by entry</figcaption>
+            <div id="zoom"></div>
+            <div class="ramp-legend"><span>small |value|</span><i class="ramp"></i><span>large</span></div>
+          </figure>
+          <table class="plain facts" id="matrix-facts"></table>
+        </div>
+      </div>
+
+      <div class="matrix-cards" id="matrix-cards"></div>
     </section>
 
     <!-- DEMO -->
@@ -111,10 +147,11 @@
       <div class="flow" id="flow">
         <div class="box" data-phase="read">Read matrix<small>.mtx or generated</small></div><span class="arr">&rarr;</span>
         <div class="box" data-phase="read">Store as CSR<small>rows, columns, values</small></div><span class="arr">&rarr;</span>
-        <div class="box" data-phase="race" id="jacobi-box">Jacobi<small>scale by 1/diagonal</small></div><span class="arr">&rarr;</span>
-        <div class="box" data-phase="race">CG loop<small>multiply, dot, update</small></div><span class="arr">&rarr;</span>
+        <div class="box" data-phase="solve" id="jacobi-box">Jacobi<small>scale by 1/diagonal</small></div><span class="arr">&rarr;</span>
+        <div class="box" data-phase="solve">CG loop<small>multiply, dot, update</small></div><span class="arr">&rarr;</span>
         <div class="box" data-phase="check">Check answer<small>true error &le; 1e-8</small></div>
       </div>
+      <div class="now" id="flow-now" aria-live="polite"></div>
 
       <div class="label">2 &middot; Head to head on the same problem</div>
       <div class="lane"><b>ours</b><div class="track"><div class="fill ours" id="lane-ours"></div></div><span id="time-ours"></span></div>
@@ -140,7 +177,7 @@
   <dialog id="confirm">
     <form method="dialog">
       <h2>Replace the earlier result?</h2>
-      <p>This machine already has:</p>
+      <p>This results folder already has:</p>
       <ul id="confirm-files"></ul>
       <p>Running again deletes it and measures from scratch.</p>
       <div class="actions">
