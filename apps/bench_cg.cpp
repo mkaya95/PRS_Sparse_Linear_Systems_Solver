@@ -2,11 +2,14 @@
 //
 // Usage: bench_cg --matrix SPEC --solver NAME[,NAME...] [--tol 1e-8] [--maxit N] [--repeat 10]
 //                 [--warmup 1] [--mode solve|fixed] [--problem random|a1|unit] [--power TEXT]
-//                 [--csv FILE] [--label TEXT]
+//                 [--csv FILE] [--label TEXT] [--progress 0|1]
 //
 // Solvers take turns round by round (A, B, then B, A, ...), so a machine that slows down
 // mid-run affects them equally and none always goes first. A solver that fails is reported
 // and dropped, the others continue, and the exit status is then 1.
+//
+// --progress 1 names each stage on stderr ("progress: solve ours round 1 of 2") before it starts,
+// outside every timed region, so a viewer such as the browser demo can follow along.
 //
 // The problem sets the right-hand side: b = A·x for a fixed random x (the default), b = A·1, or b = 1.
 // The rows of A·1 can nearly cancel, which puts the tolerance out of reach on some real matrices.
@@ -38,11 +41,16 @@ using namespace ssolve_bench;
 int main(int argc, char** argv) {
   try {
     const ssolve_cli::Args args(argc, argv, {"matrix", "solver", "tol", "maxit", "repeat", "warmup", "mode", "problem",
-                                             "power", "csv", "label"});
+                                             "power", "csv", "label", "progress"});
     const std::string spec = args.required("matrix");
     const std::string solver_list = args.required("solver");
     const int repeats = args.get_count("repeat", 10, 1);
     const int warmups = args.get_count("warmup", 1);
+    const int progress = args.get_count("progress", 0);
+    if (progress > 1) throw std::runtime_error("--progress must be 0 or 1");
+    const auto say = [progress](const std::string& stage) {
+      if (progress != 0) std::fprintf(stderr, "progress: %s\n", stage.c_str());
+    };
     const std::string problem = args.get("problem", "random");
     const std::string mode = args.get("mode", "solve");
     if (mode != "solve" && mode != "fixed") throw std::runtime_error("--mode must be solve or fixed");
@@ -53,6 +61,7 @@ int main(int argc, char** argv) {
     validate_options(options);
     if (mode == "fixed" && options.max_iterations == 0) throw std::runtime_error("fixed mode needs --maxit");
 
+    say("read");
     const double preparation_start = wall_seconds();
     const CsrMatrix a = load_matrix_spec(spec);
     validate_cg_matrix(a);
@@ -151,6 +160,9 @@ int main(int argc, char** argv) {
       // Rotate who goes first, because the first run in a round is measurably slower.
       if (repeat > 0 && !solvers.empty()) std::rotate(solvers.begin(), solvers.begin() + 1, solvers.end());
       for (auto solver = solvers.begin(); solver != solvers.end();) {
+        say("solve " + solver->name +
+            (repeat < 0 ? std::string(" warmup")
+                        : " round " + std::to_string(repeat + 1) + " of " + std::to_string(repeats)));
         try {
           run_once(*solver, repeat);
           ++solver;

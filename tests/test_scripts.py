@@ -562,6 +562,34 @@ class PreconditionerColumn(unittest.TestCase):
         )
 
 
+class Progress(unittest.TestCase):
+    def bench(self, *extra):
+        return subprocess.run(
+            [os.path.join(BUILD_DIR, "bench_cg"), "--matrix", "poisson2d:12", "--solver", "ours,eigen-E0",
+             "--warmup", "1", "--repeat", "2", *extra],
+            capture_output=True,
+            text=True,
+        )
+
+    def test_progress_names_each_stage_before_it_starts(self):
+        done = self.bench("--progress", "1")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        stages = [line for line in done.stderr.splitlines() if line.startswith("progress:")]
+        self.assertEqual(stages, ["progress: read",
+                                  "progress: solve ours warmup", "progress: solve eigen-E0 warmup",
+                                  "progress: solve ours round 1 of 2", "progress: solve eigen-E0 round 1 of 2",
+                                  "progress: solve eigen-E0 round 2 of 2", "progress: solve ours round 2 of 2"])
+        self.assertEqual(len(done.stdout.splitlines()), 4)
+
+    def test_without_the_flag_the_output_is_unchanged(self):
+        done = self.bench()
+        self.assertEqual((done.returncode, done.stderr), (0, ""))
+        self.assertEqual(len(done.stdout.splitlines()), 4)
+
+    def test_the_flag_is_zero_or_one(self):
+        self.assertEqual(self.bench("--progress", "2").returncode, 1)
+
+
 class PairedRatios(unittest.TestCase):
     def test_each_round_is_compared_with_itself(self):
         # The machine doubles in speed between rounds. Ours is always 2% slower than base
