@@ -6,11 +6,13 @@ const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 const STORE = "p08-ui-settings";
+const SINGLE_STORE = "p08-ui-single";
 const ALL_STEPS = ["build", "test", "download", "speed", "accuracy", "scipy"];
 const STATE_TEXT = { waiting: "waiting", running: "running", done: "done", failed: "failed", "gate-failed": "gate failed", stopped: "stopped" };
 
 const ui = {
   settings: null, preview: [], selected: "build",
+  single: { matrix: null, test: "speed" }, singleInfo: null,
   job: null, offset: 0, lines: [], polling: false,
   machines: [], machine: 0, pair: 0, kind: "real",
   precond: "jacobi", lastDemo: null, demoShown: false,
@@ -73,13 +75,17 @@ function settingsChanged(event) {
 
 async function refreshPreview() {
   try {
-    const data = await api("/api/preview", { settings: ui.settings });
+    const data = await api("/api/preview", { settings: ui.settings, single: ui.single });
     ui.preview = data.steps;
+    ui.singleInfo = data.single;
     $("#settings-error").textContent = "";
+    if (fixSingle()) return refreshPreview();
   } catch (error) {
     $("#settings-error").textContent = error.message;
     ui.preview = [];
+    ui.singleInfo = null;
   }
+  renderSingleChoices();
   renderSteps();
 }
 
@@ -104,13 +110,105 @@ function renderSteps() {
       <span class="about">${esc(step.about)}</span>
     </li>`;
   }).join("");
-  const chosen = ui.preview.find((s) => s.id === ui.selected);
-  const index = ui.preview.indexOf(chosen) + 1;
-  $("#cmd-label").textContent = chosen ? `Step ${index} · the exact command${chosen.commands.length > 1 ? "s" : ""}` : "The exact command";
-  $("#cmd").textContent = chosen ? chosen.commands.map((c) => `$ ${c}`).join("\n") : "";
+  if (ui.selected === "single") {
+    $("#cmd-label").textContent = "One matrix · the exact commands";
+    $("#cmd").textContent = ui.singleInfo ? ui.singleInfo.commands.map((c) => `$ ${c}`).join("\n") : "";
+  } else {
+    const chosen = ui.preview.find((s) => s.id === ui.selected);
+    const index = ui.preview.indexOf(chosen) + 1;
+    $("#cmd-label").textContent = chosen ? `Step ${index} · the exact command${chosen.commands.length > 1 ? "s" : ""}` : "The exact command";
+    $("#cmd").textContent = chosen ? chosen.commands.map((c) => `$ ${c}`).join("\n") : "";
+  }
   $("#run-all").disabled = busy || !ui.preview.length;
   $("#stop").disabled = !busy;
   $("#solve-live").disabled = busy;
+  renderSingleState(busy);
+}
+
+// ---------- one matrix ----------
+function loadSingle() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SINGLE_STORE) || "{}");
+    if (typeof saved.matrix === "string") ui.single.matrix = saved.matrix;
+    if (typeof saved.test === "string") ui.single.test = saved.test;
+  } catch (_) { /* nothing saved, or storage is blocked */ }
+}
+
+function saveSingle() {
+  try { localStorage.setItem(SINGLE_STORE, JSON.stringify(ui.single)); } catch (_) { /* keep it in memory */ }
+}
+
+// Real matrices first, then generated, as the list shows them.
+function singleOrder(choices) {
+  return [...choices.filter((c) => !c.generated), ...choices.filter((c) => c.generated)];
+}
+
+// Moves the choice to a downloaded matrix that offers the chosen test. Returns true if it changed.
+function fixSingle() {
+  const choices = ui.singleInfo ? ui.singleInfo.choices : [];
+  const was = `${ui.single.matrix}|${ui.single.test}`;
+  const pick = choices.find((c) => c.name === ui.single.matrix && c.available) || singleOrder(choices).find((c) => c.available);
+  if (!pick) return false;
+  ui.single.matrix = pick.name;
+  if (!pick.tests.includes(ui.single.test)) ui.single.test = "speed";
+  saveSingle();
+  return `${ui.single.matrix}|${ui.single.test}` !== was;
+}
+
+function renderSingleChoices() {
+  const info = ui.singleInfo;
+  const select = $("#single-matrix");
+  if (!info) {
+    select.innerHTML = "";
+    $("#single-note").textContent = "";
+    return;
+  }
+  const option = (c) => `<option value="${esc(c.name)}"${c.available ? "" : " disabled"}>${esc(c.name)}` +
+    `${c.available ? "" : " · not downloaded"}</option>`;
+  const ordered = singleOrder(info.choices);
+  select.innerHTML = `<optgroup label="Real matrices">${ordered.filter((c) => !c.generated).map(option).join("")}</optgroup>` +
+    `<optgroup label="Generated">${ordered.filter((c) => c.generated).map(option).join("")}</optgroup>`;
+  select.value = ui.single.matrix || "";
+  const chosen = info.choices.find((c) => c.name === ui.single.matrix);
+  $$("#single-test button").forEach((b) => {
+    b.classList.toggle("on", b.dataset.test === ui.single.test);
+    b.disabled = !chosen || !chosen.tests.includes(b.dataset.test);
+  });
+  const noAccuracy = chosen && !chosen.tests.includes("accuracy") ? " Accuracy runs only on the six matrices the Accuracy step uses." : "";
+  $("#single-note").textContent = info.scratch
+    ? `The full step's test and gate, on this matrix only. Saved to ${info.scratch}, never to results/.${noAccuracy}`
+    : (info.error || "");
+}
+
+function renderSingleState(busy) {
+  $("#single").classList.toggle("selected", ui.selected === "single");
+  $("#single-run").disabled = busy || !(ui.singleInfo && ui.singleInfo.commands.length);
+  const job = ui.job && ui.job.kind === "single" ? ui.job : null;
+  const last = $("#single-last");
+  last.className = `single-last${job ? ` ${job.state}` : ""}`;
+  last.textContent = job ? `${job.steps[0].title}: ${STATE_TEXT[job.state] || job.state} · ${clock(job.elapsed)}` : "";
+}
+
+function selectSingle() {
+  if (ui.selected === "single") return;
+  ui.selected = "single";
+  renderSteps();
+}
+
+function singleChanged() {
+  ui.selected = "single";
+  saveSingle();
+  refreshPreview();
+}
+
+async function startSingle() {
+  try {
+    const data = await api("/api/single", { settings: ui.settings, matrix: ui.single.matrix, test: ui.single.test });
+    ui.selected = "single";
+    takeJob(data.job, true);
+  } catch (error) {
+    $("#run-status").textContent = error.message;
+  }
 }
 
 async function startRun(ids, replace = false) {
@@ -152,7 +250,7 @@ function applySnapshot(job) {
   }
   ui.offset = job.offset;
   const running = job.state === "running";
-  const label = job.kind === "demo" ? "Demo" : "Run";
+  const label = { demo: "Demo", single: "One-matrix run" }[job.kind] || "Run";
   $("#run-status").textContent = running ? `${label} running · ${clock(job.elapsed)}` : `${label} ${STATE_TEXT[job.state] || job.state} after ${clock(job.elapsed)}`;
   renderSteps();
   if (job.kind === "demo") renderDemoProgress(job);
@@ -439,6 +537,15 @@ async function init() {
     if (row && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); ui.selected = row.dataset.id; renderSteps(); }
   });
   $("#run-all").addEventListener("click", () => startRun(ALL_STEPS));
+  loadSingle();
+  $("#single").addEventListener("click", selectSingle);
+  $("#single").addEventListener("focusin", selectSingle);
+  $("#single-matrix").addEventListener("change", (e) => { ui.single.matrix = e.target.value; singleChanged(); });
+  $("#single-test").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (b && !b.disabled) { ui.single.test = b.dataset.test; singleChanged(); }
+  });
+  $("#single-run").addEventListener("click", startSingle);
   $("#stop").addEventListener("click", () => api("/api/stop", {}).catch((error) => { $("#run-status").textContent = error.message; }));
 
   $("#machine-pick").addEventListener("change", (e) => { ui.machine = Number(e.target.value); renderResults(); });
@@ -458,6 +565,7 @@ async function init() {
   loadResults();
   loadDemoChoices();
   if (state.job) {
+    if (state.job.kind === "single") ui.selected = "single";
     takeJob(state.job, true);
     if (state.job.state !== "running") jobEndedQuietly(state.job);
   }

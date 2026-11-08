@@ -87,6 +87,52 @@ class Steps(unittest.TestCase):
         machine = steps.suggested_settings()["machine"]
         self.assertTrue(machine == "" or steps.MACHINE_PATTERN.match(machine), machine)
 
+    def test_one_matrix_runs_the_full_steps_commands_on_that_matrix_into_a_scratch_file(self):
+        def without_matrices(argv):
+            if "--matrices" not in argv:
+                return argv
+            at = argv.index("--matrices")
+            return argv[:at] + argv[at + 2:]
+
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d)
+            full = {s["id"]: s for s in steps.steps(settings_in(folder))}
+            for test, name in (("speed", "apache2"), ("accuracy", "hood"), ("speed", "poisson3d:llc=4")):
+                with self.subTest(test=test, name=name):
+                    one = steps.single_step(settings_in(folder), name, test)
+                    bench, gate = [c["argv"] for c in one["commands"]]
+                    full_bench, full_gate = [c["argv"] for c in full[test]["commands"]]
+                    self.assertEqual(bench[bench.index("--matrices") + 1], name)
+                    self.assertEqual(without_matrices(bench)[:-1], without_matrices(full_bench)[:-1])
+                    self.assertEqual(gate[:2] + gate[3:], full_gate[:2] + full_gate[3:])
+                    self.assertTrue(one["commands"][1]["gate"])
+                    scratch = pathlib.Path(bench[-1])
+                    self.assertEqual((gate[2], scratch.parent), (bench[-1], folder / "ui-single"))
+                    self.assertTrue(steps.MACHINE_PATTERN.match(scratch.stem), scratch.name)
+                    self.assertEqual(one["replaces"], [])
+
+    def test_accuracy_is_offered_only_on_the_six_matrices_the_accuracy_step_uses(self):
+        with tempfile.TemporaryDirectory() as d:
+            settings = settings_in(pathlib.Path(d))
+            offered = {c["name"]: c["tests"] for c in steps.single_choices(settings)}
+            for name, test in (("ldoor", "accuracy"), ("poisson3d:llc=4", "accuracy"), ("nope", "speed"),
+                               ("hood", "rm"), ("hood", ["speed"]), (["hood"], "speed")):
+                with self.subTest(name=name, test=test), self.assertRaises(steps.SettingsError):
+                    steps.single_step(settings, name, test)
+        self.assertEqual(sorted(n for n, t in offered.items() if "accuracy" in t),
+                         sorted(steps.ACCURACY_MATRICES.split(",")))
+        self.assertTrue(all("speed" in t for t in offered.values()))
+        self.assertIn("audikw_1", offered)
+        self.assertIn("point27:llc=0.5", offered)
+
+    def test_a_real_matrix_is_available_once_downloaded_and_a_generated_one_always(self):
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d)
+            (folder / "data").mkdir()
+            (folder / "data" / "hood.mtx").write_text("", encoding="ascii")
+            available = {c["name"]: c["available"] for c in steps.single_choices(settings_in(folder))}
+        self.assertEqual((available["hood"], available["ecology2"], available["poisson3d:llc=4"]), (True, False, True))
+
 
 class Runner(unittest.TestCase):
     def test_a_failing_command_stops_the_job(self):
@@ -267,6 +313,27 @@ class Server(unittest.TestCase):
                                                              "steps": ["build"]})
         self.assertEqual(status, 400)
         self.assertIn("machine name", json.loads(data)["error"])
+
+    def test_the_preview_shows_the_one_matrix_choices_and_commands(self):
+        with tempfile.TemporaryDirectory() as d:
+            status, data = self.request("POST", "/api/preview", {"settings": settings_in(pathlib.Path(d)),
+                                                                 "single": {"matrix": "apache2", "test": "accuracy"}})
+        self.assertEqual(status, 200)
+        single = json.loads(data)["single"]
+        self.assertIn("apache2", [c["name"] for c in single["choices"]])
+        self.assertIn("--matrices apache2", single["commands"][0])
+        self.assertTrue(single["scratch"].endswith("ui-single/apache2-accuracy.csv"), single["scratch"])
+
+    def test_one_matrix_needs_a_valid_choice_its_file_and_a_build(self):
+        with tempfile.TemporaryDirectory() as d:
+            settings = settings_in(pathlib.Path(d))
+            for matrix, test, reason in (("hood", "speed", "Download"), ("poisson3d:llc=4", "speed", "Build"),
+                                         ("ldoor", "accuracy", "six"), ("nope", "speed", "list")):
+                with self.subTest(matrix=matrix, test=test):
+                    status, data = self.request("POST", "/api/single", {"settings": settings, "matrix": matrix,
+                                                                        "test": test})
+                    self.assertEqual(status, 400)
+                    self.assertIn(reason, json.loads(data)["error"])
 
     def test_files_outside_the_static_folder_are_not_served(self):
         self.assertEqual(self.request("GET", "/")[0], 200)

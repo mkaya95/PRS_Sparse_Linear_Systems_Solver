@@ -50,7 +50,16 @@ def preview(data):
         out.append({"id": step["id"], "title": step["title"], "about": step["about"], "minutes": step["minutes"],
                     "commands": [steps.display(c["argv"]) for c in step["commands"]],
                     "existing": [steps.display([str(p)]) for p in step["replaces"] if p.exists()]})
-    return {"steps": out}
+    single = {"choices": steps.single_choices(settings), "commands": [], "scratch": None}
+    wanted = data.get("single")
+    if isinstance(wanted, dict):
+        try:
+            step = steps.single_step(settings, wanted.get("matrix"), wanted.get("test"))
+            single.update(commands=[steps.display(c["argv"]) for c in step["commands"]],
+                          scratch=steps.display([str(step["scratch"])]))
+        except steps.SettingsError as error:
+            single["error"] = str(error)
+    return {"steps": out, "single": single}
 
 
 def start_run(data):
@@ -72,6 +81,30 @@ def start_run(data):
             path.unlink()
 
     return RUNNER.start(Job("run", chosen, before=before if existing else None))
+
+
+def start_single(data):
+    """One matrix through the Speed or Accuracy step. Its scratch file is started afresh each time,
+    because a CSV from an earlier commit would be rejected rather than pooled."""
+    settings = settings_from(data)
+    try:
+        step = steps.single_step(settings, data.get("matrix"), data.get("test"))
+    except steps.SettingsError as error:
+        raise ClientError(str(error)) from None
+    paths = steps.paths(settings)
+    if not step["available"]:
+        raise ClientError(f"{data['matrix']}.mtx is not in {steps.display([str(paths['data'])])}. "
+                          "Run the Download step first.")
+    if not (paths["release"] / "bench_cg").exists():
+        raise ClientError(f"bench_cg is not built in {steps.display([str(paths['release'])])}. "
+                          "Run the Build step first.")
+    scratch = step["scratch"]
+
+    def before(job):
+        job.say(f"Scratch file, outside results/: {steps.display([str(scratch)])}")
+        scratch.unlink(missing_ok=True)
+
+    return RUNNER.start(Job("single", [step], before=before))
 
 
 def start_demo(data):
@@ -180,6 +213,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(preview(data))
             if path == "/api/run":
                 job = start_run(data)
+                return self.send_json({"job": job.snapshot()})
+            if path == "/api/single":
+                job = start_single(data)
                 return self.send_json({"job": job.snapshot()})
             if path == "/api/demo":
                 job = start_demo(data)

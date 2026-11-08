@@ -2,6 +2,7 @@
 
 Every command is an argument list, never a shell string, and runs from the repository root.
 """
+import json
 import os
 import pathlib
 import platform
@@ -13,9 +14,13 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "scripts"
 PYTHON = sys.executable or "python3"
 
+sys.path.insert(0, str(SCRIPTS))
+import run_bench  # noqa: E402
+
 ACCURACY_MATRICES = "ecology2,apache2,tmt_sym,G3_circuit,thermal2,hood"
 SPEED_CSV = "g1-real.csv"
 ACCURACY_CSV = "g1-real-solve.csv"
+SINGLE_TESTS = {"speed": "Speed", "accuracy": "Accuracy"}
 
 MACHINE_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 COMPILER_PATTERN = re.compile(r"^[A-Za-z0-9._+/-]{1,200}$")
@@ -105,6 +110,7 @@ def paths(settings):
         "data": resolve(settings["data"]),
         "results": ROOT / "results" / settings["machine"],
         "last_demo": build / "ui-last-demo.json",
+        "single": build / "ui-single",
     }
 
 
@@ -124,6 +130,8 @@ def steps(settings):
     if not (release / "CMakeCache.txt").exists():
         configure_release.append(f"-DCMAKE_CXX_COMPILER={settings['compiler']}")
     speed_csv, accuracy_csv = results / SPEED_CSV, results / ACCURACY_CSV
+    measure = {"speed": speed_commands(release, data, speed_csv),
+               "accuracy": accuracy_commands(release, data, accuracy_csv, ACCURACY_MATRICES)}
     return [
         {"id": "build", "title": "Build", "about": "release build of the solver and benchmarks", "minutes": 2,
          "commands": [command(configure_release),
@@ -138,26 +146,62 @@ def steps(settings):
          "commands": [command([PYTHON, SCRIPTS / "download_matrices.py", "--data-dir", data])],
          "replaces": []},
         {"id": "speed", "title": "Speed", "about": "100 iterations per solver, at most 1.05 times Eigen", "minutes": 20,
-         "commands": [command([PYTHON, SCRIPTS / "run_bench.py", "--build", release, "--data-dir", data,
-                               "--mode", "fixed", "--maxit", "100", "--repeat", "11",
-                               "--solvers", "eigen-E0,ours,eigen-E1,ours-jacobi", "--out", speed_csv]),
-                      command([PYTHON, SCRIPTS / "summarize.py", speed_csv, "--metric", "iteration",
-                               "--gate", "eigen-E0=ours", "--gate", "eigen-E1=ours-jacobi"], gate=True)],
-         "replaces": [speed_csv]},
+         "commands": measure["speed"], "replaces": [speed_csv]},
         {"id": "accuracy", "title": "Accuracy", "about": "complete solves to 1e-8 on the six smaller matrices",
-         "minutes": 15,
-         "commands": [command([PYTHON, SCRIPTS / "run_bench.py", "--build", release, "--data-dir", data,
-                               "--maxit", "30000", "--repeat", "3", "--warmup", "0",
-                               "--matrices", ACCURACY_MATRICES, "--solvers", "eigen-E1,ours-jacobi",
-                               "--out", accuracy_csv]),
-                      command([PYTHON, SCRIPTS / "summarize.py", accuracy_csv, "--gate", "eigen-E1=ours-jacobi"],
-                              gate=True)],
-         "replaces": [accuracy_csv]},
+         "minutes": 15, "commands": measure["accuracy"], "replaces": [accuracy_csv]},
         {"id": "scipy", "title": "SciPy check", "about": "our answer on apache2, judged by SciPy", "minutes": 1,
          "commands": [command([PYTHON, SCRIPTS / "check_against_scipy.py", "--build", release,
                                "--matrix", data / "apache2.mtx"])],
          "replaces": []},
     ]
+
+
+def speed_commands(release, data, out, matrices=None):
+    """The Speed step's measurement and gate, on the whole suite or on the named matrices."""
+    only = [] if matrices is None else ["--matrices", matrices]
+    return [command([PYTHON, SCRIPTS / "run_bench.py", "--build", release, "--data-dir", data,
+                     "--mode", "fixed", "--maxit", "100", "--repeat", "11", *only,
+                     "--solvers", "eigen-E0,ours,eigen-E1,ours-jacobi", "--out", out]),
+            command([PYTHON, SCRIPTS / "summarize.py", out, "--metric", "iteration",
+                     "--gate", "eigen-E0=ours", "--gate", "eigen-E1=ours-jacobi"], gate=True)]
+
+
+def accuracy_commands(release, data, out, matrices):
+    """The Accuracy step's complete solves and gate, on the named matrices."""
+    return [command([PYTHON, SCRIPTS / "run_bench.py", "--build", release, "--data-dir", data,
+                     "--maxit", "30000", "--repeat", "3", "--warmup", "0",
+                     "--matrices", matrices, "--solvers", "eigen-E1,ours-jacobi", "--out", out]),
+            command([PYTHON, SCRIPTS / "summarize.py", out, "--gate", "eigen-E1=ours-jacobi"], gate=True)]
+
+
+def single_choices(settings):
+    """Every suite matrix, named as run_bench.py names it. Speed runs on any of them, accuracy only on
+    the six the Accuracy step uses. A real matrix is available once its file is downloaded."""
+    with open(SCRIPTS / "suite.json", encoding="utf-8") as f:
+        suite = json.load(f)
+    files = {entry["name"] for entry in suite.get("files", [])}
+    accuracy = ACCURACY_MATRICES.split(",")
+    return [{"name": name, "generated": name not in files, "available": spec is not None,
+             "tests": ["speed", "accuracy"] if name in accuracy else ["speed"]}
+            for name, spec in run_bench.matrix_specs(suite, str(paths(settings)["data"]))]
+
+
+def single_step(settings, name, test):
+    """The Speed or Accuracy step on one matrix, writing to a scratch file outside results/.
+    The choice is checked here; whether the file is downloaded is left to the caller."""
+    choice = next((c for c in single_choices(settings) if c["name"] == name), None)
+    if choice is None:
+        raise SettingsError("pick a matrix from the list")
+    if not isinstance(test, str) or test not in SINGLE_TESTS:
+        raise SettingsError("the test must be speed or accuracy")
+    if test not in choice["tests"]:
+        raise SettingsError("accuracy runs only on the six matrices the Accuracy step uses")
+    p = paths(settings)
+    out = p["single"] / f"{re.sub(r'[^A-Za-z0-9._-]', '_', name)}-{test}.csv"
+    build = speed_commands if test == "speed" else accuracy_commands
+    return {"id": "single", "title": f"{SINGLE_TESTS[test]} on {name}",
+            "commands": build(p["release"], p["data"], out, name), "replaces": [], "scratch": out,
+            "available": choice["available"]}
 
 
 def display(argv):

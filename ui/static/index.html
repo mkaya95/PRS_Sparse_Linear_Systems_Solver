@@ -35,7 +35,19 @@
       </div>
 
       <div class="run-grid">
-        <ol class="steps" id="steps"></ol>
+        <div>
+          <ol class="steps" id="steps"></ol>
+          <div class="single" id="single">
+            <div class="label">One matrix</div>
+            <div class="single-row">
+              <select id="single-matrix" aria-label="Matrix"></select>
+              <span class="seg" id="single-test"><button data-test="speed" class="on">Speed</button><button data-test="accuracy">Accuracy</button></span>
+              <button class="go-one" id="single-run" aria-label="Run the chosen test on this matrix">Run</button>
+            </div>
+            <div class="single-last" id="single-last"></div>
+            <p class="note" id="single-note"></p>
+          </div>
+        </div>
         <div class="detail">
           <div class="label" id="cmd-label">The exact command</div>
           <pre class="cmd" id="cmd"></pre>
