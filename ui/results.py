@@ -108,15 +108,29 @@ def section(loader, path):
         return {"error": str(error)}
 
 
+def check_picture(entry):
+    """Raises ValueError unless entry has every field the page draws, as bench_cg writes them."""
+    if not isinstance(entry, dict):
+        raise ValueError("not a solution picture")
+    for key, kind in (("matrix", str), ("n", int), ("grid", int), ("x_scale", (int, float)), ("comparisons", list)):
+        if not isinstance(entry.get(key), kind) or isinstance(entry.get(key), bool):
+            raise ValueError(f"not a solution picture: missing or wrong '{key}'")
+    for comparison in entry["comparisons"]:
+        if not (isinstance(comparison, dict) and isinstance(comparison.get("a"), str)
+                and isinstance(comparison.get("b"), str) and isinstance(comparison.get("cells"), list)
+                and isinstance(comparison.get("equal"), int)):
+            raise ValueError("not a solution picture: a comparison lacks a, b, equal or cells")
+
+
 def pictures_in(folder):
-    """Every solution picture file in folder, sorted by matrix name. A file that cannot be read says why."""
+    """Every solution picture file in folder, sorted by matrix name. A file that cannot be read, or lacks a
+    field the page draws, says why instead, so one bad file cannot stop the page from drawing the rest."""
     found = []
     for path in sorted(folder.glob("*.json")) if folder.is_dir() else []:
         try:
             with open(path, encoding="utf-8") as f:
                 entry = json.load(f)
-            if not isinstance(entry, dict):
-                raise ValueError("not a solution picture")
+            check_picture(entry)
         except (OSError, ValueError) as error:
             entry = {"error": str(error)}
         entry["file"] = path.name

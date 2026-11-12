@@ -236,6 +236,21 @@ class Results(unittest.TestCase):
         self.assertIn("error", pictures[2])
         self.assertEqual(pictures[0]["file"], "a.json")
 
+    def test_a_picture_file_without_its_fields_says_why_instead_of_breaking_the_page(self):
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d) / "box" / "solutions"
+            folder.mkdir(parents=True)
+            (folder / "a.json").write_text("{}", encoding="utf-8")
+            (folder / "b.json").write_text(json.dumps({"matrix": "b", "n": 4, "grid": 2, "comparisons": "none"}),
+                                           encoding="utf-8")
+            (folder / "c.json").write_text(json.dumps({"matrix": "c", "n": 4, "grid": 2, "x_scale": 1,
+                                                       "comparisons": [{"a": "x", "b": "y"}]}), encoding="utf-8")
+            pictures = results.solutions(pathlib.Path(d) / "box")
+        self.assertEqual([p["file"] for p in pictures], ["a.json", "b.json", "c.json"])
+        for picture in pictures:
+            self.assertIn("error", picture)
+            self.assertNotIn("comparisons", picture)
+
     def test_one_matrix_pictures_are_listed_from_every_folder(self):
         with tempfile.TemporaryDirectory() as d:
             base = pathlib.Path(d)
