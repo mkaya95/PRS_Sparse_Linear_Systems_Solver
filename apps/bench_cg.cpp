@@ -2,7 +2,7 @@
 //
 // Usage: bench_cg --matrix SPEC --solver NAME[,NAME...] [--tol 1e-8] [--maxit N] [--repeat 10]
 //                 [--warmup 1] [--mode solve|fixed] [--problem random|a1|unit] [--power TEXT]
-//                 [--csv FILE] [--label TEXT] [--progress 0|1]
+//                 [--csv FILE] [--label TEXT] [--progress 0|1] [--solutions FILE]
 //
 // Solvers take turns round by round (A, B, then B, A, ...), so a machine that slows down
 // mid-run affects them equally and none always goes first. A solver that fails is reported
@@ -11,12 +11,18 @@
 // --progress 1 names each stage on stderr ("progress: solve ours round 1 of 2") before it starts,
 // outside every timed region, so a viewer such as the browser demo can follow along.
 //
+// --solutions FILE writes, after the last round, how far each solver's answer is from every other
+// solver's and from the true answer (when the problem has a known one), as block pictures for the
+// browser page. Only solvers that ran every round are compared.
+//
 // The problem sets the right-hand side: b = A·x for a fixed random x (the default), b = A·1, or b = 1.
 // The rows of A·1 can nearly cancel, which puts the tolerance out of reach on some real matrices.
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstdio>
 #include <exception>
+#include <map>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
@@ -25,6 +31,7 @@
 #include <unistd.h>
 
 #include "cli.hpp"
+#include "ssolve/compare.hpp"
 #include "problem.hpp"
 #include "ssolve/matrix_spec.hpp"
 #include "registry.hpp"
@@ -38,10 +45,54 @@
 using namespace ssolve;
 using namespace ssolve_bench;
 
+namespace {
+
+// Every pair of solvers in the order they were named, then each solver against the true answer.
+void write_solutions(const std::string& path, const std::string& matrix, const std::string& problem,
+                     const std::vector<std::string>& order, const std::map<std::string, std::vector<double>>& answers) {
+  std::vector<const std::string*> present;
+  for (const std::string& name : order) {
+    if (answers.count(name) != 0) present.push_back(&name);
+  }
+  if (present.empty()) return;
+  const std::size_t n = answers.at(*present.front()).size();
+  std::vector<double> truth;
+  if (problem == "random") {
+    const AlignedArray<double> x = random_solution(static_cast<Index>(n));
+    truth.assign(x.begin(), x.end());
+  } else if (problem == "a1") {
+    truth.assign(n, 1.0);
+  }
+
+  std::vector<VectorDifference> diffs;
+  for (std::size_t i = 0; i < present.size(); ++i) {
+    for (std::size_t j = i + 1; j < present.size(); ++j) {
+      diffs.push_back(compare_vectors(*present[i], answers.at(*present[i]).data(), *present[j],
+                                      answers.at(*present[j]).data(), n));
+    }
+  }
+  double scale = 0.0;
+  if (!truth.empty()) {
+    for (const std::string* name : present) {
+      diffs.push_back(compare_vectors(*name, answers.at(*name).data(), "true", truth.data(), n));
+    }
+    for (const double value : truth) scale = std::fmax(scale, std::fabs(value));
+  } else {
+    for (const std::string* name : present) {
+      for (const double value : answers.at(*name)) {
+        if (std::isfinite(value)) scale = std::fmax(scale, std::fabs(value));
+      }
+    }
+  }
+  write_file_atomically(path, solutions_json(matrix, static_cast<std::int64_t>(n), problem, scale, diffs));
+}
+
+}  // namespace
+
 int main(int argc, char** argv) {
   try {
     const ssolve_cli::Args args(argc, argv, {"matrix", "solver", "tol", "maxit", "repeat", "warmup", "mode", "problem",
-                                             "power", "csv", "label", "progress"});
+                                             "power", "csv", "label", "progress", "solutions"});
     const std::string spec = args.required("matrix");
     const std::string solver_list = args.required("solver");
     const int repeats = args.get_count("repeat", 10, 1);
@@ -90,10 +141,13 @@ int main(int argc, char** argv) {
     };
 
     std::vector<NamedSolver> solvers;
+    std::vector<std::string> named_order;  // as given on --solver, for the comparison order
+    std::map<std::string, std::vector<double>> answers;  // last measured x per solver, for --solutions
     std::stringstream names(solver_list);
     for (std::string solver_name; std::getline(names, solver_name, ',');) {
       try {
         solvers.push_back(find_solver(solver_name));
+        named_order.push_back(solver_name);
       } catch (const std::exception& e) {
         report_failure(solver_name, e.what());
       }
@@ -107,6 +161,7 @@ int main(int argc, char** argv) {
       const double start = wall_seconds();
       const SolveResult result = solver.run(a, b.data(), x.data(), options);
       const double end_to_end = preparation_seconds + wall_seconds() - start;
+      if (repeat >= 0 && args.has("solutions")) answers[solver.name].assign(x.begin(), x.end());
       if (repeat < 0) {
         if (result.status == SolveStatus::Breakdown || result.status == SolveStatus::ResidualFailure) {
           throw std::runtime_error(std::string(to_string(result.status)) + ": " + result.detail);
@@ -168,10 +223,12 @@ int main(int argc, char** argv) {
           ++solver;
         } catch (const std::exception& e) {
           report_failure(solver->name, e.what());
+          answers.erase(solver->name);
           solver = solvers.erase(solver);
         }
       }
     }
+    if (args.has("solutions")) write_solutions(args.required("solutions"), name, problem, named_order, answers);
     return exit_status;
   } catch (const std::exception& e) {
     std::fprintf(stderr, "bench_cg: %s\n", e.what());

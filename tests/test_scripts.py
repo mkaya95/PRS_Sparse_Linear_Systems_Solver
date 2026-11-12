@@ -153,6 +153,53 @@ class RunBench(unittest.TestCase):
         self.assertNotIn("PASS", report.stdout)
 
 
+class Solutions(unittest.TestCase):
+    def setUp(self):
+        self.dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self.dir.cleanup)
+        self.file = os.path.join(self.dir.name, "solutions.json")
+
+    def run_cg(self, solvers, *extra):
+        return subprocess.run(
+            [os.path.join(BUILD_DIR, "bench_cg"), "--matrix", "poisson2d:20", "--solver", solvers, "--repeat", "1",
+             "--warmup", "0", *extra],
+            capture_output=True, text=True, cwd=self.dir.name)
+
+    def pictures(self):
+        with open(self.file, encoding="utf-8") as f:
+            return json.load(f)
+
+    def test_each_pair_and_each_solver_against_the_true_answer_is_written(self):
+        done = self.run_cg("ours-jacobi,eigen-E1", "--solutions", self.file)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        data = self.pictures()
+        self.assertEqual((data["matrix"], data["n"], data["grid"], data["problem"]), ("poisson2d:20", 400, 20, "random"))
+        self.assertEqual([(c["a"], c["b"]) for c in data["comparisons"]],
+                         [("ours-jacobi", "eigen-E1"), ("ours-jacobi", "true"), ("eigen-E1", "true")])
+        for comparison in data["comparisons"]:
+            self.assertLess(comparison["rel_norm"], 1e-6)
+            self.assertEqual(len(comparison["cells"]), 400)
+        self.assertGreater(data["x_scale"], 0.5)
+        self.assertLessEqual(data["x_scale"], 1.0)
+
+    def test_the_unit_problem_has_no_true_answer(self):
+        done = self.run_cg("ours-jacobi,eigen-E1", "--problem", "unit", "--solutions", self.file)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        data = self.pictures()
+        self.assertEqual([(c["a"], c["b"]) for c in data["comparisons"]], [("ours-jacobi", "eigen-E1")])
+        self.assertGreater(data["x_scale"], 0)
+
+    def test_a_dropped_solver_is_left_out(self):
+        done = self.run_cg("no-such-solver,ours", "--solutions", self.file)
+        self.assertEqual(done.returncode, 1, done.stderr)
+        self.assertEqual([(c["a"], c["b"]) for c in self.pictures()["comparisons"]], [("ours", "true")])
+
+    def test_without_the_option_no_file_is_written(self):
+        done = self.run_cg("ours")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(os.listdir(self.dir.name), [])
+
+
 class TestProblem(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.TemporaryDirectory()
