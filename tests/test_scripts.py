@@ -204,6 +204,18 @@ class Solutions(unittest.TestCase):
         self.assertEqual(done.returncode, 1, done.stderr)
         self.assertEqual([(c["a"], c["b"]) for c in self.pictures()["comparisons"]], [("ours", "true")])
 
+    def test_a_solver_that_did_not_converge_is_left_out(self):
+        # The Accuracy step runs without a warm-up, so a failed solve must be dropped from its measured round too.
+        done = self.run_cg("ours,ours-ic", "--maxit", "30", "--solutions", self.file)
+        self.assertEqual(done.returncode, 1, done.stdout)  # ours needs 60 iterations here, ours-ic 21
+        self.assertEqual([(c["a"], c["b"]) for c in self.pictures()["comparisons"]], [("ours-ic", "true")])
+
+    def test_a_run_where_no_solver_converged_still_writes_its_file(self):
+        done = self.run_cg("ours,eigen-E0", "--maxit", "1", "--solutions", self.file)
+        self.assertEqual(done.returncode, 1, done.stdout)
+        data = self.pictures()
+        self.assertEqual((data["n"], data["comparisons"]), (400, []))
+
     def test_without_the_option_no_file_is_written(self):
         done = self.run_cg("ours")
         self.assertEqual(done.returncode, 0, done.stderr)

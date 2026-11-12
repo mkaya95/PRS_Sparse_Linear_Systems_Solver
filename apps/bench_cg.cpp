@@ -23,6 +23,7 @@
 #include <cstdio>
 #include <exception>
 #include <map>
+#include <set>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
@@ -47,15 +48,14 @@ using namespace ssolve_bench;
 
 namespace {
 
-// Every pair of solvers in the order they were named, then each solver against the true answer.
-void write_solutions(const std::string& path, const std::string& matrix, const std::string& problem,
+// Every pair of solvers in the order they were named, then each solver against the true answer. A run in
+// which no solver finished still gets its file, with no comparisons, so an older picture cannot stand in.
+void write_solutions(const std::string& path, const std::string& matrix, const std::string& problem, std::size_t n,
                      const std::vector<std::string>& order, const std::map<std::string, std::vector<double>>& answers) {
   std::vector<const std::string*> present;
   for (const std::string& name : order) {
     if (answers.count(name) != 0) present.push_back(&name);
   }
-  if (present.empty()) return;
-  const std::size_t n = answers.at(*present.front()).size();
   std::vector<double> truth;
   if (problem == "random") {
     const AlignedArray<double> x = random_solution(static_cast<Index>(n));
@@ -143,6 +143,7 @@ int main(int argc, char** argv) {
     std::vector<NamedSolver> solvers;
     std::vector<std::string> named_order;  // as given on --solver, for the comparison order
     std::map<std::string, std::vector<double>> answers;  // last measured x per solver, for --solutions
+    std::set<std::string> failed;  // solvers with a failed measured solve: never drawn, whatever later rounds do
     std::stringstream names(solver_list);
     for (std::string solver_name; std::getline(names, solver_name, ',');) {
       try {
@@ -161,7 +162,9 @@ int main(int argc, char** argv) {
       const double start = wall_seconds();
       const SolveResult result = solver.run(a, b.data(), x.data(), options);
       const double end_to_end = preparation_seconds + wall_seconds() - start;
-      if (repeat >= 0 && args.has("solutions")) answers[solver.name].assign(x.begin(), x.end());
+      if (repeat >= 0 && args.has("solutions") && failed.count(solver.name) == 0) {
+        answers[solver.name].assign(x.begin(), x.end());
+      }
       if (repeat < 0) {
         if (result.status == SolveStatus::Breakdown || result.status == SolveStatus::ResidualFailure) {
           throw std::runtime_error(std::string(to_string(result.status)) + ": " + result.detail);
@@ -206,6 +209,9 @@ int main(int argc, char** argv) {
       if ((mode == "solve" && result.status != SolveStatus::Converged) ||
           result.status == SolveStatus::Breakdown || result.status == SolveStatus::ResidualFailure) {
         report_failure(solver.name, std::string(to_string(result.status)) + ": " + result.detail);
+        // A failed answer is not drawn: the picture would look like a valid answer.
+        failed.insert(solver.name);
+        answers.erase(solver.name);
       }
     };
 
@@ -228,7 +234,10 @@ int main(int argc, char** argv) {
         }
       }
     }
-    if (args.has("solutions")) write_solutions(args.required("solutions"), name, problem, named_order, answers);
+    if (args.has("solutions")) {
+      write_solutions(args.required("solutions"), name, problem, static_cast<std::size_t>(a.n_rows), named_order,
+                      answers);
+    }
     return exit_status;
   } catch (const std::exception& e) {
     std::fprintf(stderr, "bench_cg: %s\n", e.what());
