@@ -47,6 +47,7 @@ add_library(ssolve STATIC
   src/bench/manifest.cpp
   src/backends/seq/seq_backend.cpp
   src/formats/csr.cpp
+  src/formats/sell.cpp
   src/io/generators.cpp
   src/io/mtx_reader.cpp
   src/io/matrix_spec.cpp
@@ -113,6 +114,7 @@ ssolve_test(test_generators)
 ssolve_test(test_csv)
 ssolve_test(test_backend)
 ssolve_test(test_compare)
+ssolve_test(test_sell)
 
 add_executable(test_solvers tests/test_solvers.cpp)
 target_include_directories(test_solvers PRIVATE tests)
