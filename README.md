@@ -61,7 +61,7 @@ Start the page where the solver builds, on Linux, WSL2 or macOS, and open the ad
 python3 ui/server.py
 ```
 
-The Run tab runs the steps below with your settings and shows each exact command. Its One matrix box runs the speed or accuracy step on a single matrix and saves the CSV as `results/NAME/one-MATRIX-TEST.csv`, apart from the full results. The Results tab charts every machine in `results/`, the Matrices tab draws the non-zero pattern of each test matrix, and the Demo tab solves one problem with our solver and with Eigen. Use `--port` to pick another port. The page answers only on this computer.
+The Run tab runs the steps below with your settings and shows each exact command. Its One matrix box runs the speed or accuracy step on a single matrix and saves the CSV as `results/NAME/one-MATRIX-TEST.csv`, apart from the full results, and an accuracy run also saves its solution pictures in `results/NAME/one-solutions/`. The Results tab charts every machine in `results/`, the Matrices tab draws the non-zero pattern of each test matrix, and the Demo tab solves one problem with our solver and with Eigen. Use `--port` to pick another port. The page answers only on this computer.
 
 ## Run the benchmarks
 
@@ -92,9 +92,11 @@ Plug in the charger and close other applications first. `run_bench.py` refuses t
     ```bash
     python3 scripts/run_bench.py --build build/release --data-dir ~/p08/data --maxit 30000 --repeat 3 --warmup 0 \
         --matrices ecology2,apache2,tmt_sym,G3_circuit,thermal2,hood \
-        --solvers eigen-E1,ours-jacobi --out $R/g1-real-solve.csv
+        --solvers eigen-E1,ours-jacobi --solutions $R/solutions --out $R/g1-real-solve.csv
     python3 scripts/summarize.py $R/g1-real-solve.csv --gate eigen-E1=ours-jacobi
     ```
+
+    `--solutions` saves, for each matrix, how far our answer is from Eigen's and from the true answer, as `$R/solutions/MATRIX.json`. The Results tab draws them.
 
 5. Check the answers against SciPy, which needs `pip install scipy`:
 

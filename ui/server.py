@@ -11,6 +11,7 @@ import argparse
 import json
 import mimetypes
 import pathlib
+import shutil
 import sys
 import time
 import urllib.parse
@@ -65,7 +66,8 @@ def preview(data):
 
 def confirm_replacing(paths, data):
     """Refuses to overwrite earlier results unless the page confirmed it; returns the removal to run."""
-    existing = [p for p in paths if p.exists()]
+    # A folder, such as the solution pictures, counts once it holds a file.
+    existing = [p for p in paths if p.is_file() or (p.is_dir() and any(p.iterdir()))]
     if existing and not data.get("replace"):
         raise ClientError("these results already exist", HTTPStatus.CONFLICT,
                           {"existing": [steps.display([str(p)]) for p in existing]})
@@ -73,7 +75,10 @@ def confirm_replacing(paths, data):
     def before(job):
         for path in existing:
             job.say(f"Removing the earlier result {steps.display([str(path)])}, as confirmed")
-            path.unlink()
+            if path.is_dir():
+                shutil.rmtree(path)
+            else:
+                path.unlink()
 
     return before if existing else None
 

@@ -140,6 +140,16 @@ class RunBench(unittest.TestCase):
         )
         self.assertNotEqual(done.returncode, 0)
 
+    def test_solution_pictures_go_one_file_per_matrix(self):
+        self.write_suite(generated=[{"stencil": "poisson2d", "n": [8, 9]}])
+        pictures = os.path.join(self.dir.name, "pictures")
+        done = run_bench("--solvers", "ours,eigen-E0", "--repeat", "1", "--out", self.out, "--solutions", pictures,
+                         suite=self.suite)
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertEqual(sorted(os.listdir(pictures)), ["poisson2d_8.json", "poisson2d_9.json"])
+        with open(os.path.join(pictures, "poisson2d_9.json"), encoding="utf-8") as f:
+            self.assertEqual(json.load(f)["n"], 81)
+
     def test_fixed_iteration_mode_is_explicit_and_not_a_solve_gate(self):
         self.write_suite(generated=[{"stencil": "poisson2d", "n": [8]}])
         done = run_bench("--solvers", "eigen-E0,ours", "--mode", "fixed", "--maxit", "1",

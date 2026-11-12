@@ -56,7 +56,17 @@ class Steps(unittest.TestCase):
         self.assertTrue(every[3]["commands"][1]["gate"])
         accuracy = every[4]["commands"][0]["argv"]
         self.assertIn("ecology2,apache2,tmt_sym,G3_circuit,thermal2,hood", accuracy)
-        self.assertEqual(every[4]["replaces"], [ROOT / "results" / "test-box" / "g1-real-solve.csv"])
+        self.assertEqual(every[4]["replaces"], [ROOT / "results" / "test-box" / "g1-real-solve.csv",
+                                                ROOT / "results" / "test-box" / "solutions"])
+
+    def test_the_accuracy_step_saves_solution_pictures_and_says_it_replaces_them(self):
+        with tempfile.TemporaryDirectory() as d:
+            accuracy = {s["id"]: s for s in steps.steps(settings_in(pathlib.Path(d)))}["accuracy"]
+        argv = accuracy["commands"][0]["argv"]
+        self.assertEqual(argv[argv.index("--solutions") + 1], str(ROOT / "results" / "test-box" / "solutions"))
+        self.assertIn(ROOT / "results" / "test-box" / "solutions", accuracy["replaces"])
+        speed = {s["id"]: s for s in steps.steps(settings_in(pathlib.Path(d)))}["speed"]
+        self.assertNotIn("--solutions", speed["commands"][0]["argv"])
 
     def test_the_compiler_is_named_only_when_the_release_folder_is_new(self):
         # Naming it again makes CMake wipe the cache and drop the preset's settings.
@@ -91,10 +101,11 @@ class Steps(unittest.TestCase):
 
     def test_one_matrix_runs_the_full_steps_commands_on_that_matrix_into_its_own_results_file(self):
         def without_matrices(argv):
-            if "--matrices" not in argv:
-                return argv
-            at = argv.index("--matrices")
-            return argv[:at] + argv[at + 2:]
+            for option in ("--matrices", "--solutions"):
+                if option in argv:
+                    at = argv.index(option)
+                    argv = argv[:at] + argv[at + 2:]
+            return argv
 
         with tempfile.TemporaryDirectory() as d:
             folder = pathlib.Path(d)
@@ -113,7 +124,12 @@ class Steps(unittest.TestCase):
                     self.assertTrue(out.name.startswith("one-") and out.name.endswith(f"-{test}.csv"), out.name)
                     self.assertTrue(steps.MACHINE_PATTERN.match(out.stem), out.name)
                     self.assertNotIn(out.name, (steps.SPEED_CSV, steps.ACCURACY_CSV))
-                    self.assertEqual(one["replaces"], [out])
+                    if test == "speed":
+                        self.assertEqual(one["replaces"], [out])
+                    else:
+                        pictures = ROOT / "results" / "test-box" / "one-solutions"
+                        self.assertEqual(bench[bench.index("--solutions") + 1], str(pictures))
+                        self.assertEqual(one["replaces"], [out, pictures / f"{name}.json"])
 
     def test_accuracy_is_offered_only_on_the_six_matrices_the_accuracy_step_uses(self):
         with tempfile.TemporaryDirectory() as d:
@@ -442,6 +458,24 @@ class Server(unittest.TestCase):
             self.assertEqual(status, 409)
             self.assertEqual(json.loads(data)["existing"], ["results/test-box/one-poisson3d_llc_4-speed.csv"])
             self.assertEqual(target.read_text(encoding="ascii"), "kept\n")
+
+    def test_a_solutions_folder_is_replaced_only_when_confirmed(self):
+        class Job:
+            def say(self, text):
+                pass
+
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d) / "solutions"
+            folder.mkdir()
+            self.assertIsNone(server.confirm_replacing([folder], {}))  # an empty folder holds no result
+            (folder / "hood.json").write_text("{}", encoding="ascii")
+            with self.assertRaises(server.ClientError) as refused:
+                server.confirm_replacing([folder], {})
+            self.assertEqual(refused.exception.status, 409)
+            before = server.confirm_replacing([folder], {"replace": True})
+            self.assertTrue(folder.exists())
+            before(Job())
+            self.assertFalse(folder.exists())
 
     def test_drawing_needs_the_preview_tool(self):
         with tempfile.TemporaryDirectory() as d:
