@@ -53,6 +53,7 @@ add_library(ssolve STATIC
   src/io/mtx_reader.cpp
   src/io/matrix_spec.cpp
   src/precond/basic.cpp
+  src/precond/sgs.cpp
   src/solvers/cg.cpp
   src/solvers/cg_history.cpp
   src/verify.cpp
@@ -119,6 +120,7 @@ ssolve_test(test_csv)
 ssolve_test(test_backend)
 ssolve_test(test_compare)
 ssolve_test(test_sell)
+ssolve_test(test_precond)
 
 add_executable(test_solvers tests/test_solvers.cpp)
 target_include_directories(test_solvers PRIVATE tests)

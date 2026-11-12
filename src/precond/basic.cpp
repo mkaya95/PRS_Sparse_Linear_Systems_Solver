@@ -7,6 +7,7 @@
 
 #include "ssolve/cg.hpp"
 #include "ssolve/preconditioner.hpp"
+#include "ssolve/sgs.hpp"
 
 namespace ssolve {
 
@@ -72,6 +73,8 @@ std::unique_ptr<Preconditioner> make_preconditioner(Precond kind, const CsrMatri
       return make_identity_preconditioner();
     case Precond::Jacobi:
       return make_jacobi_preconditioner(a);
+    case Precond::SymGaussSeidel:
+      return make_sgs_preconditioner(a);
     default:
       throw std::runtime_error(std::string("no preconditioner of kind ") + to_string(kind));
   }
