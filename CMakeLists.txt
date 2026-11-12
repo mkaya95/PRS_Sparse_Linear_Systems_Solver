@@ -50,6 +50,7 @@ add_library(ssolve STATIC
   src/io/mtx_reader.cpp
   src/io/matrix_spec.cpp
   src/solvers/cg.cpp
+  src/solvers/cg_history.cpp
   src/verify.cpp
 )
 add_dependencies(ssolve ssolve_build_info)
@@ -92,6 +93,8 @@ add_executable(bench_kernels apps/bench_kernels.cpp)
 target_link_libraries(bench_kernels PRIVATE ssolve_bench)
 add_executable(solve apps/solve.cpp)
 target_link_libraries(solve PRIVATE ssolve)
+add_executable(matrix_preview apps/matrix_preview.cpp)
+target_link_libraries(matrix_preview PRIVATE ssolve)
 
 enable_testing()
 
@@ -118,4 +121,6 @@ find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)
   add_test(NAME test_scripts
     COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_scripts.py" "$<TARGET_FILE_DIR:bench_cg>")
+  add_test(NAME test_ui
+    COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_ui.py" "$<TARGET_FILE_DIR:bench_cg>")
 endif()

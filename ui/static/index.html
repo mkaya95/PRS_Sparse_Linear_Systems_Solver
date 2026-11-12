@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SM Solver</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header class="masthead">
+    <h1>SM Solver</h1>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="run">Run</button>
+      <button role="tab" data-tab="results">Results</button>
+      <button role="tab" data-tab="matrices">Matrices</button>
+      <button role="tab" data-tab="demo">Demo</button>
+    </nav>
+    <span class="machine-tag" id="machine-tag"></span>
+  </header>
+
+  <main>
+    <!-- RUN -->
+    <section id="tab-run" class="tab-panel" role="tabpanel" hidden>
+      <form class="settings" id="settings" autocomplete="off">
+        <label>Results name <input name="machine" spellcheck="false" required></label>
+        <label>Build folder <input name="build" spellcheck="false" required></label>
+        <label>Matrices in <input name="data" spellcheck="false" required></label>
+        <label>Compiler <input name="compiler" spellcheck="false" required></label>
+      </form>
+      <p class="note" id="settings-error" role="alert"></p>
+
+      <div class="actions">
+        <button class="btn go" id="run-all">Run all</button>
+        <button class="btn" id="stop" disabled>Stop</button>
+        <span class="status" id="run-status"></span>
+      </div>
+
+      <div class="run-grid">
+        <div>
+          <ol class="steps" id="steps"></ol>
+          <div class="single" id="single">
+            <div class="label">One matrix</div>
+            <div class="single-row">
+              <select id="single-matrix" aria-label="Matrix"></select>
+              <span class="seg" id="single-test"><button data-test="speed" class="on">Speed</button><button data-test="accuracy">Accuracy</button></span>
+              <button class="go-one" id="single-run" aria-label="Run the chosen test on this matrix">Run</button>
+            </div>
+            <div class="single-last" id="single-last"></div>
+            <p class="note" id="single-note"></p>
+          </div>
+        </div>
+        <div class="detail">
+          <div class="label" id="cmd-label">The exact command</div>
+          <pre class="cmd" id="cmd"></pre>
+          <div class="label">Output</div>
+          <pre class="out" id="out" tabindex="0">Nothing has run yet.</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="tab-results" class="tab-panel" role="tabpanel" hidden>
+      <table class="gates" id="gates"></table>
+      <p class="note" id="gates-note"></p>
+
+      <div class="controls" id="result-controls">
+        <label class="pick" id="machine-pick-wrap">Machine <select id="machine-pick"></select></label>
+        <span class="seg" id="pair-seg"><button data-pair="0" class="on">Plain CG</button><button data-pair="1">Jacobi</button></span>
+        <span class="seg" id="kind-seg"><button data-kind="real" class="on">Real matrices</button><button data-kind="generated">Generated</button></span>
+      </div>
+
+      <div class="chart-grid">
+        <figure>
+          <figcaption>Our time / Eigen's, per iteration</figcaption>
+          <div id="ratio-chart"></div>
+          <p class="note">Dot: median of the paired rounds. Line: 95% interval. Left of the blue line is faster than Eigen.</p>
+        </figure>
+        <figure>
+          <figcaption>Time per iteration</figcaption>
+          <div id="time-chart"></div>
+        </figure>
+      </div>
+
+      <div class="chart-grid" id="ladder-grid">
+        <figure>
+          <figcaption>What each change was worth</figcaption>
+          <div id="ladder-chart"></div>
+          <p class="note" id="ladder-note"></p>
+        </figure>
+        <figure>
+          <figcaption>Accuracy: complete solves to 1e-8</figcaption>
+          <table class="plain" id="accuracy"></table>
+        </figure>
+      </div>
+
+      <figure id="machines-figure" hidden>
+        <figcaption>Machines side by side</figcaption>
+        <div id="machines-chart"></div>
+      </figure>
+
+      <figure id="single-figure" hidden>
+        <figcaption>One-matrix runs</figcaption>
+        <table class="plain" id="single-runs"></table>
+        <p class="note">From the One matrix box on the Run tab. They use the same gate as the full step but never count towards G1.</p>
+      </figure>
+    </section>
+
+    <!-- MATRICES -->
+    <section id="tab-matrices" class="tab-panel" role="tabpanel" hidden>
+      <div class="actions">
+        <button class="btn go" id="draw-all">Draw matrices</button>
+        <span class="status" id="matrices-status"></span>
+      </div>
+      <p class="note">The real matrices have up to 78 million non-zeros, too many to draw one by one. Each picture cuts the matrix into 160 &times; 160 blocks and shades every block by how many non-zeros it holds. The close-up shows the top-left corner entry by entry.</p>
+
+      <div class="matrix-detail" id="matrix-detail" hidden>
+        <h2 class="matrix-name" id="matrix-name"></h2>
+        <p class="matrix-about" id="matrix-about"></p>
+        <div class="matrix-pictures">
+          <figure>
+            <figcaption>Whole matrix, by block</figcaption>
+            <div class="density-frame"><canvas id="density" class="density" aria-label="non-zero pattern of the whole matrix"></canvas></div>
+            <div class="ramp-legend"><span>1 non-zero</span><i class="ramp"></i><span id="density-max"></span></div>
+          </figure>
+          <figure>
+            <figcaption id="zoom-caption">Top-left corner, entry by entry</figcaption>
+            <div id="zoom"></div>
+            <div class="ramp-legend"><span>small |value|</span><i class="ramp"></i><span>large</span></div>
+          </figure>
+          <table class="plain facts" id="matrix-facts"></table>
+        </div>
+      </div>
+
+      <div class="matrix-cards" id="matrix-cards"></div>
+    </section>
+
+    <!-- DEMO -->
+    <section id="tab-demo" class="tab-panel" role="tabpanel" hidden>
+      <div class="actions">
+        <label class="pick">Matrix <select id="demo-matrix"></select></label>
+        <span class="seg" id="precond-seg"><button data-precond="jacobi" class="on">Jacobi</button><button data-precond="none">None</button></span>
+        <button class="btn go" id="solve-live">Solve live</button>
+        <span class="status" id="demo-status"></span>
+      </div>
+
+      <div class="label">1 &middot; What the solver does</div>
+      <div class="flow" id="flow">
+        <div class="box" data-phase="read">Read matrix<small>.mtx or generated</small></div><span class="arr">&rarr;</span>
+        <div class="box" data-phase="read">Store as CSR<small>rows, columns, values</small></div><span class="arr">&rarr;</span>
+        <div class="box" data-phase="solve" id="jacobi-box">Jacobi<small>scale by 1/diagonal</small></div><span class="arr">&rarr;</span>
+        <div class="box" data-phase="solve">CG loop<small>multiply, dot, update</small></div><span class="arr">&rarr;</span>
+        <div class="box" data-phase="check">Check answer<small>true error &le; 1e-8</small></div>
+      </div>
+      <div class="now" id="flow-now" aria-live="polite"></div>
+
+      <div class="label">2 &middot; Head to head on the same problem</div>
+      <div class="lane"><b>ours</b><div class="track"><div class="fill ours" id="lane-ours"></div></div><span id="time-ours"></span></div>
+      <div class="lane"><b>Eigen</b><div class="track"><div class="fill eigen" id="lane-eigen"></div></div><span id="time-eigen"></span></div>
+      <p class="note">One warm-up each, then two timed rounds that take turns going first. They never run at the same time, so neither slows the other down.</p>
+
+      <div class="demo-grid">
+        <div>
+          <div class="label">3 &middot; Result</div>
+          <div class="big" id="verdict">&nbsp;</div>
+          <div class="stamps" id="demo-stamps"></div>
+          <p class="note" id="demo-facts"></p>
+        </div>
+        <div>
+          <div class="label">4 &middot; How the error falls</div>
+          <div id="curve"></div>
+          <p class="note">Drawn from a separate, untimed run on the same problem, so recording it never touches the timed numbers.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="confirm">
+    <form method="dialog">
+      <h2>Replace the earlier result?</h2>
+      <p>This results folder already has:</p>
+      <ul id="confirm-files"></ul>
+      <p>Running again deletes it and measures from scratch.</p>
+      <div class="actions">
+        <button class="btn go" value="replace">Replace and run</button>
+        <button class="btn" value="cancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="tip" role="tooltip" hidden></div>
+  <script src="charts.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

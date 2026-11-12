@@ -1,0 +1,476 @@
+"""Tests for the browser UI's server side. Usage: test_ui.py BUILD_DIR"""
+import csv
+import http.client
+import json
+import os
+import pathlib
+import subprocess
+import sys
+import tempfile
+import threading
+import time
+import unittest
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "ui"))
+
+import demo  # noqa: E402
+import jobs  # noqa: E402
+import matrices  # noqa: E402
+import results  # noqa: E402
+import server  # noqa: E402
+import steps  # noqa: E402
+
+BUILD_DIR = None  # set in __main__
+
+
+def settings_in(folder, machine="test-box"):
+    return {"machine": machine, "build": str(folder), "data": str(folder / "data"), "compiler": "g++"}
+
+
+def py(code, gate=False):
+    return steps.command([sys.executable, "-c", code], gate=gate)
+
+
+def run(job, timeout=60):
+    jobs.Runner().start(job)
+    deadline = time.time() + timeout
+    while job.state == "running" and time.time() < deadline:
+        time.sleep(0.05)
+    while job.finished is None and time.time() < deadline:
+        time.sleep(0.01)
+    return job
+
+
+class Steps(unittest.TestCase):
+    def test_the_steps_are_the_readme_commands_in_order(self):
+        with tempfile.TemporaryDirectory() as d:
+            every = steps.steps(settings_in(pathlib.Path(d)))
+        self.assertEqual([s["id"] for s in every], ["build", "test", "download", "speed", "accuracy", "scipy"])
+        speed, gate = [c["argv"] for c in every[3]["commands"]]
+        self.assertEqual(speed[speed.index("--mode"):speed.index("--out")],
+                         ["--mode", "fixed", "--maxit", "100", "--repeat", "11",
+                          "--solvers", "eigen-E0,ours,eigen-E1,ours-jacobi"])
+        self.assertEqual(speed[-1], str(ROOT / "results" / "test-box" / "g1-real.csv"))
+        self.assertEqual(gate[-4:], ["--gate", "eigen-E0=ours", "--gate", "eigen-E1=ours-jacobi"])
+        self.assertTrue(every[3]["commands"][1]["gate"])
+        accuracy = every[4]["commands"][0]["argv"]
+        self.assertIn("ecology2,apache2,tmt_sym,G3_circuit,thermal2,hood", accuracy)
+        self.assertEqual(every[4]["replaces"], [ROOT / "results" / "test-box" / "g1-real-solve.csv"])
+
+    def test_the_compiler_is_named_only_when_the_release_folder_is_new(self):
+        # Naming it again makes CMake wipe the cache and drop the preset's settings.
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d)
+            first = steps.steps(settings_in(folder))
+            (folder / "release").mkdir()
+            (folder / "release" / "CMakeCache.txt").write_text("", encoding="ascii")
+            again = steps.steps(settings_in(folder))
+        self.assertIn("-DCMAKE_CXX_COMPILER=g++", first[0]["commands"][0]["argv"])
+        self.assertFalse(any("COMPILER" in a for a in again[0]["commands"][0]["argv"]))
+        self.assertFalse(any("COMPILER" in a for a in first[1]["commands"][0]["argv"]))
+
+    def test_settings_are_checked(self):
+        good = settings_in(pathlib.Path("/tmp"))
+        self.assertEqual(steps.validate(good)["machine"], "test-box")
+        for machine in ("../up", "two words", "", "x;rm", "-dash"):
+            with self.subTest(machine=machine), self.assertRaises(steps.SettingsError):
+                steps.validate(dict(good, machine=machine))
+        with self.assertRaises(steps.SettingsError):
+            steps.validate(dict(good, compiler="g++; rm -rf ~"))
+        with self.assertRaises(steps.SettingsError):
+            steps.validate(dict(good, data="a\nb"))
+
+    def test_commands_are_shown_as_a_person_would_type_them(self):
+        argv = [steps.PYTHON, str(ROOT / "scripts" / "summarize.py"), os.path.expanduser("~/p08/x.csv"), "a b"]
+        self.assertEqual(steps.display(argv), "python3 scripts/summarize.py ~/p08/x.csv 'a b'")
+
+    def test_the_suggested_machine_name_is_a_valid_one(self):
+        machine = steps.suggested_settings()["machine"]
+        self.assertTrue(machine == "" or steps.MACHINE_PATTERN.match(machine), machine)
+
+    def test_one_matrix_runs_the_full_steps_commands_on_that_matrix_into_its_own_results_file(self):
+        def without_matrices(argv):
+            if "--matrices" not in argv:
+                return argv
+            at = argv.index("--matrices")
+            return argv[:at] + argv[at + 2:]
+
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d)
+            full = {s["id"]: s for s in steps.steps(settings_in(folder))}
+            for test, name in (("speed", "apache2"), ("accuracy", "hood"), ("speed", "poisson3d:llc=4")):
+                with self.subTest(test=test, name=name):
+                    one = steps.single_step(settings_in(folder), name, test)
+                    bench, gate = [c["argv"] for c in one["commands"]]
+                    full_bench, full_gate = [c["argv"] for c in full[test]["commands"]]
+                    self.assertEqual(bench[bench.index("--matrices") + 1], name)
+                    self.assertEqual(without_matrices(bench)[:-1], without_matrices(full_bench)[:-1])
+                    self.assertEqual(gate[:2] + gate[3:], full_gate[:2] + full_gate[3:])
+                    self.assertTrue(one["commands"][1]["gate"])
+                    out = pathlib.Path(bench[-1])
+                    self.assertEqual((gate[2], out.parent), (bench[-1], ROOT / "results" / "test-box"))
+                    self.assertTrue(out.name.startswith("one-") and out.name.endswith(f"-{test}.csv"), out.name)
+                    self.assertTrue(steps.MACHINE_PATTERN.match(out.stem), out.name)
+                    self.assertNotIn(out.name, (steps.SPEED_CSV, steps.ACCURACY_CSV))
+                    self.assertEqual(one["replaces"], [out])
+
+    def test_accuracy_is_offered_only_on_the_six_matrices_the_accuracy_step_uses(self):
+        with tempfile.TemporaryDirectory() as d:
+            settings = settings_in(pathlib.Path(d))
+            offered = {c["name"]: c["tests"] for c in steps.single_choices(settings)}
+            for name, test in (("ldoor", "accuracy"), ("poisson3d:llc=4", "accuracy"), ("nope", "speed"),
+                               ("hood", "rm"), ("hood", ["speed"]), (["hood"], "speed")):
+                with self.subTest(name=name, test=test), self.assertRaises(steps.SettingsError):
+                    steps.single_step(settings, name, test)
+        self.assertEqual(sorted(n for n, t in offered.items() if "accuracy" in t),
+                         sorted(steps.ACCURACY_MATRICES.split(",")))
+        self.assertTrue(all("speed" in t for t in offered.values()))
+        self.assertIn("audikw_1", offered)
+        self.assertIn("point27:llc=0.5", offered)
+
+    def test_a_real_matrix_is_available_once_downloaded_and_a_generated_one_always(self):
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d)
+            (folder / "data").mkdir()
+            (folder / "data" / "hood.mtx").write_text("", encoding="ascii")
+            available = {c["name"]: c["available"] for c in steps.single_choices(settings_in(folder))}
+        self.assertEqual((available["hood"], available["ecology2"], available["poisson3d:llc=4"]), (True, False, True))
+
+
+class Runner(unittest.TestCase):
+    def test_a_failing_command_stops_the_job(self):
+        job = run(jobs.Job("run", [{"id": "a", "title": "A", "commands": [py("raise SystemExit(3)")]},
+                                   {"id": "b", "title": "B", "commands": [py("print('never')")]}]))
+        self.assertEqual(job.state, "failed")
+        self.assertEqual([s["state"] for s in job.steps], ["failed", "waiting"])
+        self.assertIn("exit status 3", job.lines)
+        self.assertNotIn("never", job.lines)
+
+    def test_a_failed_gate_is_marked_and_the_next_step_still_runs(self):
+        job = run(jobs.Job("run", [{"id": "a", "title": "A", "commands": [py("raise SystemExit(2)", gate=True)]},
+                                   {"id": "b", "title": "B", "commands": [py("print('ran')")]}]))
+        self.assertEqual([s["state"] for s in job.steps], ["gate-failed", "done"])
+        self.assertEqual(job.state, "gate-failed")
+        self.assertIn("ran", job.lines)
+
+    def test_stop_ends_the_command_and_what_it_started(self):
+        runner = jobs.Runner()
+        code = "import subprocess, sys, time; subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)']); time.sleep(60)"
+        job = runner.start(jobs.Job("run", [{"id": "a", "title": "A", "commands": [py(code)]}]))
+        time.sleep(0.5)
+        with self.assertRaises(jobs.Busy):
+            runner.start(jobs.Job("run", [{"id": "b", "title": "B", "commands": [py("pass")]}]))
+        started = time.time()
+        self.assertTrue(runner.stop())
+        while job.finished is None and time.time() - started < 15:
+            time.sleep(0.05)
+        self.assertEqual(job.state, "stopped")
+        self.assertLess(time.time() - started, 10)
+
+    def test_preparation_and_cleanup_run_around_the_steps(self):
+        order = []
+        job = run(jobs.Job("run", [{"id": "a", "title": "A", "commands": [py("print('step')")]}],
+                           before=lambda j: order.append("before"), finish=lambda j: order.append("finish"),
+                           cleanup=lambda j: order.append("cleanup")))
+        self.assertEqual(job.state, "done")
+        self.assertEqual(order, ["before", "finish", "cleanup"])
+
+    def test_output_is_read_from_an_offset(self):
+        job = run(jobs.Job("run", [{"id": "a", "title": "A", "commands": [py("print('one'); print('two')")]}]))
+        everything = job.snapshot(0)
+        later = job.snapshot(everything["offset"] - 1)
+        self.assertEqual(later["lines"], ["two"])
+
+
+class Results(unittest.TestCase):
+    def write_csv(self, path, rows):
+        with open(path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=list(rows[0]))
+            writer.writeheader()
+            writer.writerows(rows)
+
+    def test_the_committed_results_match_the_results_document(self):
+        folder = ROOT / "results" / "i5-1335U-wsl2"
+        if not folder.is_dir():
+            self.skipTest("no committed i5-1335U results")
+        machine = results.machine(folder)
+        self.assertTrue(machine["speed"]["passed"])
+        self.assertTrue(machine["accuracy"]["passed"])
+        plain = next(l for l in machine["ladder"]["ladders"] if l["base"] == "eigen-E0")["points"]
+        self.assertEqual(round(plain[0]["ratio"], 3), 0.971)
+        self.assertEqual(round(plain[-1]["ratio"], 3), 0.781)
+        g3 = next(r for r in machine["speed"]["pairs"][0]["rows"] if r["matrix"] == "G3_circuit")
+        self.assertEqual(round(g3["ratio"], 3), 0.649)
+
+    def test_missing_files_are_not_run_and_rejected_files_say_why(self):
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d) / "box"
+            folder.mkdir()
+            row = dict(matrix="m", solver="eigen-E1", spmv_count=10, per_spmv_s=1, solve_s=1, status="Converged",
+                       tol="1e-8", rel_res_true="1e-9")
+            self.write_csv(folder / steps.ACCURACY_CSV, [row, dict(row, solver="ours-jacobi", tol="1e-6")])
+            machine = results.machine(folder)
+        self.assertIsNone(machine["speed"])
+        self.assertIn("incompatible", machine["accuracy"]["error"])
+
+    def test_a_failing_matrix_fails_the_gate(self):
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d) / "box"
+            folder.mkdir()
+            rows = []
+            for base, ours in (("eigen-E0", "ours"), ("eigen-E1", "ours-jacobi")):
+                for solver, time_s in ((base, 1.0), (ours, 1.5)):
+                    rows.append(dict(matrix="m", solver=solver, spmv_count=100, per_spmv_s=time_s, solve_s=time_s,
+                                     status="MaxIterations", tol="1e-8", rel_res_true="0.5", mode="fixed", repeat=0))
+            self.write_csv(folder / steps.SPEED_CSV, rows)
+            speed = results.machine(folder)["speed"]
+        self.assertFalse(speed["passed"])
+        self.assertEqual(speed["pairs"][0]["rows"][0]["ratio"], 1.5)
+
+    def test_one_matrix_runs_are_listed_apart_from_the_gates(self):
+        with tempfile.TemporaryDirectory() as d:
+            base = pathlib.Path(d)
+            (base / "box").mkdir()
+            rows = []
+            for pair in (("eigen-E0", "ours"), ("eigen-E1", "ours-jacobi")):
+                for solver, time_s in zip(pair, (1.0, 0.8)):
+                    rows.append(dict(matrix="apache2", solver=solver, spmv_count=100, per_spmv_s=time_s, solve_s=time_s,
+                                     status="MaxIterations", tol="1e-8", rel_res_true="0.5", mode="fixed", repeat=0))
+            self.write_csv(base / "box" / "one-apache2-speed.csv", rows)
+            runs = results.one_matrix_runs(base)
+            machines = results.all_machines(base)
+        self.assertEqual(machines, [])  # a folder of one-matrix runs is not a machine with G1 results
+        self.assertEqual([(r["results"], r["matrix"], r["test"], r["passed"]) for r in runs],
+                         [("box", "apache2", "speed", True)])
+        self.assertEqual([p["ratio"] for p in runs[0]["pairs"]], [0.8, 0.8])
+
+
+class Demo(unittest.TestCase):
+    def test_a_demo_compares_both_solvers_on_one_problem_and_records_the_curve(self):
+        plan_steps, finish, cleanup = demo.plan(pathlib.Path(BUILD_DIR), "poisson2d:30", "jacobi")
+        race = plan_steps[0]["commands"][0]["argv"]
+        work = pathlib.Path(race[race.index("--csv") + 1]).parent
+        job = run(jobs.Job("demo", plan_steps, finish=finish, cleanup=cleanup))
+        self.assertEqual(job.state, "done", "\n".join(job.lines))
+        r = job.result
+        self.assertTrue(r["same_answer"])
+        self.assertEqual(r["ours"]["spmv"], r["eigen"]["spmv"])
+        self.assertEqual(r["history"][0], [0, 1.0])
+        self.assertEqual(r["history"][-1][0], r["ours"]["spmv"])
+        self.assertLess(r["history"][-1][1], 1e-8)
+        self.assertGreater(r["speedup"], 0)
+        self.assertEqual((r["n"], r["ours"]["solver"], r["eigen"]["solver"]), (900, "ours-jacobi", "eigen-E1"))
+        self.assertFalse(work.exists())
+        # The page follows these to light up the flow diagram for whichever solver is running.
+        progress = [line for line in job.lines if line.startswith("progress:")]
+        self.assertEqual((progress[0], progress[1], progress[-1]),
+                         ("progress: read", "progress: solve ours-jacobi warmup",
+                          "progress: solve ours-jacobi round 2 of 2"))
+
+    def test_a_long_curve_is_thinned_but_keeps_both_ends(self):
+        points = demo.thin(list(range(10000)), 100)
+        self.assertLessEqual(len(points), 100)
+        self.assertEqual((points[0], points[-1]), ((0, 0), (9999, 9999)))
+
+    def test_choices_include_downloaded_suite_matrices_only(self):
+        with tempfile.TemporaryDirectory() as d:
+            pathlib.Path(d, "hood.mtx").write_text("", encoding="ascii")
+            specs = [c["spec"] for c in demo.choices(d)]
+        self.assertIn("poisson3d:llc=4", specs)
+        self.assertIn(os.path.join(d, "hood.mtx"), specs)
+        self.assertFalse(any("ecology2" in s for s in specs))
+
+
+class Matrices(unittest.TestCase):
+    def preview(self, spec, *extra):
+        with tempfile.TemporaryDirectory() as d:
+            out = pathlib.Path(d) / "p.json"
+            done = subprocess.run([str(pathlib.Path(BUILD_DIR) / "matrix_preview"), "--matrix", spec, "--out", str(out),
+                                   *extra], capture_output=True, text=True)
+            self.assertEqual(done.returncode, 0, done.stderr)
+            self.assertEqual(list(pathlib.Path(d).iterdir()), [out])  # no partial file is left behind
+            return json.loads(out.read_text(encoding="utf-8"))
+
+    def test_the_drawing_counts_every_nonzero_once(self):
+        # 2-D Poisson on a 10 x 10 grid: n = 100, 4 on the diagonal, -1 for each of up to 4 neighbours.
+        p = self.preview("poisson2d:10", "--grid", "7", "--zoom", "4")
+        self.assertEqual((p["matrix"], p["n"], p["nnz"], p["grid"]), ("poisson2d:10", 100, 460, 7))
+        self.assertEqual((len(p["cells"]), sum(p["cells"])), (49, 460))
+        self.assertEqual((p["row_nnz"]["min"], p["row_nnz"]["max"], p["bandwidth"]), (3, 5, 10))
+        self.assertAlmostEqual(p["row_nnz"]["mean"], 4.6)
+        entries = {(i, j): v for i, j, v in p["zoom"]["entries"]}
+        self.assertEqual(p["zoom"]["size"], 4)
+        self.assertEqual(entries, {(0, 0): 4, (0, 1): -1, (1, 0): -1, (1, 1): 4, (1, 2): -1, (2, 1): -1,
+                                   (2, 2): 4, (2, 3): -1, (3, 2): -1, (3, 3): 4})
+
+    def test_a_small_matrix_gets_one_cell_per_entry(self):
+        p = self.preview("poisson2d:3")
+        self.assertEqual((p["n"], p["grid"], sum(p["cells"]), p["zoom"]["size"]), (9, 9, 33, 9))
+
+    def test_a_drawing_is_used_until_its_file_changes(self):
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d)
+            settings = settings_in(folder)
+            (folder / "data").mkdir()
+            mtx = folder / "data" / "hood.mtx"
+            mtx.write_text("", encoding="ascii")
+            drawings = matrices.drawings_dir(settings)
+            drawings.mkdir()
+            for name in ("hood", "poisson3d_llc_4"):
+                (drawings / f"{name}.json").write_text('{"n": 1}', encoding="ascii")
+            listed = {m["name"]: m for m in matrices.listing(settings)}
+            self.assertEqual((listed["hood"]["drawing"], listed["poisson3d:llc=4"]["drawing"]), ({"n": 1}, {"n": 1}))
+            os.utime(mtx, (time.time() + 60, time.time() + 60))
+            listed = {m["name"]: m for m in matrices.listing(settings)}
+        self.assertIsNone(listed["hood"]["drawing"])
+        self.assertIsNone(listed["ecology2"]["drawing"])
+        self.assertEqual((listed["hood"]["group"], listed["poisson3d:llc=4"]["group"]), ("GHS_psdef", None))
+        self.assertTrue(all(m["about"] for m in listed.values()), [n for n, m in listed.items() if not m["about"]])
+
+    def test_drawing_covers_the_downloaded_matrices_not_yet_drawn(self):
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d)
+            settings = settings_in(folder)
+            (folder / "data").mkdir()
+            (folder / "data" / "hood.mtx").write_text("", encoding="ascii")
+            matrices.drawings_dir(settings).mkdir()
+            (matrices.drawings_dir(settings) / "point27_llc_4.json").write_text("{}", encoding="ascii")
+            plan = matrices.plan(settings)
+        names = [s["id"] for s in plan]
+        self.assertIn("hood", names)
+        self.assertIn("poisson3d:llc=4", names)
+        self.assertNotIn("point27:llc=4", names)
+        self.assertNotIn("ecology2", names)
+        argv = plan[names.index("hood")]["commands"][0]["argv"]
+        self.assertEqual(argv[:3], [str(folder / "release" / "matrix_preview"), "--matrix",
+                                    str(folder / "data" / "hood.mtx")])
+
+
+class Server(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.server = server.make_server(0)
+        cls.port = cls.server.server_address[1]
+        threading.Thread(target=cls.server.serve_forever, daemon=True).start()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.server.shutdown()
+        cls.server.server_close()
+
+    def request(self, method, path, body=None, headers=None):
+        connection = http.client.HTTPConnection("127.0.0.1", self.port, timeout=30)
+        all_headers = {"Host": f"localhost:{self.port}"}
+        if body is not None:
+            all_headers.update({"Content-Type": "application/json", "X-P08": "1"})
+        all_headers.update(headers or {})
+        connection.request(method, path, None if body is None else json.dumps(body), all_headers)
+        response = connection.getresponse()
+        data = response.read()
+        connection.close()
+        return response.status, data
+
+    def test_changes_need_the_header_the_page_sends(self):
+        with tempfile.TemporaryDirectory() as d:
+            body = {"settings": settings_in(pathlib.Path(d))}
+            status, _ = self.request("POST", "/api/preview", body, {"X-P08": "0"})
+            self.assertEqual(status, 403)
+            status, data = self.request("POST", "/api/preview", body)
+        self.assertEqual(status, 200)
+        self.assertEqual(len(json.loads(data)["steps"]), 6)
+
+    def test_other_host_names_are_refused(self):
+        status, _ = self.request("GET", "/api/state", headers={"Host": f"attacker.example:{self.port}"})
+        self.assertEqual(status, 403)
+
+    def test_existing_results_are_only_replaced_when_confirmed(self):
+        with tempfile.TemporaryDirectory() as d:
+            original = steps.ROOT
+            steps.ROOT = pathlib.Path(d)
+            self.addCleanup(setattr, steps, "ROOT", original)
+            target = pathlib.Path(d) / "results" / "test-box" / steps.SPEED_CSV
+            target.parent.mkdir(parents=True)
+            target.write_text("kept\n", encoding="ascii")
+            status, data = self.request("POST", "/api/run", {"settings": settings_in(pathlib.Path(d)), "steps": ["speed"]})
+            self.assertEqual(status, 409)
+            self.assertEqual(len(json.loads(data)["existing"]), 1)
+            self.assertEqual(target.read_text(encoding="ascii"), "kept\n")
+
+    def test_unknown_steps_and_bad_settings_are_rejected(self):
+        with tempfile.TemporaryDirectory() as d:
+            status, _ = self.request("POST", "/api/run", {"settings": settings_in(pathlib.Path(d)), "steps": ["rm"]})
+            self.assertEqual(status, 400)
+            status, data = self.request("POST", "/api/run", {"settings": settings_in(pathlib.Path(d), "../x"),
+                                                             "steps": ["build"]})
+        self.assertEqual(status, 400)
+        self.assertIn("results name", json.loads(data)["error"])
+
+    def test_the_preview_shows_the_one_matrix_choices_and_commands(self):
+        with tempfile.TemporaryDirectory() as d:
+            status, data = self.request("POST", "/api/preview", {"settings": settings_in(pathlib.Path(d)),
+                                                                 "single": {"matrix": "apache2", "test": "accuracy"}})
+        self.assertEqual(status, 200)
+        single = json.loads(data)["single"]
+        self.assertIn("apache2", [c["name"] for c in single["choices"]])
+        self.assertIn("--matrices apache2", single["commands"][0])
+        self.assertEqual(single["out"], "results/test-box/one-apache2-accuracy.csv")
+
+    def test_one_matrix_needs_a_valid_choice_its_file_and_a_build(self):
+        with tempfile.TemporaryDirectory() as d:
+            settings = settings_in(pathlib.Path(d))
+            for matrix, test, reason in (("hood", "speed", "Download"), ("poisson3d:llc=4", "speed", "Build"),
+                                         ("ldoor", "accuracy", "six"), ("nope", "speed", "list")):
+                with self.subTest(matrix=matrix, test=test):
+                    status, data = self.request("POST", "/api/single", {"settings": settings, "matrix": matrix,
+                                                                        "test": test})
+                    self.assertEqual(status, 400)
+                    self.assertIn(reason, json.loads(data)["error"])
+
+    def test_an_earlier_one_matrix_result_is_only_replaced_when_confirmed(self):
+        with tempfile.TemporaryDirectory() as d:
+            original = steps.ROOT
+            steps.ROOT = pathlib.Path(d)
+            self.addCleanup(setattr, steps, "ROOT", original)
+            (pathlib.Path(d) / "release").mkdir()
+            (pathlib.Path(d) / "release" / "bench_cg").write_text("", encoding="ascii")
+            target = pathlib.Path(d) / "results" / "test-box" / "one-poisson3d_llc_4-speed.csv"
+            target.parent.mkdir(parents=True)
+            target.write_text("kept\n", encoding="ascii")
+            status, data = self.request("POST", "/api/single", {"settings": settings_in(pathlib.Path(d)),
+                                                                "matrix": "poisson3d:llc=4", "test": "speed"})
+            self.assertEqual(status, 409)
+            self.assertEqual(json.loads(data)["existing"], ["results/test-box/one-poisson3d_llc_4-speed.csv"])
+            self.assertEqual(target.read_text(encoding="ascii"), "kept\n")
+
+    def test_drawing_needs_the_preview_tool(self):
+        with tempfile.TemporaryDirectory() as d:
+            status, data = self.request("POST", "/api/drawings", {"settings": settings_in(pathlib.Path(d))})
+        self.assertEqual(status, 400)
+        self.assertIn("Build", json.loads(data)["error"])
+
+    def test_the_matrix_list_is_served_with_its_drawings(self):
+        with tempfile.TemporaryDirectory() as d:
+            query = "&".join(f"{k}={v}" for k, v in settings_in(pathlib.Path(d)).items())
+            status, data = self.request("GET", f"/api/matrices?{query}")
+        self.assertEqual(status, 200)
+        listed = json.loads(data)
+        self.assertIn("ldoor", [m["name"] for m in listed["matrices"]])
+        self.assertFalse(listed["tool"])
+
+    def test_files_outside_the_static_folder_are_not_served(self):
+        self.assertEqual(self.request("GET", "/")[0], 200)
+        self.assertEqual(self.request("GET", "/charts.js")[0], 200)
+        for path in ("/../server.py", "/%2e%2e/server.py", "/fonts/../../server.py"):
+            with self.subTest(path=path):
+                self.assertEqual(self.request("GET", path)[0], 404)
+
+    def test_results_are_served_as_json(self):
+        status, data = self.request("GET", "/api/results")
+        self.assertEqual(status, 200)
+        self.assertIsInstance(json.loads(data)["machines"], list)
+
+
+if __name__ == "__main__":
+    BUILD_DIR = sys.argv.pop(1)
+    unittest.main()

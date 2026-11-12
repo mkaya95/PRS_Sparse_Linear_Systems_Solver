@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cstdint>
 #include <limits>
 #include <vector>
 
@@ -187,6 +188,60 @@ TEST(cg_on_the_backend_solves_a_poisson_system) {
   const SolveResult result = cg(*backend, nullptr, b.data(), x.data(), SolveOptions{});
   CHECK(result.status == SolveStatus::Converged);
   CHECK(true_relative_residual(a, b.data(), x.data()) < 1e-7);
+}
+
+TEST(cg_with_history_records_one_residual_per_iteration_and_solves_identically) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 20);
+  const AlignedArray<double> b = rhs_for_random_solution(a);
+  const AlignedArray<double> inv_diag = jacobi_inverse_diagonal(a);
+  const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
+  const std::size_t n = static_cast<std::size_t>(a.n_rows);
+  for (const double* diag : {static_cast<const double*>(nullptr), inv_diag.data()}) {
+    std::vector<double> plain_x(n), recorded_x(n), history = {42.0};
+    const SolveResult plain = cg(*backend, diag, b.data(), plain_x.data(), SolveOptions{});
+    const SolveResult recorded = cg_with_history(*backend, diag, b.data(), recorded_x.data(), SolveOptions{}, history);
+    CHECK(recorded.status == SolveStatus::Converged);
+    CHECK_EQ(recorded.spmv_count, plain.spmv_count);
+    CHECK_EQ(static_cast<std::int64_t>(history.size()), recorded.spmv_count + 1);
+    CHECK_EQ(history.front(), 1.0);  // x starts at 0, so r = b
+    CHECK_NEAR(history.back() / recorded.recursive_residual, 1.0, 1e-12);
+    CHECK(history.back() < 1e-8);
+    CHECK(history[1] < 1.0);
+    CHECK(plain_x == recorded_x);
+  }
+}
+
+TEST(cg_with_history_normalizes_a_rescaled_rhs) {
+  // A tiny b makes cg() solve with b / max|bᵢ|, which must not shift the recorded residuals.
+  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 10);
+  AlignedArray<double> b = rhs_for_random_solution(a);
+  for (double& value : b) value *= 1e-150;
+  const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
+  std::vector<double> x(b.size()), history;
+  const SolveResult result = cg_with_history(*backend, nullptr, b.data(), x.data(), SolveOptions{}, history);
+  CHECK(result.status == SolveStatus::Converged);
+  CHECK_EQ(history.front(), 1.0);
+  CHECK_NEAR(history.back() / result.recursive_residual, 1.0, 1e-12);
+}
+
+TEST(cg_with_history_refuses_an_initial_guess) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 4);
+  const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
+  const AlignedArray<double> b = rhs_for_unit_solution(a);
+  std::vector<double> x(b.size()), history;
+  SolveOptions options;
+  options.use_initial_guess = true;
+  CHECK_THROWS_WITH(cg_with_history(*backend, nullptr, b.data(), x.data(), options, history), "x = 0");
+}
+
+TEST(cg_with_history_is_empty_for_a_zero_rhs) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 4);
+  const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
+  const std::vector<double> b(static_cast<std::size_t>(a.n_rows), 0.0);
+  std::vector<double> x(b.size()), history = {1.0};
+  const SolveResult result = cg_with_history(*backend, nullptr, b.data(), x.data(), SolveOptions{}, history);
+  CHECK(result.status == SolveStatus::Converged);
+  CHECK(history.empty());
 }
 
 TEST(verification_uses_the_given_matrix_so_a_wrong_kernel_cannot_hide) {

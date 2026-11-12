@@ -1,3 +1,4 @@
 # Keep LF everywhere so scripts run under WSL2 from a Windows checkout.
 * text=auto eol=lf
 *.pdf binary
+*.woff2 binary
