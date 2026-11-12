@@ -21,7 +21,7 @@ struct NamedSolver {
   SolverFunction run;
 };
 
-std::vector<NamedSolver> eigen_solvers();   // eigen-E0 to eigen-E3
+std::vector<NamedSolver> eigen_solvers();   // eigen-E0 to eigen-E4
 std::vector<NamedSolver> ladder_solvers();   // our solvers, one rung per optimization
 std::vector<NamedSolver> variant_solvers();  // our solver with other storage formats and preconditioners
 std::vector<NamedSolver> our_solvers();      // ladder and variants: every solver of ours

@@ -1,9 +1,10 @@
-// Eigen's conjugate gradient in the four configurations we compare against.
+// Eigen's conjugate gradient in the five configurations we compare against.
 //
 //   E0  row-major     Lower|Upper  Identity            plain CG baseline
 //   E1  row-major     Lower|Upper  Diagonal            Jacobi baseline
 //   E2  column-major  Lower        Diagonal            what a default Eigen user gets
 //   E3  row-major     Lower|Upper  IncompleteCholesky  preconditioner baseline
+//   E4  row-major     Lower|Upper  IncompleteCholesky with natural ordering, the counterpart of ours-ic
 #include <Eigen/IterativeLinearSolvers>
 #include <Eigen/Sparse>
 #include <limits>
@@ -98,12 +99,15 @@ std::vector<NamedSolver> eigen_solvers() {
   using Eigen::IdentityPreconditioner;
   using Eigen::IncompleteCholesky;
   using Eigen::Lower;
+  using Eigen::NaturalOrdering;
   using Eigen::Upper;
   return {
       {"eigen-E0", Precond::None, run_eigen<RowMajorMatrix, Lower | Upper, IdentityPreconditioner>},
       {"eigen-E1", Precond::Jacobi, run_eigen<RowMajorMatrix, Lower | Upper, DiagonalPreconditioner<double>>},
       {"eigen-E2", Precond::Jacobi, run_eigen<ColMajorMatrix, Lower, DiagonalPreconditioner<double>>},
       {"eigen-E3", Precond::IncompleteCholesky, run_eigen<RowMajorMatrix, Lower | Upper, IncompleteCholesky<double>>},
+      {"eigen-E4", Precond::IncompleteCholesky,
+       run_eigen<RowMajorMatrix, Lower | Upper, IncompleteCholesky<double, Lower, NaturalOrdering<int>>>},
   };
 }
 

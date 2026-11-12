@@ -25,7 +25,7 @@ GENERATED = [
     ("poisson2d:llc=4", "2-D Poisson, 4x the cache", "about a minute"),
     ("poisson3d:llc=0.5", "3-D Poisson, half the cache", "under a second"),
 ]
-PAIRS = {"jacobi": ("ours-jacobi", "eigen-E1"), "none": ("ours", "eigen-E0")}
+PAIRS = {"jacobi": ("ours-jacobi", "eigen-E1"), "none": ("ours", "eigen-E0"), "ic": ("ours-ic", "eigen-E4")}
 TOL = "1e-8"
 MAX_POINTS = 1500
 

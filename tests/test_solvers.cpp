@@ -151,7 +151,8 @@ TEST(our_solvers_report_breakdown_on_an_indefinite_matrix) {
   const std::vector<double> b = {1, 1};
   for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     std::vector<double> x;
-    if (solver.precond == Precond::Jacobi) {
+    // Jacobi and Gauss-Seidel divide by the diagonal, so their setup refuses it.
+    if (solver.precond == Precond::Jacobi || solver.precond == Precond::SymGaussSeidel) {
       CHECK_THROWS_WITH(solve(solver, a, b, x), "positive");
       continue;
     }
@@ -164,7 +165,8 @@ TEST(our_solvers_report_breakdown_on_nan_values_without_spinning) {
   const std::vector<double> b = {1, 1};
   for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     std::vector<double> x;
-    if (solver.precond == Precond::Jacobi) {
+    // Jacobi and Gauss-Seidel divide by the diagonal, so their setup refuses it.
+    if (solver.precond == Precond::Jacobi || solver.precond == Precond::SymGaussSeidel) {
       CHECK_THROWS_WITH(solve(solver, a, b, x), "positive");
       continue;
     }
@@ -267,11 +269,12 @@ TEST(our_solvers_match_eigen_spmv_counts) {
   std::vector<double> x;
   const SolveResult plain = solve(ssolve_bench::find_solver("eigen-E0"), poisson, b, x);
   const SolveResult jacobi = solve(ssolve_bench::find_solver("eigen-E1"), poisson, b, x);
+  const SolveResult ic = solve(ssolve_bench::find_solver("eigen-E4"), poisson, b, x);
   for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
-    // Other preconditioners have their own Eigen counterpart, compared in their own test.
-    if (solver.precond != Precond::None && solver.precond != Precond::Jacobi) continue;
+    // Symmetric Gauss-Seidel has no Eigen counterpart.
+    if (solver.precond == Precond::SymGaussSeidel) continue;
     const SolveResult ours = solve(solver, poisson, b, x);
-    const SolveResult& theirs = solver.precond == Precond::None ? plain : jacobi;
+    const SolveResult& theirs = solver.precond == Precond::None ? plain : solver.precond == Precond::Jacobi ? jacobi : ic;
     CHECK(std::llabs(ours.spmv_count - theirs.spmv_count) <=
           std::max<long long>(1, theirs.spmv_count / 100));
   }
@@ -391,6 +394,37 @@ TEST(the_sell_variants_are_registered) {
     CHECK(ours);
   }
   CHECK(ssolve_bench::find_solver("ours-sell-jacobi").precond == Precond::Jacobi);
+}
+
+TEST(ours_ic_needs_the_same_iterations_as_eigen_e4) {
+  // The same factor as Eigen's IncompleteCholesky with natural ordering, so the same iteration count.
+  std::vector<CsrMatrix> matrices;
+  matrices.push_back(make_stencil(Stencil::Poisson3D, 15));
+  matrices.push_back(make_stencil(Stencil::Point27, 8));
+  Coo coo;
+  coo.n_rows = 300;
+  coo.n_cols = 300;
+  for (Index i = 0; i < 300; ++i) {
+    if (i > 0) coo.add(i, i - 1, -1.0);
+    coo.add(i, i, 2.5 * (1 + i % 7));
+    if (i + 1 < 300) coo.add(i, i + 1, -1.0);
+  }
+  matrices.push_back(csr_from_coo(coo));
+  for (const CsrMatrix& a : matrices) {
+    const AlignedArray<double> rhs = rhs_for_random_solution(a);
+    const std::vector<double> b(rhs.begin(), rhs.end());
+    std::vector<double> x;
+    const SolveResult ours = solve(ssolve_bench::find_solver("ours-ic"), a, b, x);
+    const SolveResult theirs = solve(ssolve_bench::find_solver("eigen-E4"), a, b, x);
+    CHECK(ours.status == SolveStatus::Converged);
+    CHECK(std::llabs(ours.spmv_count - theirs.spmv_count) <= std::max<long long>(1, theirs.spmv_count / 100));
+  }
+}
+
+TEST(the_preconditioner_variants_are_registered) {
+  CHECK(ssolve_bench::find_solver("ours-sgs").precond == Precond::SymGaussSeidel);
+  CHECK(ssolve_bench::find_solver("ours-ic").precond == Precond::IncompleteCholesky);
+  CHECK(ssolve_bench::find_solver("eigen-E4").precond == Precond::IncompleteCholesky);
 }
 
 TEST(unknown_solver_name_lists_the_valid_ones) {

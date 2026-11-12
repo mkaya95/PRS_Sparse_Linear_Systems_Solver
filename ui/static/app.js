@@ -8,6 +8,12 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 const STORE = "p08-ui-settings";
 const SINGLE_STORE = "p08-ui-single";
 const ALL_STEPS = ["build", "test", "download", "speed", "accuracy", "scipy"];
+// Each demo preconditioner: its name in the flow diagram, what it does, and the Eigen solver it races.
+const PRECONDS = {
+  jacobi: ["Jacobi", "scale by 1/diagonal", "Jacobi CG against Eigen E1"],
+  ic: ["Incomplete Cholesky", "approximate A = L·Lᵀ", "incomplete Cholesky CG against Eigen E4"],
+  none: ["Preconditioner", "none", "plain CG against Eigen E0"],
+};
 const STATE_TEXT = { waiting: "waiting", running: "running", done: "done", failed: "failed", "gate-failed": "gate failed", stopped: "stopped" };
 
 const ui = {
@@ -713,7 +719,7 @@ function renderDemo(r, recorded) {
   const its = r.ours.spmv === r.eigen.spmv ? `${r.ours.spmv.toLocaleString()} iterations each` : `ours ${r.ours.spmv.toLocaleString()} iterations, Eigen ${r.eigen.spmv.toLocaleString()}`;
   $("#demo-facts").textContent = `${r.label || r.matrix} · n = ${r.n.toLocaleString()}, ${r.nnz.toLocaleString()} non-zeros · ${its} · ` +
     (r.ours.converged && r.eigen.converged ? `both errors below ${r.tol}` : "not every solve met the tolerance") +
-    ` · ${r.precond === "jacobi" ? "Jacobi CG against Eigen E1" : "plain CG against Eigen E0"}` +
+    ` · ${(PRECONDS[r.precond] || PRECONDS.none)[2]}` +
     (r.power === "battery" ? " · ON BATTERY: these times are not reliable, plug in the charger" : "");
   if (r.history && r.history.length > 1) {
     $("#curve").innerHTML = Charts.residual(r.history, r.tol, "relative residual per iteration");
@@ -725,7 +731,7 @@ function renderDemo(r, recorded) {
   // Older recorded demos have no pictures.
   $("#demo-solutions").hidden = !r.solutions;
   $("#demo-solution-legend").innerHTML = r.solutions ? Charts.differenceLegend() : "";
-  showPictures($("#demo-solution-card"), r.solutions ? solutionCard(r.solutions, `${r.precond === "jacobi" ? "Jacobi" : "plain"} CG against Eigen`) : "");
+  showPictures($("#demo-solution-card"), r.solutions ? solutionCard(r.solutions, (PRECONDS[r.precond] || PRECONDS.none)[2]) : "");
 }
 
 // ---------- tooltip ----------
@@ -793,6 +799,9 @@ async function init() {
     ui.precond = b.dataset.precond;
     $$("#precond-seg button").forEach((x) => x.classList.toggle("on", x === b));
     $("#jacobi-box").classList.toggle("skip", ui.precond === "none");
+    const [name, about] = PRECONDS[ui.precond];
+    $("#precond-name").textContent = name;
+    $("#precond-about").textContent = about;
   });
   $("#solve-live").addEventListener("click", solveLive);
 

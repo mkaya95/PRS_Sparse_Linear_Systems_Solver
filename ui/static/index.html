@@ -145,7 +145,7 @@
     <section id="tab-demo" class="tab-panel" role="tabpanel" hidden>
       <div class="actions">
         <label class="pick">Matrix <select id="demo-matrix"></select></label>
-        <span class="seg" id="precond-seg"><button data-precond="jacobi" class="on">Jacobi</button><button data-precond="none">None</button></span>
+        <span class="seg" id="precond-seg"><button data-precond="jacobi" class="on">Jacobi</button><button data-precond="ic">Incomplete Cholesky</button><button data-precond="none">None</button></span>
         <button class="btn go" id="solve-live">Solve live</button>
         <span class="status" id="demo-status"></span>
       </div>
@@ -154,7 +154,7 @@
       <div class="flow" id="flow">
         <div class="box" data-phase="read">Read matrix<small>.mtx or generated</small></div><span class="arr">&rarr;</span>
         <div class="box" data-phase="read">Store as CSR<small>rows, columns, values</small></div><span class="arr">&rarr;</span>
-        <div class="box" data-phase="solve" id="jacobi-box">Jacobi<small>scale by 1/diagonal</small></div><span class="arr">&rarr;</span>
+        <div class="box" data-phase="solve" id="jacobi-box"><span id="precond-name">Jacobi</span><small id="precond-about">scale by 1/diagonal</small></div><span class="arr">&rarr;</span>
         <div class="box" data-phase="solve">CG loop<small>multiply, dot, update</small></div><span class="arr">&rarr;</span>
         <div class="box" data-phase="check">Check answer<small>true error &le; 1e-8</small></div>
       </div>

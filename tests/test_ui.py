@@ -317,6 +317,15 @@ class Demo(unittest.TestCase):
                          ("progress: read", "progress: solve ours-jacobi warmup",
                           "progress: solve ours-jacobi round 2 of 2"))
 
+    def test_the_demo_runs_incomplete_cholesky_against_eigen_e4(self):
+        plan_steps, finish, cleanup = demo.plan(pathlib.Path(BUILD_DIR), "poisson2d:30", "ic")
+        job = run(jobs.Job("demo", plan_steps, finish=finish, cleanup=cleanup))
+        self.assertEqual(job.state, "done", "\n".join(job.lines))
+        r = job.result
+        self.assertTrue(r["same_answer"])
+        self.assertEqual((r["ours"]["solver"], r["eigen"]["solver"]), ("ours-ic", "eigen-E4"))
+        self.assertLess(r["history"][-1][1], 1e-8)
+
     def test_a_long_curve_is_thinned_but_keeps_both_ends(self):
         points = demo.thin(list(range(10000)), 100)
         self.assertLessEqual(len(points), 100)

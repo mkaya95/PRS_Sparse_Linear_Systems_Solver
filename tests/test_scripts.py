@@ -793,6 +793,14 @@ class SolveCommand(unittest.TestCase):
         done = self.run_solve("--matrix", "poisson2d:5", "--precond", "ilu")
         self.assertEqual(done.returncode, 1)
         self.assertIn("ilu", done.stderr)
+        self.assertIn("none, jacobi, sgs or ic", done.stderr)
+
+    def test_gauss_seidel_and_incomplete_cholesky_are_selectable(self):
+        for precond in ("sgs", "ic"):
+            with self.subTest(precond=precond):
+                done = self.run_solve("--matrix", "poisson3d:10", "--precond", precond)
+                self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+                self.assertIn(f"preconditioner {precond}", done.stdout)
 
     def test_invalid_options_are_rejected(self):
         for option, value in (("--tol", "inf"), ("--tol", "nan"), ("--tol", "-1"),

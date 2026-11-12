@@ -1,6 +1,6 @@
 // Solves A x = b for one matrix and reports what happened.
 //
-// Usage: solve --matrix SPEC [--rhs b.txt | --problem a1|random|unit] [--precond none|jacobi] [--tol 1e-8]
+// Usage: solve --matrix SPEC [--rhs b.txt | --problem a1|random|unit] [--precond none|jacobi|sgs|ic] [--tol 1e-8]
 //              [--maxit N] [--out x.txt] [--history h.txt] [--format csr|sell [--chunk 8] [--sigma 256]]
 //
 // SPEC is poisson2d:N, poisson3d:N, point27:N, poisson3d:llc=4 or a Matrix Market file.
@@ -26,6 +26,7 @@
 #include "ssolve/backend.hpp"
 #include "ssolve/cg.hpp"
 #include "ssolve/generators.hpp"
+#include "ssolve/preconditioner.hpp"
 #include "ssolve/sell.hpp"
 #include "ssolve/timer.hpp"
 #include "ssolve/verify.hpp"
@@ -51,8 +52,15 @@ int main(int argc, char** argv) {
                                                   "format", "chunk", "sigma"});
     const std::string spec = args.required("matrix");
     const std::string precond = args.get("precond", "none");
-    if (precond != "none" && precond != "jacobi") {
-      throw std::runtime_error("unknown preconditioner '" + precond + "': use none or jacobi");
+    Precond kind = Precond::None;
+    if (precond == "jacobi") {
+      kind = Precond::Jacobi;
+    } else if (precond == "sgs") {
+      kind = Precond::SymGaussSeidel;
+    } else if (precond == "ic") {
+      kind = Precond::IncompleteCholesky;
+    } else if (precond != "none") {
+      throw std::runtime_error("unknown preconditioner '" + precond + "': use none, jacobi, sgs or ic");
     }
     if (args.has("rhs") && args.has("problem")) throw std::runtime_error("give either --rhs or --problem, not both");
     const std::string format = args.get("format", "csr");
@@ -81,8 +89,6 @@ int main(int argc, char** argv) {
     const double preparation_seconds = wall_seconds() - end_to_end_start;
 
     const double setup_start = wall_seconds();
-    AlignedArray<double> inv_diag;
-    if (precond == "jacobi") inv_diag = jacobi_inverse_diagonal(a);
     std::unique_ptr<Backend> backend;
     std::string storage = "csr";
     if (format == "sell") {
@@ -95,16 +101,16 @@ int main(int argc, char** argv) {
     } else {
       backend = make_seq_backend(clone(a));
     }
+    const std::unique_ptr<Preconditioner> preconditioner = make_preconditioner(kind, a);
     const double setup_seconds = wall_seconds() - setup_start;
 
-    const double* diag = precond == "jacobi" ? inv_diag.data() : nullptr;
     std::vector<double> history;
     SolveResult result;
     if (args.has("history")) {
-      result = cg_with_history(*backend, diag, b.data(), x.data(), options, history);
+      result = cg_with_history(*backend, *preconditioner, b.data(), x.data(), options, history);
       verify_result(a, b.data(), x.data(), options, result);
     } else {
-      result = verified_cg(a, *backend, diag, b.data(), x.data(), options);
+      result = verified_cg(a, *backend, *preconditioner, b.data(), x.data(), options);
     }
     const double end_to_end_seconds = wall_seconds() - end_to_end_start;
 

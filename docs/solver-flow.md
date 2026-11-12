@@ -40,7 +40,11 @@ flowchart TD
    system `b = A*1`.
 4. **Validate solver options.** The tolerance must be finite and positive;
    the maximum iteration count must be nonnegative (`0` selects the default).
-5. **Prepare the preconditioner and backend.** Plain CG needs no preconditioner.
+5. **Prepare the preconditioner and backend.** The preconditioner is none, Jacobi,
+   symmetric Gauss-Seidel (`sgs`, from HPCG's reference kernel) or incomplete
+   Cholesky (`ic`, from Eigen's IncompleteCholesky with natural ordering). CG runs
+   one loop for all of them: none and Jacobi merge their work into the vector
+   updates, the other two store z = M⁻¹r. Plain CG needs no preconditioner.
    Jacobi requires every diagonal and inverse-diagonal value to be finite and
    positive. The solver then constructs the sequential CSR backend, or the SELL-C-σ
    backend with `--format sell`; both share the same vector kernels.

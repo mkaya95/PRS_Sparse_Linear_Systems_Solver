@@ -122,7 +122,7 @@ def start_demo(data):
     if spec not in options:
         raise ClientError("pick a matrix from the list")
     if precond not in demo.PAIRS:
-        raise ClientError("preconditioner must be jacobi or none")
+        raise ClientError("preconditioner must be jacobi, ic or none")
     for binary in ("bench_cg", "solve"):
         if not (paths["release"] / binary).exists():
             raise ClientError(f"{binary} is not built in {steps.display([str(paths['release'])])}. "
