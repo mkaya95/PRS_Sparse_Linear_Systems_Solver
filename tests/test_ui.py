@@ -219,6 +219,34 @@ class Results(unittest.TestCase):
         g3 = next(r for r in machine["speed"]["pairs"][0]["rows"] if r["matrix"] == "G3_circuit")
         self.assertEqual(round(g3["ratio"], 3), 0.649)
 
+    def write_picture(self, path, matrix):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"matrix": matrix, "n": 4, "grid": 2, "problem": "random", "x_scale": 1.0,
+                                    "comparisons": []}), encoding="utf-8")
+
+    def test_solution_pictures_of_the_accuracy_step_belong_to_the_machine(self):
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d) / "box"
+            self.write_picture(folder / "solutions" / "b.json", "b")
+            self.write_picture(folder / "solutions" / "a.json", "a")
+            (folder / "solutions" / "c.json").write_text("{not json", encoding="utf-8")
+            self.write_picture(folder / "one-solutions" / "z.json", "z")
+            pictures = results.solutions(folder)
+        self.assertEqual([p.get("matrix", p["file"]) for p in pictures], ["a", "b", "c.json"])
+        self.assertIn("error", pictures[2])
+        self.assertEqual(pictures[0]["file"], "a.json")
+
+    def test_one_matrix_pictures_are_listed_from_every_folder(self):
+        with tempfile.TemporaryDirectory() as d:
+            base = pathlib.Path(d)
+            self.write_picture(base / "box" / "one-solutions" / "hood.json", "hood")
+            self.write_picture(base / "other" / "one-solutions" / "apache2.json", "apache2")
+            machines = results.all_machines(base)
+            pictures = results.one_matrix_solutions(base)
+        self.assertEqual(machines, [])  # one-matrix pictures alone do not make a machine with G1 results
+        self.assertEqual(sorted((p["results"], p["matrix"]) for p in pictures),
+                         [("box", "hood"), ("other", "apache2")])
+
     def test_missing_files_are_not_run_and_rejected_files_say_why(self):
         with tempfile.TemporaryDirectory() as d:
             folder = pathlib.Path(d) / "box"
@@ -277,6 +305,11 @@ class Demo(unittest.TestCase):
         self.assertLess(r["history"][-1][1], 1e-8)
         self.assertGreater(r["speedup"], 0)
         self.assertEqual((r["n"], r["ours"]["solver"], r["eigen"]["solver"]), (900, "ours-jacobi", "eigen-E1"))
+        self.assertEqual(race[race.index("--solutions") + 1], str(work / "solutions.json"))
+        pictures = r["solutions"]
+        self.assertEqual([(c["a"], c["b"]) for c in pictures["comparisons"]],
+                         [("ours-jacobi", "eigen-E1"), ("ours-jacobi", "true"), ("eigen-E1", "true")])
+        self.assertLess(pictures["comparisons"][0]["rel_norm"], 1e-6)
         self.assertFalse(work.exists())
         # The page follows these to light up the flow diagram for whichever solver is running.
         progress = [line for line in job.lines if line.startswith("progress:")]

@@ -4,10 +4,11 @@ The gates here are the README's: speed from g1-real.csv, accuracy from g1-real-s
 page and summarize.py can never disagree. g1-ladder.csv, when present, gives the optimization ladder.
 """
 import csv
+import json
 import math
 import sys
 
-from steps import ACCURACY_CSV, ROOT, SPEED_CSV
+from steps import ACCURACY_CSV, ONE_SOLUTIONS_DIR, ROOT, SOLUTIONS_DIR, SPEED_CSV
 
 sys.path.insert(0, str(ROOT / "scripts"))
 import summarize  # noqa: E402
@@ -107,12 +108,34 @@ def section(loader, path):
         return {"error": str(error)}
 
 
+def pictures_in(folder):
+    """Every solution picture file in folder, sorted by matrix name. A file that cannot be read says why."""
+    found = []
+    for path in sorted(folder.glob("*.json")) if folder.is_dir() else []:
+        try:
+            with open(path, encoding="utf-8") as f:
+                entry = json.load(f)
+            if not isinstance(entry, dict):
+                raise ValueError("not a solution picture")
+        except (OSError, ValueError) as error:
+            entry = {"error": str(error)}
+        entry["file"] = path.name
+        found.append(entry)
+    return sorted(found, key=lambda e: str(e.get("matrix", e["file"])))
+
+
+def solutions(folder):
+    """The Accuracy step's solution pictures: our answer against Eigen's and against the true one."""
+    return pictures_in(folder / SOLUTIONS_DIR)
+
+
 def machine(folder):
     return {
         "name": folder.name,
         "speed": section(speed_section, folder / SPEED_CSV),
         "accuracy": section(accuracy_section, folder / ACCURACY_CSV),
         "ladder": section(ladder_section, folder / LADDER_CSV),
+        "solutions": solutions(folder),
     }
 
 
@@ -141,6 +164,20 @@ def one_matrix_run(path):
     matrices = [m for m, _ in groups]
     return {"matrix": matrices[0] if matrices else path.stem, "pairs": out,
             "passed": bool(out) and all(p["ok"] for p in out)}
+
+
+def one_matrix_solutions(results_dir=None):
+    """Solution pictures from one-matrix accuracy runs in every results/<name>/one-solutions/ folder.
+    Like the one-matrix CSVs, they are listed apart from any machine's G1 results."""
+    base = results_dir or ROOT / "results"
+    if not base.is_dir():
+        return []
+    found = []
+    for folder in sorted(p for p in base.iterdir() if p.is_dir()):
+        for entry in pictures_in(folder / ONE_SOLUTIONS_DIR):
+            entry["results"] = folder.name
+            found.append(entry)
+    return found
 
 
 def one_matrix_runs(results_dir=None):

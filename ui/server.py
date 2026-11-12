@@ -219,7 +219,8 @@ class Handler(BaseHTTPRequestHandler):
                 offset = int(query.get("offset", ["0"])[0])
                 return self.send_json({"job": job.snapshot(offset) if job else None})
             if url.path == "/api/results":
-                return self.send_json({"machines": results.all_machines(), "single": results.one_matrix_runs()})
+                return self.send_json({"machines": results.all_machines(), "single": results.one_matrix_runs(),
+                                       "one_solutions": results.one_matrix_solutions()})
             if url.path == "/api/demo/choices":
                 return self.send_json(demo_choices(query))
             if url.path == "/api/demo/last":
