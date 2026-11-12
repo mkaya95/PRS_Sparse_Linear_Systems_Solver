@@ -42,6 +42,7 @@ add_custom_target(ssolve_build_info
   VERBATIM)
 
 add_library(ssolve STATIC
+  src/bench/compare.cpp
   src/bench/csv.cpp
   src/bench/manifest.cpp
   src/backends/seq/seq_backend.cpp
@@ -111,6 +112,7 @@ ssolve_test(test_mtx_reader)
 ssolve_test(test_generators)
 ssolve_test(test_csv)
 ssolve_test(test_backend)
+ssolve_test(test_compare)
 
 add_executable(test_solvers tests/test_solvers.cpp)
 target_include_directories(test_solvers PRIVATE tests)
