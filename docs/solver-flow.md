@@ -1,6 +1,6 @@
 # Sequential Solver Flow
 
-This document describes the current sequential FP64 CG implementation. It uses CSR. SELL storage and OpenMP solver parallelism are not part of the current delivery.
+This document describes the current sequential FP64 CG implementation. It uses CSR by default, or SELL-C-σ storage with `--format sell`. OpenMP solver parallelism is not part of the current delivery.
 
 ```mermaid
 flowchart TD
@@ -42,7 +42,8 @@ flowchart TD
    the maximum iteration count must be nonnegative (`0` selects the default).
 5. **Prepare the preconditioner and backend.** Plain CG needs no preconditioner.
    Jacobi requires every diagonal and inverse-diagonal value to be finite and
-   positive. The solver then constructs the sequential CSR backend.
+   positive. The solver then constructs the sequential CSR backend, or the SELL-C-σ
+   backend with `--format sell`; both share the same vector kernels.
 6. **Run CG.** The normal CLI path starts with `x = 0`. Invalid curvature or
    non-finite intermediate arithmetic returns `Breakdown`. Reaching the
    iteration limit returns `MaxIterations`; neither indicates success.

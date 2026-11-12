@@ -4,9 +4,15 @@
 
 namespace ssolve_bench {
 
+std::vector<NamedSolver> our_solvers() {
+  std::vector<NamedSolver> solvers = ladder_solvers();
+  for (NamedSolver& solver : variant_solvers()) solvers.push_back(std::move(solver));
+  return solvers;
+}
+
 std::vector<NamedSolver> all_solvers() {
   std::vector<NamedSolver> solvers = eigen_solvers();
-  for (NamedSolver& solver : ladder_solvers()) solvers.push_back(std::move(solver));
+  for (NamedSolver& solver : our_solvers()) solvers.push_back(std::move(solver));
   return solvers;
 }
 

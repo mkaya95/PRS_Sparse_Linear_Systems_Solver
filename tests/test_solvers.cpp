@@ -124,7 +124,7 @@ TEST(a_zero_iteration_limit_means_twice_n) {
 TEST(our_solvers_solve_a_large_2d_poisson_system) {
   const CsrMatrix a = make_stencil(Stencil::Poisson2D, 100);
   const std::vector<double> b = unit_rhs(a);
-  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+  for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     std::vector<double> x;
     SolveOptions options;
     options.max_iterations = 2000;
@@ -138,7 +138,7 @@ TEST(our_solvers_solve_a_large_2d_poisson_system) {
 TEST(our_solvers_solve_a_1x1_system) {
   const CsrMatrix a = diagonal_matrix({4});
   const std::vector<double> b = {8};
-  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+  for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     std::vector<double> x;
     const SolveResult result = solve(solver, a, b, x);
     CHECK_EQ(result.spmv_count, std::int64_t{1});
@@ -149,7 +149,7 @@ TEST(our_solvers_solve_a_1x1_system) {
 TEST(our_solvers_report_breakdown_on_an_indefinite_matrix) {
   const CsrMatrix a = diagonal_matrix({1, -1});
   const std::vector<double> b = {1, 1};
-  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+  for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     std::vector<double> x;
     if (solver.precond == Precond::Jacobi) {
       CHECK_THROWS_WITH(solve(solver, a, b, x), "positive");
@@ -162,7 +162,7 @@ TEST(our_solvers_report_breakdown_on_an_indefinite_matrix) {
 TEST(our_solvers_report_breakdown_on_nan_values_without_spinning) {
   const CsrMatrix a = diagonal_matrix({1, std::numeric_limits<double>::quiet_NaN()});
   const std::vector<double> b = {1, 1};
-  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+  for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     std::vector<double> x;
     if (solver.precond == Precond::Jacobi) {
       CHECK_THROWS_WITH(solve(solver, a, b, x), "positive");
@@ -177,7 +177,7 @@ TEST(our_solvers_report_breakdown_on_nan_values_without_spinning) {
 TEST(our_solvers_report_breakdown_on_a_nan_rhs) {
   const CsrMatrix a = diagonal_matrix({1, 2});
   const std::vector<double> b = {1, std::numeric_limits<double>::quiet_NaN()};
-  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+  for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     std::vector<double> x;
     CHECK_EQ(std::string(to_string(solve(solver, a, b, x).status)), std::string("Breakdown"));
   }
@@ -187,7 +187,7 @@ TEST(our_solvers_do_not_mistake_an_all_nan_rhs_for_zero) {
   const CsrMatrix a = diagonal_matrix({1, 2});
   const double nan = std::numeric_limits<double>::quiet_NaN();
   const std::vector<double> b = {nan, nan};
-  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+  for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     std::vector<double> x;
     CHECK_EQ(std::string(to_string(solve(solver, a, b, x).status)), std::string("Breakdown"));
   }
@@ -196,7 +196,7 @@ TEST(our_solvers_do_not_mistake_an_all_nan_rhs_for_zero) {
 TEST(our_solvers_report_breakdown_on_an_infinite_rhs) {
   const CsrMatrix a = diagonal_matrix({1, 2});
   const std::vector<double> b = {1, std::numeric_limits<double>::infinity()};
-  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+  for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     std::vector<double> x;
     CHECK_EQ(std::string(to_string(solve(solver, a, b, x).status)), std::string("Breakdown"));
   }
@@ -209,7 +209,7 @@ TEST(our_solvers_reject_a_non_square_matrix) {
   coo.add(0, 0, 1);
   const CsrMatrix a = csr_from_coo(coo);
   const std::vector<double> b = {1};
-  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+  for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     std::vector<double> x;
     CHECK_THROWS_WITH(solve(solver, a, b, x), "square");
   }
@@ -220,7 +220,7 @@ TEST(our_solvers_handle_a_very_small_rhs) {
   const CsrMatrix a = make_stencil(Stencil::Poisson2D, 20);
   std::vector<double> b = unit_rhs(a);
   for (double& value : b) value = value * 1e-200 + 1e-200;
-  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+  for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     std::vector<double> x;
     const SolveResult result = solve(solver, a, b, x);
     CHECK(result.status == SolveStatus::Converged);
@@ -234,7 +234,7 @@ TEST(our_solvers_handle_a_very_large_rhs) {
   const CsrMatrix a = make_stencil(Stencil::Poisson2D, 20);
   std::vector<double> b = unit_rhs(a);
   for (double& value : b) value = value * 1e+200 + 1e+200;
-  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+  for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     std::vector<double> x;
     const SolveResult result = solve(solver, a, b, x);
     CHECK(result.status == SolveStatus::Converged);
@@ -248,7 +248,7 @@ TEST(our_solvers_start_from_a_given_guess) {
   const std::vector<double> b = unit_rhs(a);
   SolveOptions options;
   options.use_initial_guess = true;
-  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+  for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     std::vector<double> exact(b.size(), 1.0);
     const SolveResult at_solution = solver.run(a, b.data(), exact.data(), options);
     CHECK(at_solution.status == SolveStatus::Converged);
@@ -267,7 +267,9 @@ TEST(our_solvers_match_eigen_spmv_counts) {
   std::vector<double> x;
   const SolveResult plain = solve(ssolve_bench::find_solver("eigen-E0"), poisson, b, x);
   const SolveResult jacobi = solve(ssolve_bench::find_solver("eigen-E1"), poisson, b, x);
-  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+  for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
+    // Other preconditioners have their own Eigen counterpart, compared in their own test.
+    if (solver.precond != Precond::None && solver.precond != Precond::Jacobi) continue;
     const SolveResult ours = solve(solver, poisson, b, x);
     const SolveResult& theirs = solver.precond == Precond::None ? plain : jacobi;
     CHECK(std::llabs(ours.spmv_count - theirs.spmv_count) <=
@@ -279,7 +281,7 @@ TEST(jacobi_solvers_converge_at_once_on_a_badly_scaled_diagonal_system) {
   const CsrMatrix a = diagonal_matrix({1, 1e6, 1e-6});
   const std::vector<double> b = {1, 2, 3};
   int jacobi_solvers = 0;
-  for (const NamedSolver& solver : ssolve_bench::ladder_solvers()) {
+  for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     if (solver.precond != Precond::Jacobi) continue;
     ++jacobi_solvers;
     std::vector<double> x;
@@ -379,6 +381,16 @@ TEST(the_ladder_has_every_rung) {
                            "L5-nopass", "L6-rowptr32", "J0-passes", "J1-fused", "ours", "ours-jacobi"}) {
     CHECK_EQ(ssolve_bench::find_solver(name).name, std::string(name));
   }
+}
+
+TEST(the_sell_variants_are_registered) {
+  for (const char* name : {"ours-sell", "ours-sell-jacobi"}) {
+    CHECK_EQ(ssolve_bench::find_solver(name).name, std::string(name));
+    bool ours = false;
+    for (const NamedSolver& solver : ssolve_bench::our_solvers()) ours = ours || solver.name == name;
+    CHECK(ours);
+  }
+  CHECK(ssolve_bench::find_solver("ours-sell-jacobi").precond == Precond::Jacobi);
 }
 
 TEST(unknown_solver_name_lists_the_valid_ones) {

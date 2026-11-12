@@ -74,16 +74,22 @@ class SellBackend final : public SeqVectorBackend {
 
 std::unique_ptr<Backend> make_sell_backend(const CsrMatrix& a, int chunk, Index sigma) {
   if (a.n_rows != a.n_cols) throw std::runtime_error("the solver backend needs a square matrix");
-  SellMatrix s = sell_from_csr(a, chunk, sigma);
-  switch (chunk) {
+  return make_sell_backend(sell_from_csr(a, chunk, sigma));
+}
+
+std::unique_ptr<Backend> make_sell_backend(SellMatrix s) {
+  if (s.n_rows != s.n_cols) throw std::runtime_error("the solver backend needs a square matrix");
+  switch (s.chunk) {
     case 4:
       return std::make_unique<SellBackend<4>>(std::move(s));
     case 8:
       return std::make_unique<SellBackend<8>>(std::move(s));
     case 16:
       return std::make_unique<SellBackend<16>>(std::move(s));
-    default:
+    case 32:
       return std::make_unique<SellBackend<32>>(std::move(s));
+    default:
+      throw std::runtime_error("SELL chunk must be 4, 8, 16 or 32");
   }
 }
 

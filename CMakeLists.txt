@@ -85,6 +85,7 @@ add_library(ssolve_bench STATIC
   bench/eigen_solvers.cpp
   bench/ladder.cpp
   bench/registry.cpp
+  bench/variants.cpp
 )
 target_include_directories(ssolve_bench PUBLIC bench)
 target_include_directories(ssolve_bench SYSTEM PRIVATE "${SSOLVE_EIGEN_DIR}")

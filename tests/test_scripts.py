@@ -444,6 +444,23 @@ class BenchKernels(unittest.TestCase):
                 self.assertEqual({r["kernel"] for r in rows}, {"spmv", "dot", "axpy", "norm2", "xpby"})
                 self.assertTrue(all(float(r["seconds"]) > 0 for r in rows))
 
+    def test_a_sell_implementation_is_timed_like_the_others(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "k.csv")
+            done = self.run_kernels("L3-acc2,sell-c8-s256", out)
+            self.assertEqual(done.returncode, 0, done.stderr)
+            with open(out, newline="", encoding="utf-8") as f:
+                rows = list(csv.DictReader(f))
+        self.assertEqual({r["impl"] for r in rows}, {"L3-acc2", "sell-c8-s256"})
+        self.assertEqual({r["kernel"] for r in rows if r["impl"] == "sell-c8-s256"},
+                         {"spmv", "dot", "axpy", "norm2", "xpby"})
+
+    def test_a_bad_sell_name_lists_the_pattern(self):
+        with tempfile.TemporaryDirectory() as d:
+            done = self.run_kernels("sell-c6-s1", os.path.join(d, "k.csv"))
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("chunk must be 4, 8, 16 or 32", done.stderr)
+
     def test_implementations_take_turns(self):
         with tempfile.TemporaryDirectory() as d:
             out = os.path.join(d, "k.csv")
@@ -746,6 +763,21 @@ class SolveCommand(unittest.TestCase):
         done = self.run_solve("--matrix", "poisson2d:30", "--precond", "jacobi")
         self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
         self.assertIn("jacobi", done.stdout)
+
+    def test_sell_storage_is_selectable(self):
+        done = self.run_solve("--matrix", "poisson3d:10", "--format", "sell", "--chunk", "4", "--sigma", "8")
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertIn("format         sell (C = 4, sigma = 8, stored/nnz = ", done.stdout)
+        csr = self.run_solve("--matrix", "poisson3d:10")
+        self.assertIn("format         csr", csr.stdout)
+
+    def test_sell_settings_need_the_sell_format(self):
+        done = self.run_solve("--matrix", "poisson3d:10", "--chunk", "4")
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("--chunk and --sigma need --format sell", done.stderr)
+        done = self.run_solve("--matrix", "poisson3d:10", "--format", "ell")
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("csr or sell", done.stderr)
 
     def test_running_out_of_iterations_exits_2(self):
         done = self.run_solve("--matrix", "poisson2d:30", "--maxit", "1")
