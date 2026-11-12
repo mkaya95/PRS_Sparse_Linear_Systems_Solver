@@ -1,12 +1,12 @@
-// Sequential kernels, as chosen by the measurements in results/.
+// The sequential CSR backend, as chosen by the measurements in results/.
 //
 // The CSR row loop uses two accumulators, the best of the variants tried on the optimization
-// ladder. Vector loops need `omp simd`, because GCC does not otherwise vectorize floating-point
-// sums, and fused kernels save a separate pass over each vector.
+// ladder. The vector kernels are shared with the other formats in seq_vectors.hpp.
 #include <cstdint>
 #include <stdexcept>
 #include <utility>
 
+#include "seq_vectors.hpp"
 #include "ssolve/backend.hpp"
 #include "ssolve/kernels_common.hpp"
 
@@ -15,39 +15,18 @@ namespace ssolve {
 namespace {
 
 template <class Ptr>
-class SeqBackend final : public Backend {
+class SeqBackend final : public SeqVectorBackend {
  public:
-  explicit SeqBackend(CsrMatrixT<Ptr> a) : a_(std::move(a)), size_(static_cast<std::size_t>(a_.n_rows)) {}
+  explicit SeqBackend(CsrMatrixT<Ptr> a)
+      : SeqVectorBackend(static_cast<std::size_t>(a.n_rows)), a_(std::move(a)) {}
 
   Index n() const override { return a_.n_rows; }
-
-  void set_zero(double* SSOLVE_RESTRICT x) const override {
-#pragma omp simd
-    for (std::size_t i = 0; i < size_; ++i) x[i] = 0.0;
-  }
-
-  void copy(const double* SSOLVE_RESTRICT source, double* SSOLVE_RESTRICT destination) const override {
-#pragma omp simd
-    for (std::size_t i = 0; i < size_; ++i) destination[i] = source[i];
-  }
-
-  double dot(const double* SSOLVE_RESTRICT x, const double* SSOLVE_RESTRICT y) const override {
-    double sum = 0.0;
-#pragma omp simd reduction(+ : sum)
-    for (std::size_t i = 0; i < size_; ++i) sum += x[i] * y[i];
-    return sum;
-  }
 
   void spmv(const double* SSOLVE_RESTRICT x, double* SSOLVE_RESTRICT y) const override {
     const Ptr* SSOLVE_RESTRICT const row_ptr = a_.row_ptr.data();
     const Index* SSOLVE_RESTRICT const col = a_.col.data();
     const double* SSOLVE_RESTRICT const val = a_.val.data();
     for (std::size_t i = 0; i < size_; ++i) y[i] = row_times_vector(row_ptr, col, val, x, i);
-  }
-
-  void xpby(const double* SSOLVE_RESTRICT x, double beta, double* SSOLVE_RESTRICT y) const override {
-#pragma omp simd
-    for (std::size_t i = 0; i < size_; ++i) y[i] = x[i] + beta * y[i];
   }
 
   double spmv_dot(const double* SSOLVE_RESTRICT x, double* SSOLVE_RESTRICT y) const override {
@@ -61,39 +40,6 @@ class SeqBackend final : public Backend {
       sum += x[i] * value;
     }
     return sum;
-  }
-
-  double cg_update(double a, const double* SSOLVE_RESTRICT p, const double* SSOLVE_RESTRICT q, double* SSOLVE_RESTRICT x,
-                   double* SSOLVE_RESTRICT r) const override {
-    double rr = 0.0;
-#pragma omp simd reduction(+ : rr)
-    for (std::size_t i = 0; i < size_; ++i) {
-      x[i] += a * p[i];
-      r[i] -= a * q[i];
-      rr += r[i] * r[i];
-    }
-    return rr;
-  }
-
-  RrRz jacobi_update(double a, const double* SSOLVE_RESTRICT p, const double* SSOLVE_RESTRICT q,
-                     double* SSOLVE_RESTRICT x, double* SSOLVE_RESTRICT r,
-                     const double* SSOLVE_RESTRICT inv_diag) const override {
-    double rr = 0.0, rz = 0.0;
-#pragma omp simd reduction(+ : rr, rz)
-    for (std::size_t i = 0; i < size_; ++i) {
-      x[i] += a * p[i];
-      r[i] -= a * q[i];
-      const double r_squared = r[i] * r[i];
-      rr += r_squared;
-      rz += r_squared * inv_diag[i];
-    }
-    return {rr, rz};
-  }
-
-  void jacobi_direction(const double* SSOLVE_RESTRICT inv_diag, const double* SSOLVE_RESTRICT r, double beta,
-                        double* SSOLVE_RESTRICT p) const override {
-#pragma omp simd
-    for (std::size_t i = 0; i < size_; ++i) p[i] = inv_diag[i] * r[i] + beta * p[i];
   }
 
  private:
@@ -114,7 +60,6 @@ class SeqBackend final : public Backend {
   }
 
   CsrMatrixT<Ptr> a_;
-  std::size_t size_;
 };
 
 }  // namespace

@@ -1,6 +1,9 @@
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 #include <limits>
+#include <string>
 #include <vector>
 
 #include "ssolve/backend.hpp"
@@ -270,6 +273,66 @@ TEST(verified_cg_accepts_a_correct_answer) {
   const SolveResult result = verified_cg(a, *backend, nullptr, b.data(), x.data(), SolveOptions{});
   CHECK(result.status == SolveStatus::Converged);
   CHECK(result.true_residual <= 1e-8);
+}
+
+TEST(sell_spmv_matches_the_reference_for_every_chunk_and_sigma) {
+  std::vector<CsrMatrix> matrices;
+  matrices.push_back(make_stencil(Stencil::Point27, 5));
+  for (const std::size_t n : kSizes) matrices.push_back(path_graph_matrix(static_cast<Index>(n)));
+  for (const CsrMatrix& a : matrices) {
+    const std::size_t n = static_cast<std::size_t>(a.n_rows);
+    const std::vector<double> x = ramp(n, 1.0, -0.375);
+    std::vector<double> expected(n);
+    spmv_reference(a, x.data(), expected.data());
+    for (const int chunk : {4, 8, 16, 32}) {
+      for (const Index sigma : {Index{1}, Index{chunk}, Index{256}}) {
+        std::vector<double> y(n, -9.0);
+        make_sell_backend(a, chunk, sigma)->spmv(x.data(), y.data());
+        for (std::size_t i = 0; i < n; ++i) {
+          if (y[i] != expected[i]) {
+            test_util::fail(__FILE__, __LINE__, "n=" + std::to_string(n) + " C=" + std::to_string(chunk) +
+                                                    " sigma=" + std::to_string(sigma) + " row " + std::to_string(i));
+          }
+        }
+      }
+    }
+  }
+}
+
+TEST(sell_spmv_dot_returns_x_dot_y_in_the_original_order) {
+  const CsrMatrix a = make_stencil(Stencil::Point27, 5);
+  const std::size_t n = static_cast<std::size_t>(a.n_rows);
+  const std::vector<double> x = ramp(n, -2.0, 0.03125);
+  std::vector<double> expected(n), y(n);
+  spmv_reference(a, x.data(), expected.data());
+  double dot = 0.0;
+  for (std::size_t i = 0; i < n; ++i) dot += x[i] * expected[i];
+  for (const int chunk : {4, 8, 16, 32}) {
+    const double fused = make_sell_backend(a, chunk, 256)->spmv_dot(x.data(), y.data());
+    CHECK_NEAR(fused, dot, 1e-12 * std::fabs(dot));
+    for (std::size_t i = 0; i < n; ++i) CHECK_EQ(y[i], expected[i]);
+  }
+}
+
+TEST(cg_with_the_sell_backend_matches_csr) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson3D, 12);
+  const AlignedArray<double> b = rhs_for_unit_solution(a);
+  const std::size_t n = static_cast<std::size_t>(a.n_rows);
+  AlignedArray<double> x_csr(n), x_sell(n);
+  const SolveResult csr = cg(*make_seq_backend(clone(a)), nullptr, b.data(), x_csr.data(), {});
+  const SolveResult sell = cg(*make_sell_backend(a), nullptr, b.data(), x_sell.data(), {});
+  CHECK(csr.status == SolveStatus::Converged);
+  CHECK(sell.status == SolveStatus::Converged);
+  CHECK(std::llabs(csr.spmv_count - sell.spmv_count) <= std::max<long long>(1, csr.spmv_count / 100));
+  for (std::size_t i = 0; i < n; ++i) CHECK_NEAR(x_sell[i], 1.0, 1e-6);
+}
+
+TEST(sell_backend_needs_a_square_matrix) {
+  Coo coo;
+  coo.n_rows = 2;
+  coo.n_cols = 3;
+  coo.add(0, 0, 1.0);
+  CHECK_THROWS_WITH(make_sell_backend(csr_from_coo(coo)), "square");
 }
 
 TEST_MAIN()

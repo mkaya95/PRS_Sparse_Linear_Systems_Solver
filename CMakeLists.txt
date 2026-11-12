@@ -46,6 +46,7 @@ add_library(ssolve STATIC
   src/bench/csv.cpp
   src/bench/manifest.cpp
   src/backends/seq/seq_backend.cpp
+  src/backends/seq/sell_backend.cpp
   src/formats/csr.cpp
   src/formats/sell.cpp
   src/io/generators.cpp
@@ -66,7 +67,8 @@ if(SSOLVE_VEC_REPORT)
   elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(vec_report_flags -Rpass=loop-vectorize -Rpass-missed=loop-vectorize -Rpass-analysis=loop-vectorize)
   endif()
-  set_source_files_properties(src/backends/seq/seq_backend.cpp PROPERTIES COMPILE_OPTIONS "${vec_report_flags}")
+  set_source_files_properties(src/backends/seq/seq_backend.cpp src/backends/seq/sell_backend.cpp
+                              PROPERTIES COMPILE_OPTIONS "${vec_report_flags}")
 endif()
 
 # STREAM measures the machine's memory bandwidth, so it alone uses threads for now.
