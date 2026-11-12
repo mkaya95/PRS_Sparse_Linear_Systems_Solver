@@ -1,6 +1,7 @@
 // Convergence history for plots. It wraps the backend rather than changing cg(), so the loop
 // the benchmarks time stays exactly as it was measured.
 #include <cmath>
+#include <memory>
 #include <stdexcept>
 #include <vector>
 
@@ -50,9 +51,16 @@ class RecordingBackend final : public Backend {
 SolveResult cg_with_history(const Backend& backend, const double* inv_diag, const double* b, double* x,
                             const SolveOptions& options, std::vector<double>& history) {
   if (options.use_initial_guess) throw std::runtime_error("cg_with_history starts from x = 0");
+  const std::unique_ptr<Preconditioner> precond = preconditioner_for(backend, inv_diag);
+  return cg_with_history(backend, *precond, b, x, options, history);
+}
+
+SolveResult cg_with_history(const Backend& backend, Preconditioner& precond, const double* b, double* x,
+                            const SolveOptions& options, std::vector<double>& history) {
+  if (options.use_initial_guess) throw std::runtime_error("cg_with_history starts from x = 0");
   std::vector<double> rr;
   const RecordingBackend recording(backend, rr);
-  const SolveResult result = cg(recording, inv_diag, b, x, options);
+  const SolveResult result = cg(recording, precond, b, x, options);
 
   history.clear();
   if (rr.empty()) {

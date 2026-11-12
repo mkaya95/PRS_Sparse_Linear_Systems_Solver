@@ -52,6 +52,7 @@ add_library(ssolve STATIC
   src/io/generators.cpp
   src/io/mtx_reader.cpp
   src/io/matrix_spec.cpp
+  src/precond/basic.cpp
   src/solvers/cg.cpp
   src/solvers/cg_history.cpp
   src/verify.cpp

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <memory>
 
 #include "ssolve/cg_common.hpp"
 #include "ssolve/timer.hpp"
@@ -15,8 +16,8 @@ namespace {
 // One iteration moves each vector through memory as few times as possible:
 //   spmv_dot       q = A p and p·q in one sweep
 //   update         x, r and the dot products in one sweep
-//   direction      p, with no stored z for Jacobi
-SolveResult cg_loop(const Backend& backend, const double* inv_diag, const double* rhs, double* x,
+//   direction      p, the preconditioner's job; none and Jacobi never store z
+SolveResult cg_loop(const Backend& backend, Preconditioner& precond, const double* rhs, double* x,
                     const SolveOptions& options) {
   const std::size_t n = static_cast<std::size_t>(backend.n());
   const std::int64_t limit = options.max_iterations > 0 ? options.max_iterations : 2 * static_cast<std::int64_t>(n);
@@ -50,14 +51,7 @@ SolveResult cg_loop(const Backend& backend, const double* inv_diag, const double
   }
   if (rr < threshold) return finish(SolveStatus::Converged);
 
-  double rz = rr;
-  if (inv_diag == nullptr) {
-    backend.copy(r, p);
-  } else {
-    backend.set_zero(p);
-    backend.jacobi_direction(inv_diag, r, 0.0, p);
-    rz = backend.dot(r, p);
-  }
+  double rz = precond.start(backend, r, rr, p);
 
   while (result.spmv_count < limit) {
     const double pq = backend.spmv_dot(p, q);
@@ -68,15 +62,9 @@ SolveResult cg_loop(const Backend& backend, const double* inv_diag, const double
     const double alpha = rz / pq;
     if (!std::isfinite(alpha)) return finish(SolveStatus::Breakdown, "non-finite CG step");
 
-    double rz_new = 0.0;
-    if (inv_diag == nullptr) {
-      rr = backend.cg_update(alpha, p, q, x, r);
-      rz_new = rr;
-    } else {
-      const RrRz sums = backend.jacobi_update(alpha, p, q, x, r, inv_diag);
-      rr = sums.rr;
-      rz_new = sums.rz;
-    }
+    const RrRz sums = precond.update(backend, alpha, p, q, x, r);
+    rr = sums.rr;
+    const double rz_new = sums.rz;
     if (!std::isfinite(rr) || !std::isfinite(rz_new)) {
       return finish(SolveStatus::Breakdown, "non-finite residual update");
     }
@@ -85,11 +73,7 @@ SolveResult cg_loop(const Backend& backend, const double* inv_diag, const double
 
     const double beta = rz_new / rz;
     if (!std::isfinite(beta)) return finish(SolveStatus::Breakdown, "non-finite direction coefficient");
-    if (inv_diag == nullptr) {
-      backend.xpby(r, beta, p);
-    } else {
-      backend.jacobi_direction(inv_diag, r, beta, p);
-    }
+    precond.direction(backend, r, beta, p);
     rz = rz_new;
   }
   return finish(SolveStatus::MaxIterations);
@@ -97,21 +81,38 @@ SolveResult cg_loop(const Backend& backend, const double* inv_diag, const double
 
 }  // namespace
 
-SolveResult cg(const Backend& backend, const double* inv_diag, const double* b, double* x, const SolveOptions& options) {
+SolveResult cg(const Backend& backend, Preconditioner& precond, const double* b, double* x,
+               const SolveOptions& options) {
   validate_options(options);
-  if (inv_diag != nullptr) {
-    for (Index i = 0; i < backend.n(); ++i) {
-      if (!std::isfinite(inv_diag[i]) || inv_diag[i] <= 0.0) {
-        throw std::runtime_error("Jacobi inverse diagonal must be finite and positive");
-      }
-    }
-  }
   const double start = wall_seconds();
   SolveResult result = with_rhs_scaling(static_cast<std::size_t>(backend.n()), b, x, options,
                                         [&](const double* rhs, double* solution) {
-                                          return cg_loop(backend, inv_diag, rhs, solution, options);
+                                          return cg_loop(backend, precond, rhs, solution, options);
                                         });
   result.solve_seconds = wall_seconds() - start;
+  return result;
+}
+
+std::unique_ptr<Preconditioner> preconditioner_for(const Backend& backend, const double* inv_diag) {
+  if (inv_diag == nullptr) return make_identity_preconditioner();
+  for (Index i = 0; i < backend.n(); ++i) {
+    if (!std::isfinite(inv_diag[i]) || inv_diag[i] <= 0.0) {
+      throw std::runtime_error("Jacobi inverse diagonal must be finite and positive");
+    }
+  }
+  return make_jacobi_preconditioner(inv_diag);
+}
+
+SolveResult cg(const Backend& backend, const double* inv_diag, const double* b, double* x, const SolveOptions& options) {
+  validate_options(options);
+  const std::unique_ptr<Preconditioner> precond = preconditioner_for(backend, inv_diag);
+  return cg(backend, *precond, b, x, options);
+}
+
+SolveResult verified_cg(const CsrMatrix& a, const Backend& backend, Preconditioner& precond, const double* b,
+                        double* x, const SolveOptions& options) {
+  SolveResult result = cg(backend, precond, b, x, options);
+  verify_result(a, b, x, options, result);
   return result;
 }
 

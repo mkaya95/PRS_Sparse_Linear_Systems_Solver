@@ -9,6 +9,7 @@
 #include "ssolve/backend.hpp"
 #include "ssolve/cg.hpp"
 #include "ssolve/generators.hpp"
+#include "ssolve/preconditioner.hpp"
 #include "ssolve/verify.hpp"
 #include "test_util.hpp"
 
@@ -32,6 +33,49 @@ CsrMatrix path_graph_matrix(Index n) {
   for (Index i = 0; i < n; ++i) {
     if (i > 0) coo.add(i, i - 1, -1.0);
     coo.add(i, i, 2.5);
+    if (i + 1 < n) coo.add(i, i + 1, -1.0);
+  }
+  return csr_from_coo(coo);
+}
+
+// Jacobi through the general path: z is stored and read back, as any preconditioner that cannot
+// merge its work into the vector updates does it.
+class StoredZJacobi final : public Preconditioner {
+ public:
+  explicit StoredZJacobi(const CsrMatrix& a) : d_(jacobi_inverse_diagonal(a)), z_(d_.size()) {}
+
+  double start(const Backend& backend, const double* r, double, double* p) override {
+    apply(r);
+    backend.copy(z_.data(), p);
+    return backend.dot(r, z_.data());
+  }
+
+  RrRz update(const Backend& backend, double a, const double* p, const double* q, double* x, double* r) override {
+    const double rr = backend.cg_update(a, p, q, x, r);
+    apply(r);
+    return {rr, backend.dot(r, z_.data())};
+  }
+
+  void direction(const Backend& backend, const double*, double beta, double* p) override {
+    backend.xpby(z_.data(), beta, p);
+  }
+
+ private:
+  void apply(const double* r) {
+    for (std::size_t i = 0; i < d_.size(); ++i) z_[i] = d_[i] * r[i];
+  }
+
+  AlignedArray<double> d_, z_;
+};
+
+// A path graph whose diagonal varies from row to row, so Jacobi really changes the iteration.
+CsrMatrix scaled_path_matrix(Index n) {
+  Coo coo;
+  coo.n_rows = n;
+  coo.n_cols = n;
+  for (Index i = 0; i < n; ++i) {
+    if (i > 0) coo.add(i, i - 1, -1.0);
+    coo.add(i, i, 2.5 * (1 + i % 7));
     if (i + 1 < n) coo.add(i, i + 1, -1.0);
   }
   return csr_from_coo(coo);
@@ -333,6 +377,62 @@ TEST(sell_backend_needs_a_square_matrix) {
   coo.n_cols = 3;
   coo.add(0, 0, 1.0);
   CHECK_THROWS_WITH(make_sell_backend(csr_from_coo(coo)), "square");
+}
+
+TEST(the_general_path_needs_the_same_iterations_as_the_merged_one) {
+  std::vector<CsrMatrix> matrices;
+  matrices.push_back(make_stencil(Stencil::Poisson3D, 12));
+  matrices.push_back(scaled_path_matrix(200));
+  for (const CsrMatrix& a : matrices) {
+    const std::size_t n = static_cast<std::size_t>(a.n_rows);
+    const AlignedArray<double> b = rhs_for_random_solution(a);
+    const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
+    AlignedArray<double> x_general(n), x_merged(n);
+    StoredZJacobi general(a);
+    const std::unique_ptr<Preconditioner> merged = make_jacobi_preconditioner(a);
+    const SolveResult g = cg(*backend, general, b.data(), x_general.data(), {});
+    const SolveResult m = cg(*backend, *merged, b.data(), x_merged.data(), {});
+    CHECK(g.status == SolveStatus::Converged);
+    CHECK_EQ(g.spmv_count, m.spmv_count);
+    for (std::size_t i = 0; i < n; ++i) CHECK_NEAR(x_general[i], x_merged[i], 1e-9);
+  }
+}
+
+TEST(history_is_recorded_through_any_preconditioner) {
+  const CsrMatrix a = scaled_path_matrix(200);
+  const AlignedArray<double> b = rhs_for_random_solution(a);
+  const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
+  AlignedArray<double> x(static_cast<std::size_t>(a.n_rows));
+  StoredZJacobi general(a);
+  std::vector<double> history;
+  const SolveResult result = cg_with_history(*backend, general, b.data(), x.data(), {}, history);
+  CHECK(result.status == SolveStatus::Converged);
+  CHECK_EQ(history.size(), static_cast<std::size_t>(result.spmv_count + 1));
+  CHECK_NEAR(history.back(), result.recursive_residual, 1e-15);
+}
+
+TEST(the_old_entry_point_still_works) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson3D, 10);
+  const std::size_t n = static_cast<std::size_t>(a.n_rows);
+  const AlignedArray<double> b = rhs_for_random_solution(a);
+  const AlignedArray<double> inv_diag = jacobi_inverse_diagonal(a);
+  const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
+  for (const bool jacobi : {false, true}) {
+    AlignedArray<double> x_old(n), x_new(n);
+    const SolveResult old_way = cg(*backend, jacobi ? inv_diag.data() : nullptr, b.data(), x_old.data(), {});
+    const std::unique_ptr<Preconditioner> m =
+        jacobi ? make_jacobi_preconditioner(a) : make_identity_preconditioner();
+    const SolveResult new_way = cg(*backend, *m, b.data(), x_new.data(), {});
+    CHECK_EQ(old_way.spmv_count, new_way.spmv_count);
+    for (std::size_t i = 0; i < n; ++i) CHECK_EQ(x_old[i], x_new[i]);
+  }
+}
+
+TEST(the_factory_builds_each_kind_it_knows) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 5);
+  CHECK(make_preconditioner(Precond::None, a) != nullptr);
+  CHECK(make_preconditioner(Precond::Jacobi, a) != nullptr);
+  CHECK_EQ(std::string(to_string(Precond::SymGaussSeidel)), std::string("sgs"));
 }
 
 TEST_MAIN()
