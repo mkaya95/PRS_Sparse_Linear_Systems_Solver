@@ -93,6 +93,13 @@
         </figure>
       </div>
 
+      <figure id="solutions-figure" hidden>
+        <figcaption>Same numbers as Eigen? Our answer minus Eigen's, and each answer minus the true one</figcaption>
+        <div id="solution-legend"></div>
+        <div class="solution-cards" id="solution-cards"></div>
+        <p class="note">Each square is one block of the answer vector, shaded by the largest difference in it. Two correct solvers add the same numbers in a different order, so their answers differ in the last digits: when both met the 1e-8 target, small differences here are expected, not mistakes.</p>
+      </figure>
+
       <figure id="machines-figure" hidden>
         <figcaption>Machines side by side</figcaption>
         <div id="machines-chart"></div>
@@ -170,6 +177,13 @@
           <div id="curve"></div>
           <p class="note">Drawn from a separate, untimed run on the same problem, so recording it never touches the timed numbers.</p>
         </div>
+      </div>
+
+      <div id="demo-solutions" hidden>
+        <div class="label">5 &middot; Same numbers as Eigen?</div>
+        <div id="demo-solution-legend"></div>
+        <div class="solution-cards" id="demo-solution-card"></div>
+        <p class="note">Our answer minus Eigen's, and each minus the true answer, block by block. Different rounding gives tiny differences even when both answers are right.</p>
       </div>
     </section>
   </main>

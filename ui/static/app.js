@@ -297,9 +297,11 @@ async function loadResults() {
     const data = await api("/api/results");
     ui.machines = data.machines;
     ui.singleRuns = data.single || [];
+    ui.oneSolutions = data.one_solutions || [];
   } catch (error) {
     ui.machines = [];
     ui.singleRuns = [];
+    ui.oneSolutions = [];
     $("#gates-note").textContent = `Could not read results: ${error.message}`;
   }
   renderResults();
@@ -331,6 +333,7 @@ function renderResults() {
     $("#gates-note").textContent = "No results yet. Run the Speed and Accuracy steps on the Run tab, or pull a teammate's results/ folder.";
     $("#result-controls").hidden = true;
     $$(".chart-grid, #machines-figure").forEach((e) => { e.hidden = true; });
+    renderSolutions(null);
     return;
   }
   $("#result-controls").hidden = false;
@@ -391,11 +394,74 @@ function renderCharts(withSpeed) {
       <td>${r.ok ? "verified" : `<b style="color:var(--red)">fail</b>`}</td></tr>`).join("") +
     `<tr><td colspan="4" class="note">Jacobi CG against Eigen E1 on ${esc(accOwner.name)}. Verified: same iteration count within 1%, every true residual within 1e-8.</td></tr>`
     : `<tr><td class="empty">No accuracy results yet.</td></tr>`;
+  renderSolutions(accOwner || null);
 
   const series = withSpeed.map((x) => ({ name: x.name, rows: x.speed.pairs[ui.pair].rows.filter((r) => r.generated === (ui.kind === "generated")) }));
   const figure = $("#machines-figure");
   figure.hidden = series.length < 2;
   $("#machines-chart").innerHTML = series.length >= 2 ? Charts.machines(series, withSpeed[0].speed.pairs[ui.pair].limit, "machines side by side") : "";
+}
+
+// ---------- solution pictures ----------
+// Every picture on screen, by the id its canvas carries, for painting and for the hover text.
+const pictures = new Map();
+let pictureCount = 0;
+
+const sci = (v) => (v == null ? "not a number" : v === 0 ? "0" : v.toExponential(1));
+const who = (name) => (name === "true" ? "the true answer" : name);
+
+// One matrix's pictures: each comparison as a block picture with its numbers underneath.
+function solutionCard(entry, where) {
+  if (entry.error) return `<div class="solution-card"><h3>${esc(entry.file)}<small>${esc(where)}</small></h3><p class="empty">Unreadable: ${esc(entry.error)}</p></div>`;
+  const figures = entry.comparisons.map((c) => {
+    const id = `pic${++pictureCount}`;
+    pictures.set(id, { c, grid: entry.grid, n: entry.n, scale: entry.x_scale });
+    const equal = `${c.equal.toLocaleString()} of ${entry.n.toLocaleString()} entries exactly equal`;
+    return `<figure><figcaption>${esc(who(c.a))} − ${esc(who(c.b))}</figcaption>` +
+      `<div class="density-frame"><canvas class="density" data-pic="${id}" aria-label="${esc(`difference between ${who(c.a)} and ${who(c.b)}, block by block`)}"></canvas></div>` +
+      `<small>largest difference ${sci(c.max_abs)} · relative ${sci(c.rel_norm)} · ${equal}</small></figure>`;
+  }).join("");
+  return `<div class="solution-card"><h3>${esc(entry.matrix)}<small>${esc(where)}</small></h3>` +
+    `<div class="solution-pictures">${figures || `<p class="empty">No comparisons in this file.</p>`}</div></div>`;
+}
+
+function paintPictures(root) {
+  $$("canvas[data-pic]", root).forEach((canvas) => {
+    const p = pictures.get(canvas.dataset.pic);
+    if (p) Charts.paintDifference(canvas, p.c, p.grid, p.scale);
+  });
+}
+
+function showPictures(container, html) {
+  $$("canvas[data-pic]", container).forEach((canvas) => pictures.delete(canvas.dataset.pic));
+  container.innerHTML = html;
+  paintPictures(container);
+}
+
+// The Accuracy step's pictures for the machine shown, then every one-matrix accuracy run's.
+function renderSolutions(owner) {
+  const full = owner && owner.solutions ? owner.solutions.map((e) => solutionCard(e, `Accuracy step on ${owner.name}`)) : [];
+  const one = (ui.oneSolutions || []).map((e) => solutionCard(e, `one-matrix run in results/${e.results}`));
+  $("#solutions-figure").hidden = !full.length && !one.length;
+  $("#solution-legend").innerHTML = Charts.differenceLegend();
+  showPictures($("#solution-cards"), full.concat(one).join(""));
+}
+
+// Names the block under the pointer and its largest difference; the page's tooltip then shows it.
+function pictureHover(e) {
+  const canvas = e.target.closest && e.target.closest("canvas[data-pic]");
+  const p = canvas && pictures.get(canvas.dataset.pic);
+  if (!p) return;
+  const box = canvas.getBoundingClientRect();
+  const col = Math.min(p.grid - 1, Math.max(0, Math.floor(((e.clientX - box.left) / box.width) * p.grid)));
+  const row = Math.min(p.grid - 1, Math.max(0, Math.floor(((e.clientY - box.top) / box.height) * p.grid)));
+  const cell = row * p.grid + col;
+  const value = p.c.cells[cell];
+  if (value === null && cell >= p.n) { canvas.setAttribute("data-tip", "no entries here"); return; }
+  const [i0, i1] = Charts.differenceRange(cell, p.grid, p.n);
+  const span = i0 === i1 ? `entry ${i0.toLocaleString()}` : `entries ${i0.toLocaleString()}–${i1.toLocaleString()}`;
+  const text = value === 0 ? "exactly equal" : value === -1 ? "not a number" : `largest difference ${sci(value)}`;
+  canvas.setAttribute("data-tip", `${span}: ${text}`);
 }
 
 // ---------- matrices tab ----------
@@ -579,6 +645,8 @@ function clearDemo() {
   $("#demo-stamps").innerHTML = "";
   $("#demo-facts").textContent = "";
   $("#curve").innerHTML = "";
+  $("#demo-solutions").hidden = true;
+  showPictures($("#demo-solution-card"), "");
 }
 
 async function solveLive() {
@@ -654,6 +722,10 @@ function renderDemo(r, recorded) {
   } else {
     $("#curve").innerHTML = `<p class="empty">No curve recorded.</p>`;
   }
+  // Older recorded demos have no pictures.
+  $("#demo-solutions").hidden = !r.solutions;
+  $("#demo-solution-legend").innerHTML = r.solutions ? Charts.differenceLegend() : "";
+  showPictures($("#demo-solution-card"), r.solutions ? solutionCard(r.solutions, `${r.precond === "jacobi" ? "Jacobi" : "plain"} CG against Eigen`) : "");
 }
 
 // ---------- tooltip ----------
@@ -726,6 +798,8 @@ async function init() {
 
   $("#draw-all").addEventListener("click", startDrawings);
   $("#density").addEventListener("mousemove", densityHover);
+  $("#solution-cards").addEventListener("mousemove", pictureHover);
+  $("#demo-solution-card").addEventListener("mousemove", pictureHover);
   $("#matrix-cards").addEventListener("click", (e) => {
     const card = e.target.closest(".matrix-card");
     if (!card || card.disabled) return;
