@@ -1,5 +1,6 @@
 // Preconditioners copied from established code: symmetric Gauss-Seidel (HPCG) and incomplete Cholesky (Eigen).
 #include <cmath>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -7,6 +8,7 @@
 #include "ssolve/backend.hpp"
 #include "ssolve/cg.hpp"
 #include "ssolve/generators.hpp"
+#include "ssolve/incomplete_cholesky.hpp"
 #include "ssolve/preconditioner.hpp"
 #include "ssolve/sgs.hpp"
 #include "ssolve/verify.hpp"
@@ -76,7 +78,85 @@ CsrMatrix diagonal(const std::vector<double>& values) {
   return csr_from_coo(coo);
 }
 
+CsrMatrix two_by_two(double diagonal_value, double off) {
+  Coo coo;
+  coo.n_rows = 2;
+  coo.n_cols = 2;
+  coo.add(0, 0, diagonal_value);
+  coo.add(0, 1, off);
+  coo.add(1, 0, off);
+  coo.add(1, 1, diagonal_value);
+  return csr_from_coo(coo);
+}
+
 }  // namespace
+
+TEST(ic_is_exact_without_fill) {
+  // A tridiagonal matrix has no fill, so the incomplete factor is the complete one and M = A.
+  const CsrMatrix a = path(50);
+  const std::size_t n = 50;
+  const CholeskyFactor f = incomplete_cholesky(a);
+  CHECK_EQ(f.shift, 0.0);
+  const std::vector<double> r = wave(n, 0.5);
+  std::vector<double> z(n), az(n);
+  incomplete_cholesky_apply(f, r.data(), z.data());
+  spmv_reference(a, z.data(), az.data());
+  for (std::size_t i = 0; i < n; ++i) CHECK_NEAR(az[i], r[i], 1e-12);
+}
+
+TEST(ic_apply_is_symmetric) {
+  const CsrMatrix a = make_stencil(Stencil::Point27, 4);
+  const std::size_t n = static_cast<std::size_t>(a.n_rows);
+  const CholeskyFactor f = incomplete_cholesky(a);
+  const std::vector<double> u = wave(n, 0.1), v = wave(n, 1.9);
+  std::vector<double> mu(n), mv(n);
+  incomplete_cholesky_apply(f, u.data(), mu.data());
+  incomplete_cholesky_apply(f, v.data(), mv.data());
+  CHECK_NEAR(dot(u, mv), dot(v, mu), 1e-12 * std::fabs(dot(u, mv)));
+}
+
+TEST(ic_starts_with_a_shift_for_a_nonpositive_scaled_diagonal) {
+  const CholeskyFactor f = incomplete_cholesky(diagonal({1, -1}));
+  CHECK_NEAR(f.shift, 1e-3 + 1.0, 1e-15);
+}
+
+TEST(ic_doubles_the_shift_until_the_factorization_works) {
+  // Scaled, the pivots fail until the shift exceeds (c - 1) / sqrt(1 + c^2) = 0.007: 1e-3, 2e-3, 4e-3 fail, 8e-3 works.
+  const CholeskyFactor f = incomplete_cholesky(two_by_two(1.0, 1.01));
+  CHECK_EQ(f.shift, 1e-3 * 8);
+}
+
+TEST(ic_gives_up_after_ten_shifts) {
+  CHECK_THROWS_WITH(incomplete_cholesky(two_by_two(1.0, 2.0)), "failed after 10 shifts");
+}
+
+TEST(ic_keeps_the_original_count_per_column) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 6);
+  const CholeskyFactor f = incomplete_cholesky(a);
+  CHECK_EQ(f.n, a.n_rows);
+  for (Index j = 0; j < a.n_rows; ++j) {
+    std::int64_t lower = 0;
+    for (std::int64_t k = a.row_ptr[j]; k < a.row_ptr[j + 1]; ++k) lower += a.col[k] >= j ? 1 : 0;
+    CHECK_EQ(f.col_ptr[j + 1] - f.col_ptr[j], lower);
+    CHECK_EQ(f.row[f.col_ptr[j]], j);  // the diagonal comes first
+  }
+}
+
+TEST(ic_cg_needs_fewer_iterations_than_jacobi) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson3D, 12);
+  const std::size_t n = static_cast<std::size_t>(a.n_rows);
+  const AlignedArray<double> b = rhs_for_unit_solution(a);
+  const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
+  AlignedArray<double> x_ic(n), x_jacobi(n);
+  const std::unique_ptr<Preconditioner> ic = make_preconditioner(Precond::IncompleteCholesky, a);
+  const std::unique_ptr<Preconditioner> jacobi = make_jacobi_preconditioner(a);
+  const SolveResult with_ic = verified_cg(a, *backend, *ic, b.data(), x_ic.data(), {});
+  const SolveResult with_jacobi = verified_cg(a, *backend, *jacobi, b.data(), x_jacobi.data(), {});
+  CHECK(with_ic.status == SolveStatus::Converged);
+  CHECK(with_ic.spmv_count < with_jacobi.spmv_count);
+  for (std::size_t i = 0; i < n; ++i) CHECK_NEAR(x_ic[i], 1.0, 1e-6);
+}
+
 
 TEST(sgs_matches_a_dense_computation) {
   for (const CsrMatrix& a : {make_stencil(Stencil::Poisson2D, 4), path(7)}) {
