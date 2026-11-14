@@ -53,6 +53,7 @@ add_library(ssolve STATIC
   src/io/mtx_reader.cpp
   src/io/matrix_spec.cpp
   src/precond/basic.cpp
+  src/precond/ic0.cpp
   src/precond/incomplete_cholesky.cpp
   src/precond/sgs.cpp
   src/solvers/cg.cpp

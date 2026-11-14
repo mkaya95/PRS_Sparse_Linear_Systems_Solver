@@ -47,6 +47,8 @@ std::vector<NamedSolver> variant_solvers() {
       {"ours-sell-jacobi", Precond::Jacobi, run_sell<Precond::Jacobi>},
       {"ours-sgs", Precond::SymGaussSeidel, run_precond<Precond::SymGaussSeidel>},
       {"ours-ic", Precond::IncompleteCholesky, run_precond<Precond::IncompleteCholesky>},
+      {"ours-ic-fixed", Precond::IncompleteCholeskyFixed, run_precond<Precond::IncompleteCholeskyFixed>},
+      {"ours-ic0", Precond::IncompleteCholeskyZero, run_precond<Precond::IncompleteCholeskyZero>},
   };
 }
 

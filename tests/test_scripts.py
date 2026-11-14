@@ -805,10 +805,10 @@ class SolveCommand(unittest.TestCase):
         done = self.run_solve("--matrix", "poisson2d:5", "--precond", "ilu")
         self.assertEqual(done.returncode, 1)
         self.assertIn("ilu", done.stderr)
-        self.assertIn("none, jacobi, sgs or ic", done.stderr)
+        self.assertIn("none, jacobi, sgs, ic, ic-fixed or ic0", done.stderr)
 
     def test_gauss_seidel_and_incomplete_cholesky_are_selectable(self):
-        for precond in ("sgs", "ic"):
+        for precond in ("sgs", "ic", "ic-fixed", "ic0"):
             with self.subTest(precond=precond):
                 done = self.run_solve("--matrix", "poisson3d:10", "--precond", precond)
                 self.assertEqual(done.returncode, 0, done.stdout + done.stderr)

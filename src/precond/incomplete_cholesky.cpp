@@ -5,6 +5,10 @@
 //                              <Lower, ColMajor> and <Upper, RowMajor> loops, Eigen/src/SparseCore/TriangularSolver.h
 // Eigen's loops and their order of operations are kept. Eigen's containers become plain arrays, and
 // only natural ordering is supported, so there is no permutation.
+//
+// Eigen's factorization has two bugs, marked "Eigen bug" below. They are copied on purpose, so that
+// ours-ic gives the numbers of eigen-E4 and has it to check against. Do not fix them in place:
+// EigenBugs::Fixed corrects both, as the separate solver ours-ic-fixed.
 #include "ssolve/incomplete_cholesky.hpp"
 
 #include <algorithm>
@@ -79,7 +83,7 @@ void updateList(const std::int64_t* colPtr, Index* rowIdx, double* vals, Index c
 
 }  // namespace
 
-CholeskyFactor incomplete_cholesky(const CsrMatrix& a, double initial_shift) {
+CholeskyFactor incomplete_cholesky(const CsrMatrix& a, double initial_shift, EigenBugs bugs) {
   if (a.n_rows != a.n_cols) throw std::runtime_error("incomplete Cholesky needs a square matrix");
   const Index n = a.n_rows;
   const std::size_t un = static_cast<std::size_t>(n);
@@ -191,7 +195,9 @@ CholeskyFactor incomplete_cholesky(const CsrMatrix& a, double initial_shift) {
           for (std::int64_t i = jk; i < colPtr[*k + 1]; i++) {
             const Index l = rowIdx[i];
             if (col_pattern[l] < 0) {
-              col_vals[col_nnz] = vals[i] * v_j_jk;
+              // Eigen bug 1: an entry that column j does not have yet starts as 0 - vals[i] * v_j_jk,
+              // like the update in the other branch, but Eigen stores it with a plus sign.
+              col_vals[col_nnz] = bugs == EigenBugs::Fixed ? -vals[i] * v_j_jk : vals[i] * v_j_jk;
               col_irow[col_nnz] = l;
               col_pattern[l] = col_nnz;
               col_nnz++;
@@ -238,6 +244,11 @@ CholeskyFactor incomplete_cholesky(const CsrMatrix& a, double initial_shift) {
         // restore col_pattern:
         col_pattern[col_irow[cpt]] = -1;
         cpt++;
+      }
+      // Eigen bug 2: only the p entries kept are reset above. The entries QuickSplit dropped keep their
+      // position in col_pattern, so a later column takes them for its own and updates the wrong slot.
+      if (bugs == EigenBugs::Fixed) {
+        for (std::int64_t k = cpt; k < col_nnz; ++k) col_pattern[col_irow[k]] = -1;
       }
       // Get the first smallest row index and put it after the diagonal element
       const std::int64_t jk = colPtr[j] + 1;
@@ -298,8 +309,8 @@ namespace {
 // z is stored: the triangular solves need all of r before any of z is known.
 class IcPreconditioner final : public Preconditioner {
  public:
-  explicit IcPreconditioner(const CsrMatrix& a)
-      : f_(incomplete_cholesky(a)), z_(static_cast<std::size_t>(a.n_rows)) {}
+  IcPreconditioner(const CsrMatrix& a, EigenBugs bugs)
+      : f_(incomplete_cholesky(a, 1e-3, bugs)), z_(static_cast<std::size_t>(a.n_rows)) {}
 
   double start(const Backend& backend, const double* r, double, double* p) override {
     incomplete_cholesky_apply(f_, r, z_.data());
@@ -324,8 +335,8 @@ class IcPreconditioner final : public Preconditioner {
 
 }  // namespace
 
-std::unique_ptr<Preconditioner> make_ic_preconditioner(const CsrMatrix& a) {
-  return std::make_unique<IcPreconditioner>(a);
+std::unique_ptr<Preconditioner> make_ic_preconditioner(const CsrMatrix& a, EigenBugs bugs) {
+  return std::make_unique<IcPreconditioner>(a, bugs);
 }
 
 }  // namespace ssolve

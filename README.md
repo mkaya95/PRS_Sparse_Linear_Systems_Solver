@@ -1,6 +1,6 @@
 # P08: Sparse Linear Systems Solver
 
-A sequential FP64 CSR CG/Jacobi solver, benchmarked against Eigen. How it works: [solver flow](docs/solver-flow.md) and [benchmark flow](docs/benchmark-flow.md). Measurements: [docs/results](docs/results).
+A sequential FP64 conjugate gradient solver with CSR or SELL-C-σ storage and Jacobi, symmetric Gauss-Seidel or incomplete Cholesky preconditioning, benchmarked against Eigen. How it works: [solver flow](docs/solver-flow.md) and [benchmark flow](docs/benchmark-flow.md). Measurements: [docs/results](docs/results).
 
 ## Install
 
@@ -51,7 +51,7 @@ build/release/solve --matrix path/to/A.mtx --rhs b.txt --out x.txt
 build/release/solve --matrix poisson3d:100 --format sell --chunk 8 --sigma 256
 ```
 
-The matrix must be symmetric positive definite. `--precond` is `none` (the default), `jacobi`, `sgs` (symmetric Gauss-Seidel) or `ic` (incomplete Cholesky). Without `--rhs`, the solver uses b = A·1. A `--rhs` file holds exactly n numbers separated by whitespace. `--problem random` instead uses the right-hand side the benchmarks use. `--history h.txt` writes ‖r‖ / ‖b‖ before the first iteration and after each one, one value per line. `--format sell` stores the matrix as SELL-C-σ instead of CSR: chunks of C rows (4, 8, 16 or 32), sorted by length inside windows of σ rows; the output shows how much padding that adds.
+The matrix must be symmetric positive definite. `--precond` is `none` (the default), `jacobi`, `sgs` (symmetric Gauss-Seidel), `ic` (incomplete Cholesky, Eigen's number for number), `ic-fixed` (the same with Eigen's two bugs corrected) or `ic0` (incomplete Cholesky that keeps exactly the matrix's own pattern). Without `--rhs`, the solver uses b = A·1. A `--rhs` file holds exactly n numbers separated by whitespace. `--problem random` instead uses the right-hand side the benchmarks use. `--history h.txt` writes ‖r‖ / ‖b‖ before the first iteration and after each one, one value per line. `--format sell` stores the matrix as SELL-C-σ instead of CSR: chunks of C rows (4, 8, 16 or 32), sorted by length inside windows of σ rows; the output shows how much padding that adds.
 
 The exit status is 0 if the solve converged and its true residual was verified, 2 if it did not converge, and 1 for invalid input.
 

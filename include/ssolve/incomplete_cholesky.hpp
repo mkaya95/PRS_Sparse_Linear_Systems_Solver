@@ -22,13 +22,18 @@ struct CholeskyFactor {
   double shift = 0.0;
 };
 
+// Eigen's factorization has two bugs (see incomplete_cholesky.cpp). Copied keeps them, so the factor is
+// Eigen's number for number; Fixed corrects both, which gives a better preconditioner.
+enum class EigenBugs { Copied, Fixed };
+
 // Reads the upper triangle of a's rows as the lower triangle's columns, since a is symmetric.
 // Throws "incomplete Cholesky failed after 10 shifts" where Eigen reports NumericalIssue.
-CholeskyFactor incomplete_cholesky(const CsrMatrix& a, double initial_shift = 1e-3);
+CholeskyFactor incomplete_cholesky(const CsrMatrix& a, double initial_shift = 1e-3,
+                                   EigenBugs bugs = EigenBugs::Copied);
 
 // z = S L⁻ᵀ L⁻¹ S r.
 void incomplete_cholesky_apply(const CholeskyFactor& f, const double* r, double* z);
 
-std::unique_ptr<Preconditioner> make_ic_preconditioner(const CsrMatrix& a);
+std::unique_ptr<Preconditioner> make_ic_preconditioner(const CsrMatrix& a, EigenBugs bugs = EigenBugs::Copied);
 
 }  // namespace ssolve

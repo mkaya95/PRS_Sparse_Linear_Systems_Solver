@@ -151,8 +151,9 @@ TEST(our_solvers_report_breakdown_on_an_indefinite_matrix) {
   const std::vector<double> b = {1, 1};
   for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     std::vector<double> x;
-    // Jacobi and Gauss-Seidel divide by the diagonal, so their setup refuses it.
-    if (solver.precond == Precond::Jacobi || solver.precond == Precond::SymGaussSeidel) {
+    // Jacobi, Gauss-Seidel and IC(0) divide by the diagonal, so their setup refuses it.
+    if (solver.precond == Precond::Jacobi || solver.precond == Precond::SymGaussSeidel ||
+        solver.precond == Precond::IncompleteCholeskyZero) {
       CHECK_THROWS_WITH(solve(solver, a, b, x), "positive");
       continue;
     }
@@ -165,8 +166,9 @@ TEST(our_solvers_report_breakdown_on_nan_values_without_spinning) {
   const std::vector<double> b = {1, 1};
   for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
     std::vector<double> x;
-    // Jacobi and Gauss-Seidel divide by the diagonal, so their setup refuses it.
-    if (solver.precond == Precond::Jacobi || solver.precond == Precond::SymGaussSeidel) {
+    // Jacobi, Gauss-Seidel and IC(0) divide by the diagonal, so their setup refuses it.
+    if (solver.precond == Precond::Jacobi || solver.precond == Precond::SymGaussSeidel ||
+        solver.precond == Precond::IncompleteCholeskyZero) {
       CHECK_THROWS_WITH(solve(solver, a, b, x), "positive");
       continue;
     }
@@ -271,8 +273,11 @@ TEST(our_solvers_match_eigen_spmv_counts) {
   const SolveResult jacobi = solve(ssolve_bench::find_solver("eigen-E1"), poisson, b, x);
   const SolveResult ic = solve(ssolve_bench::find_solver("eigen-E4"), poisson, b, x);
   for (const NamedSolver& solver : ssolve_bench::our_solvers()) {
-    // Symmetric Gauss-Seidel has no Eigen counterpart.
-    if (solver.precond == Precond::SymGaussSeidel) continue;
+    // Symmetric Gauss-Seidel, the corrected incomplete Cholesky and IC(0) have no Eigen counterpart.
+    if (solver.precond == Precond::SymGaussSeidel || solver.precond == Precond::IncompleteCholeskyFixed ||
+        solver.precond == Precond::IncompleteCholeskyZero) {
+      continue;
+    }
     const SolveResult ours = solve(solver, poisson, b, x);
     const SolveResult& theirs = solver.precond == Precond::None ? plain : solver.precond == Precond::Jacobi ? jacobi : ic;
     CHECK(std::llabs(ours.spmv_count - theirs.spmv_count) <=
@@ -424,6 +429,8 @@ TEST(ours_ic_needs_the_same_iterations_as_eigen_e4) {
 TEST(the_preconditioner_variants_are_registered) {
   CHECK(ssolve_bench::find_solver("ours-sgs").precond == Precond::SymGaussSeidel);
   CHECK(ssolve_bench::find_solver("ours-ic").precond == Precond::IncompleteCholesky);
+  CHECK(ssolve_bench::find_solver("ours-ic-fixed").precond == Precond::IncompleteCholeskyFixed);
+  CHECK(ssolve_bench::find_solver("ours-ic0").precond == Precond::IncompleteCholeskyZero);
   CHECK(ssolve_bench::find_solver("eigen-E4").precond == Precond::IncompleteCholesky);
 }
 

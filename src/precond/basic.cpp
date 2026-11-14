@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "ssolve/cg.hpp"
+#include "ssolve/ic0.hpp"
 #include "ssolve/incomplete_cholesky.hpp"
 #include "ssolve/preconditioner.hpp"
 #include "ssolve/sgs.hpp"
@@ -78,6 +79,10 @@ std::unique_ptr<Preconditioner> make_preconditioner(Precond kind, const CsrMatri
       return make_sgs_preconditioner(a);
     case Precond::IncompleteCholesky:
       return make_ic_preconditioner(a);
+    case Precond::IncompleteCholeskyFixed:
+      return make_ic_preconditioner(a, EigenBugs::Fixed);
+    case Precond::IncompleteCholeskyZero:
+      return make_ic0_preconditioner(a);
     default:
       throw std::runtime_error(std::string("no preconditioner of kind ") + to_string(kind));
   }

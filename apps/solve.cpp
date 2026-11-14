@@ -59,8 +59,13 @@ int main(int argc, char** argv) {
       kind = Precond::SymGaussSeidel;
     } else if (precond == "ic") {
       kind = Precond::IncompleteCholesky;
+    } else if (precond == "ic-fixed") {
+      kind = Precond::IncompleteCholeskyFixed;
+    } else if (precond == "ic0") {
+      kind = Precond::IncompleteCholeskyZero;
     } else if (precond != "none") {
-      throw std::runtime_error("unknown preconditioner '" + precond + "': use none, jacobi, sgs or ic");
+      throw std::runtime_error("unknown preconditioner '" + precond +
+                               "': use none, jacobi, sgs, ic, ic-fixed or ic0");
     }
     if (args.has("rhs") && args.has("problem")) throw std::runtime_error("give either --rhs or --problem, not both");
     const std::string format = args.get("format", "csr");
