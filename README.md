@@ -41,6 +41,13 @@ On WSL2, keep the build tree and matrices in the Linux filesystem, because `/mnt
 
 To build only the solver, without Eigen and the benchmarks, run `cmake --build build/release --target solve`.
 
+For a profiler such as Intel VTune or `perf`, use the `profile` preset: the release flags plus symbols and frame pointers, so the profiler can name functions and source lines.
+
+```bash
+cmake --preset profile -DCMAKE_CXX_COMPILER=g++
+cmake --build build/profile --target solve bench_cg
+```
+
 ## Run the solver
 
 ```bash
