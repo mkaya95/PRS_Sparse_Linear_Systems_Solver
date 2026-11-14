@@ -271,6 +271,31 @@ TEST(cg_with_history_normalizes_a_rescaled_rhs) {
   CHECK_NEAR(history.back() / result.recursive_residual, 1.0, 1e-12);
 }
 
+TEST(cg_fills_the_history_its_options_point_to) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 12);
+  const std::size_t n = static_cast<std::size_t>(a.n_rows);
+  const AlignedArray<double> b = rhs_for_unit_solution(a);
+  const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
+  AlignedArray<double> plain_x(n), recorded_x(n);
+  const SolveResult plain = cg(*backend, nullptr, b.data(), plain_x.data(), SolveOptions{});
+
+  std::vector<double> history = {42.0};  // replaced, not appended to
+  SolveOptions options;
+  options.history = &history;
+  const SolveResult recorded = cg(*backend, nullptr, b.data(), recorded_x.data(), options);
+  CHECK_EQ(recorded.spmv_count, plain.spmv_count);
+  CHECK_EQ(static_cast<std::int64_t>(history.size()), plain.spmv_count + 1);
+  CHECK_EQ(history.front(), 1.0);
+  CHECK_NEAR(history.back(), plain.recursive_residual, 1e-12 * plain.recursive_residual);
+  for (std::size_t i = 0; i < n; ++i) CHECK_EQ(recorded_x[i], plain_x[i]);
+
+  // With an initial guess there is no history, and the solve still runs.
+  options.use_initial_guess = true;
+  const SolveResult guessed = cg(*backend, nullptr, b.data(), recorded_x.data(), options);
+  CHECK(guessed.status == SolveStatus::Converged);
+  CHECK(history.empty());
+}
+
 TEST(cg_with_history_refuses_an_initial_guess) {
   const CsrMatrix a = make_stencil(Stencil::Poisson2D, 4);
   const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));

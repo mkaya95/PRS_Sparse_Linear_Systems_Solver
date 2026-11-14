@@ -84,6 +84,13 @@ SolveResult cg_loop(const Backend& backend, Preconditioner& precond, const doubl
 SolveResult cg(const Backend& backend, Preconditioner& precond, const double* b, double* x,
                const SolveOptions& options) {
   validate_options(options);
+  if (options.history != nullptr) {
+    SolveOptions plain = options;
+    plain.history = nullptr;
+    options.history->clear();
+    if (options.use_initial_guess) return cg(backend, precond, b, x, plain);
+    return cg_with_history(backend, precond, b, x, plain, *options.history);
+  }
   const double start = wall_seconds();
   SolveResult result = with_rhs_scaling(static_cast<std::size_t>(backend.n()), b, x, options,
                                         [&](const double* rhs, double* solution) {
