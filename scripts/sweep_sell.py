@@ -48,8 +48,10 @@ def summary(timing_rows, layout_rows):
             if impl == BASELINE or not ratios or (matrix, impl) not in layouts:
                 continue
             stored, build = layouts[(matrix, impl)]
-            saved = summarize.median(list(base.values())) - summarize.median(list(rounds.values()))
-            lines.append((impl, stored, summarize.median(ratios), build / saved if saved > 0 else None))
+            # Seconds saved per product, from the paired ratio, so the two columns can never disagree.
+            ratio = summarize.median(ratios)
+            saved = summarize.median(list(base.values())) * (1.0 - ratio)
+            lines.append((impl, stored, ratio, build / saved if saved > 0 else None))
         out[matrix] = lines
     return out
 

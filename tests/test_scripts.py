@@ -493,7 +493,8 @@ class SellSweep(unittest.TestCase):
         layouts = [dict(matrix="m", impl="sell-c8-s1", stored_per_nnz="1.25", build_s="30"),
                    dict(matrix="m", impl="sell-c4-s1", stored_per_nnz="1.5", build_s="30")]
         lines = sweep_sell.summary(timings, layouts)["m"]
-        self.assertEqual(lines[0], ("sell-c8-s1", 1.25, 0.8, 10.0))  # medians 15 and 12: 30 s / 3 s saved
+        self.assertEqual(lines[0][:3], ("sell-c8-s1", 1.25, 0.8))
+        self.assertAlmostEqual(lines[0][3], 10.0)  # CSR median 15 s, 20% saved: 30 s / 3 s
         self.assertEqual(lines[1][0], "sell-c4-s1")
         self.assertAlmostEqual(lines[1][2], 1.1)
         self.assertIsNone(lines[1][3])  # slower than CSR, so the conversion never pays
