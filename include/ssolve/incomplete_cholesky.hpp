@@ -23,7 +23,8 @@ struct CholeskyFactor {
 };
 
 // Eigen's factorization has two bugs (see incomplete_cholesky.cpp). Copied keeps them, so the factor is
-// Eigen's number for number; Fixed corrects both, which gives a better preconditioner.
+// Eigen's, operation for operation (the two then differ only by rounding); Fixed corrects both, which
+// gives a better preconditioner.
 enum class EigenBugs { Copied, Fixed };
 
 // Reads the upper triangle of a's rows as the lower triangle's columns, since a is symmetric.

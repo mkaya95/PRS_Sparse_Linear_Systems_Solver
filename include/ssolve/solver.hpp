@@ -33,7 +33,7 @@ enum class Precond {
   None,
   Jacobi,
   SymGaussSeidel,
-  IncompleteCholesky,       // Eigen's, number for number
+  IncompleteCholesky,       // Eigen's, operation for operation
   IncompleteCholeskyFixed,  // Eigen's with its two bugs corrected
   IncompleteCholeskyZero    // IC(0): the factor keeps exactly the pattern of A
 };
