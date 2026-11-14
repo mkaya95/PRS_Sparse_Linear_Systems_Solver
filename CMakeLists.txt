@@ -48,6 +48,7 @@ add_library(ssolve STATIC
   src/backends/seq/seq_backend.cpp
   src/backends/seq/sell_backend.cpp
   src/formats/csr.cpp
+  src/formats/reorder.cpp
   src/formats/sell.cpp
   src/io/generators.cpp
   src/io/mtx_reader.cpp
@@ -122,6 +123,7 @@ ssolve_test(test_csv)
 ssolve_test(test_backend)
 ssolve_test(test_compare)
 ssolve_test(test_sell)
+ssolve_test(test_reorder)
 ssolve_test(test_precond)
 
 add_executable(test_solvers tests/test_solvers.cpp)
