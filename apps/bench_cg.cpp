@@ -3,6 +3,7 @@
 // Usage: bench_cg --matrix SPEC --solver NAME[,NAME...] [--tol 1e-8] [--maxit N] [--repeat 10]
 //                 [--warmup 1] [--mode solve|fixed] [--problem random|a1|unit] [--power TEXT]
 //                 [--csv FILE] [--label TEXT] [--progress 0|1] [--solutions FILE]
+//                 [--compare all|same-precond]
 //
 // Solvers take turns round by round (A, B, then B, A, ...), so a machine that slows down
 // mid-run affects them equally and none always goes first. A solver that fails is reported
@@ -13,7 +14,9 @@
 //
 // --solutions FILE writes, after the last round, how far each solver's answer is from every other
 // solver's and from the true answer (when the problem has a known one), as block pictures for the
-// browser page. Only solvers that ran every round are compared.
+// browser page. Only solvers that ran every round are compared. --compare same-precond keeps only the
+// pairs with the same preconditioner, which a run of many solvers needs to stay small. The file also
+// holds the convergence history of each of our solvers, which summarize.py's accuracy gate reads.
 //
 // The problem sets the right-hand side: b = A·x for a fixed random x (the default), b = A·1, or b = 1.
 // The rows of A·1 can nearly cancel, which puts the tolerance out of reach on some real matrices.
@@ -51,7 +54,9 @@ namespace {
 // Every pair of solvers in the order they were named, then each solver against the true answer. A run in
 // which no solver finished still gets its file, with no comparisons, so an older picture cannot stand in.
 void write_solutions(const std::string& path, const std::string& matrix, const std::string& problem, std::size_t n,
-                     const std::vector<std::string>& order, const std::map<std::string, std::vector<double>>& answers) {
+                     const std::vector<std::string>& order, const std::map<std::string, std::vector<double>>& answers,
+                     const std::map<std::string, Precond>& kinds, bool same_precond_only,
+                     const std::map<std::string, std::vector<double>>& residuals) {
   std::vector<const std::string*> present;
   for (const std::string& name : order) {
     if (answers.count(name) != 0) present.push_back(&name);
@@ -67,6 +72,7 @@ void write_solutions(const std::string& path, const std::string& matrix, const s
   std::vector<VectorDifference> diffs;
   for (std::size_t i = 0; i < present.size(); ++i) {
     for (std::size_t j = i + 1; j < present.size(); ++j) {
+      if (same_precond_only && kinds.at(*present[i]) != kinds.at(*present[j])) continue;
       diffs.push_back(compare_vectors(*present[i], answers.at(*present[i]).data(), *present[j],
                                       answers.at(*present[j]).data(), n));
     }
@@ -84,7 +90,13 @@ void write_solutions(const std::string& path, const std::string& matrix, const s
       }
     }
   }
-  write_file_atomically(path, solutions_json(matrix, static_cast<std::int64_t>(n), problem, scale, diffs));
+  std::vector<ResidualHistory> histories;
+  for (const std::string* name : present) {
+    const auto found = residuals.find(*name);
+    if (found != residuals.end() && !found->second.empty()) histories.push_back({*name, found->second});
+  }
+  write_file_atomically(path,
+                        solutions_json(matrix, static_cast<std::int64_t>(n), problem, scale, diffs, histories));
 }
 
 }  // namespace
@@ -92,7 +104,7 @@ void write_solutions(const std::string& path, const std::string& matrix, const s
 int main(int argc, char** argv) {
   try {
     const ssolve_cli::Args args(argc, argv, {"matrix", "solver", "tol", "maxit", "repeat", "warmup", "mode", "problem",
-                                             "power", "csv", "label", "progress", "solutions"});
+                                             "power", "csv", "label", "progress", "solutions", "compare"});
     const std::string spec = args.required("matrix");
     const std::string solver_list = args.required("solver");
     const int repeats = args.get_count("repeat", 10, 1);
@@ -105,6 +117,11 @@ int main(int argc, char** argv) {
     const std::string problem = args.get("problem", "random");
     const std::string mode = args.get("mode", "solve");
     if (mode != "solve" && mode != "fixed") throw std::runtime_error("--mode must be solve or fixed");
+    const std::string compare = args.get("compare", "all");
+    if (compare != "all" && compare != "same-precond") {
+      throw std::runtime_error("--compare must be all or same-precond");
+    }
+    if (args.has("compare") && !args.has("solutions")) throw std::runtime_error("--compare needs --solutions");
 
     SolveOptions options;
     options.tol = args.get_double("tol", 1e-8);
@@ -144,11 +161,14 @@ int main(int argc, char** argv) {
     std::vector<std::string> named_order;  // as given on --solver, for the comparison order
     std::map<std::string, std::vector<double>> answers;  // last measured x per solver, for --solutions
     std::set<std::string> failed;  // solvers with a failed measured solve: never drawn, whatever later rounds do
+    std::map<std::string, Precond> kinds;                  // each solver's preconditioner, for --compare
+    std::map<std::string, std::vector<double>> residuals;  // last measured convergence history per solver
     std::stringstream names(solver_list);
     for (std::string solver_name; std::getline(names, solver_name, ',');) {
       try {
         solvers.push_back(find_solver(solver_name));
         named_order.push_back(solver_name);
+        kinds[solver_name] = solvers.back().precond;
       } catch (const std::exception& e) {
         report_failure(solver_name, e.what());
       }
@@ -159,11 +179,16 @@ int main(int argc, char** argv) {
     const auto run_once = [&](const NamedSolver& solver, int repeat) {
       // Identical initial state for warm-ups and all implementations.
       x.fill(0.0);
+      // The history costs one stored number per iteration, and only our cg() records it.
+      std::vector<double> history;
+      SolveOptions run_options = options;
+      if (args.has("solutions")) run_options.history = &history;
       const double start = wall_seconds();
-      const SolveResult result = solver.run(a, b.data(), x.data(), options);
+      const SolveResult result = solver.run(a, b.data(), x.data(), run_options);
       const double end_to_end = preparation_seconds + wall_seconds() - start;
       if (repeat >= 0 && args.has("solutions") && failed.count(solver.name) == 0) {
         answers[solver.name].assign(x.begin(), x.end());
+        residuals[solver.name] = std::move(history);
       }
       if (repeat < 0) {
         if (result.status == SolveStatus::Breakdown || result.status == SolveStatus::ResidualFailure) {
@@ -236,7 +261,7 @@ int main(int argc, char** argv) {
     }
     if (args.has("solutions")) {
       write_solutions(args.required("solutions"), name, problem, static_cast<std::size_t>(a.n_rows), named_order,
-                      answers);
+                      answers, kinds, compare == "same-precond", residuals);
     }
     return exit_status;
   } catch (const std::exception& e) {

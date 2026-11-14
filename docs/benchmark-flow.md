@@ -37,7 +37,7 @@ G1 is the sequential solver matching Eigen. A complete solve on every real matri
 | Speed | `--mode fixed --maxit 100`, summarized with `--metric iteration` | Time per iteration is at most 1.05 times Eigen's, iteration counts match, and no run failed |
 | Accuracy | `--mode solve`, summarized with the default metric | Every true residual meets the tolerance and iteration counts match |
 
-Iteration counts match when they differ by at most 1%, or by 1 iteration. Reaching the iteration limit is expected in a speed run and fails an accuracy run. A breakdown fails both. Each gate refuses runs made for the other, so a fast run that never converged cannot pass.
+Iteration counts match when they differ by at most 1%, or by 1 iteration. An accuracy gate also passes when ours is lower, and when ours is higher only because the residual lingered at the stopping line: with `--solutions DIR`, it reads the convergence history `bench_cg --solutions` saved and passes as `VERIFIED (plateau)` if our residual at Eigen's stopping iteration was within 5% of the tolerance. On `thermal2` with incomplete Cholesky, for example, the residual stays within 1% to 60% above the line for about 400 iterations, so rounding decides which solver crosses first. Reaching the iteration limit is expected in a speed run and fails an accuracy run. A breakdown fails both. Each gate refuses runs made for the other, so a fast run that never converged cannot pass.
 
 ## Steps
 

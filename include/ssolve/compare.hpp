@@ -25,10 +25,18 @@ int difference_grid(std::int64_t n);
 VectorDifference compare_vectors(const std::string& a_name, const double* a, const std::string& b_name,
                                  const double* b, std::size_t n);
 
-// {"matrix","n","grid","problem","x_scale","comparisons":[{"a","b","max_abs","rel_norm","equal","cells"}]},
-// with three significant digits for the differences. A NaN becomes null.
+// One solver's recursive ‖r‖ / ‖b‖ before the first iteration and after each one.
+struct ResidualHistory {
+  std::string solver;
+  std::vector<double> residuals;
+};
+
+// {"matrix","n","grid","problem","x_scale","comparisons":[{"a","b","max_abs","rel_norm","equal","cells"}],
+//  "histories":[{"solver","residuals"}]}, with three significant digits for the differences and four for
+// the residuals. A NaN becomes null.
 std::string solutions_json(const std::string& matrix, std::int64_t n, const std::string& problem, double x_scale,
-                           const std::vector<VectorDifference>& diffs);
+                           const std::vector<VectorDifference>& diffs,
+                           const std::vector<ResidualHistory>& histories = {});
 
 // A JSON string literal; control characters become spaces.
 std::string json_string(const std::string& text);

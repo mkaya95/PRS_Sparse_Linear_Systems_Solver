@@ -97,7 +97,8 @@ std::string json_number(double value, int digits) {
 }
 
 std::string solutions_json(const std::string& matrix, std::int64_t n, const std::string& problem, double x_scale,
-                           const std::vector<VectorDifference>& diffs) {
+                           const std::vector<VectorDifference>& diffs,
+                           const std::vector<ResidualHistory>& histories) {
   std::string out = "{\"matrix\":" + json_string(matrix) + ",\"n\":" + std::to_string(n) +
                     ",\"grid\":" + std::to_string(difference_grid(n)) + ",\"problem\":" + json_string(problem) +
                     ",\"x_scale\":" + json_number(x_scale) + ",\"comparisons\":[";
@@ -109,6 +110,16 @@ std::string solutions_json(const std::string& matrix, std::int64_t n, const std:
     for (std::size_t c = 0; c < d.cells.size(); ++c) {
       if (c) out += ',';
       out += json_number(d.cells[c], 3);
+    }
+    out += "]}";
+  }
+  out += "],\"histories\":[";
+  for (std::size_t k = 0; k < histories.size(); ++k) {
+    out += (k ? ",{" : "{");
+    out += "\"solver\":" + json_string(histories[k].solver) + ",\"residuals\":[";
+    for (std::size_t i = 0; i < histories[k].residuals.size(); ++i) {
+      if (i) out += ',';
+      out += json_number(histories[k].residuals[i], 4);
     }
     out += "]}";
   }

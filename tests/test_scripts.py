@@ -67,6 +67,21 @@ class Gate(unittest.TestCase):
         self.assertFalse(summarize.spmv_passes(10, 12))
         self.assertTrue(summarize.spmv_passes(1009, 1000))
 
+    def test_an_accuracy_gate_accepts_equal_or_fewer_iterations(self):
+        self.assertEqual(summarize.iterations_verdict(1000, 1009, 1e-8, None), (True, ""))
+        self.assertEqual(summarize.iterations_verdict(1000, 700, 1e-8, None), (True, "fewer iterations"))
+
+    def test_more_iterations_pass_only_on_a_recorded_plateau(self):
+        # history[k] is the residual after k iterations; the base stopped after 3.
+        near = [1.0, 1e-4, 2e-8, 1.04e-8, 1.2e-8, 1.1e-8, 0.99e-8]
+        far = [1.0, 1e-2, 1e-4, 1.06e-8, 1e-7, 2e-8, 0.99e-8]
+        self.assertEqual(summarize.iterations_verdict(3, 6, 1e-8, near), (True, "plateau"))
+        self.assertEqual(summarize.iterations_verdict(3, 6, 1e-8, far), (False, ""))
+        self.assertEqual(summarize.iterations_verdict(3, 6, 1e-8, None), (False, ""))
+        self.assertEqual(summarize.iterations_verdict(3, 6, None, near), (False, ""))
+        self.assertEqual(summarize.iterations_verdict(30, 60, 1e-8, near), (False, ""))  # history too short
+        self.assertEqual(summarize.iterations_verdict(3, 6, 1e-8, [1.0, 1e-4, 2e-8, None]), (False, ""))
+
 
 class RunBench(unittest.TestCase):
     def setUp(self):
@@ -215,6 +230,33 @@ class Solutions(unittest.TestCase):
         self.assertEqual(done.returncode, 1, done.stdout)
         data = self.pictures()
         self.assertEqual((data["n"], data["comparisons"]), (400, []))
+
+    def test_our_solvers_get_a_convergence_history_and_eigen_none(self):
+        done = self.run_cg("ours-jacobi,eigen-E1,ours-ic0", "--solutions", self.file)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        histories = {h["solver"]: h["residuals"] for h in self.pictures()["histories"]}
+        self.assertEqual(sorted(histories), ["ours-ic0", "ours-jacobi"])
+        counts = {line.split()[1]: int(line.split("spmv=")[1].split()[0]) for line in done.stdout.splitlines()}
+        for solver, residuals in histories.items():
+            self.assertEqual(len(residuals), counts[solver] + 1)
+            self.assertEqual(residuals[0], 1)
+            self.assertLess(residuals[-1], 1e-8)
+            self.assertGreaterEqual(residuals[-2], 1e-8)
+        self.assertEqual(summarize.load_histories(self.dir.name)["poisson2d:20"], histories)
+
+    def test_compare_same_precond_draws_only_counterparts(self):
+        done = self.run_cg("eigen-E1,ours-jacobi,eigen-E4,ours-ic,ours-sgs", "--solutions", self.file,
+                           "--compare", "same-precond")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual([(c["a"], c["b"]) for c in self.pictures()["comparisons"]],
+                         [("eigen-E1", "ours-jacobi"), ("eigen-E4", "ours-ic"), ("eigen-E1", "true"),
+                          ("ours-jacobi", "true"), ("eigen-E4", "true"), ("ours-ic", "true"), ("ours-sgs", "true")])
+
+    def test_compare_needs_solutions_and_a_known_value(self):
+        for extra in (("--compare", "same-precond"), ("--solutions", self.file, "--compare", "some")):
+            done = self.run_cg("ours", *extra)
+            self.assertEqual(done.returncode, 1, done.stdout)
+            self.assertIn("--compare", done.stderr)
 
     def test_without_the_option_no_file_is_written(self):
         done = self.run_cg("ours")
@@ -966,6 +1008,53 @@ class Summarize(unittest.TestCase):
                 capture_output=True, text=True)
             self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
             self.assertNotIn("VERIFIED", done.stdout)
+
+
+class PlateauGate(unittest.TestCase):
+    """The accuracy gate with the convergence histories bench_cg --solutions saved."""
+
+    def gate(self, residual_at_base_stop, extra=(), mode="solve", with_solutions=True):
+        def row(solver, spmv):
+            return dict(matrix="m", solver=solver, spmv_count=spmv, per_spmv_s="1", solve_s="1",
+                        status="Converged" if mode == "solve" else "MaxIterations", tol="1e-8",
+                        rel_res_true="1e-9", mode=mode)
+        with tempfile.TemporaryDirectory() as d:
+            path = pathlib.Path(d) / "r.csv"
+            rows = [row("base", 3), row("ours", 6)]
+            with path.open("w", newline="", encoding="ascii") as f:
+                writer = csv.DictWriter(f, fieldnames=list(rows[0]))
+                writer.writeheader()
+                writer.writerows(rows)
+            pictures = pathlib.Path(d) / "solutions"
+            pictures.mkdir()
+            history = [1.0, 1e-3, 1e-5, residual_at_base_stop, 2e-8, 1.5e-8, 9e-9]
+            (pictures / "m.json").write_text(json.dumps(
+                {"matrix": "m", "comparisons": [], "histories": [{"solver": "ours", "residuals": history}]}),
+                encoding="utf-8")
+            (pictures / "broken.json").write_text("{not json", encoding="utf-8")
+            options = ["--solutions", str(pictures)] if with_solutions else []
+            return subprocess.run(
+                [sys.executable, str(ROOT / "scripts/summarize.py"), str(path), *options, "--gate", "base=ours", *extra],
+                capture_output=True, text=True)
+
+    def test_a_residual_at_the_line_when_the_base_stopped_passes_as_a_plateau(self):
+        done = self.gate(1.03e-8)
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertIn("VERIFIED (plateau)", done.stdout)
+
+    def test_a_residual_well_above_the_line_fails(self):
+        done = self.gate(3e-8)
+        self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
+        self.assertNotIn("VERIFIED", done.stdout)
+
+    def test_without_the_histories_more_iterations_fail(self):
+        done = self.gate(1.03e-8, with_solutions=False)
+        self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
+
+    def test_the_speed_gate_ignores_histories(self):
+        done = self.gate(1.03e-8, extra=("--metric", "iteration"), mode="fixed")
+        self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
+        self.assertNotIn("plateau", done.stdout)
 
 
 class SpeedGate(unittest.TestCase):
