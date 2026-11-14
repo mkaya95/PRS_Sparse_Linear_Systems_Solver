@@ -15,7 +15,10 @@ import summarize  # noqa: E402
 
 LADDER_CSV = "g1-ladder.csv"
 SPEED_PAIRS = (("eigen-E0", "ours", "Plain CG"), ("eigen-E1", "ours-jacobi", "Jacobi"))
-ACCURACY_PAIR = ("eigen-E1", "ours-jacobi")
+ACCURACY_PAIR = ("eigen-E1", "ours-jacobi")  # the G1 accuracy gate
+# The other pairs the Accuracy step gates, shown when measured. They do not decide G1.
+ACCURACY_OTHERS = (("eigen-E1", "ours-sell-jacobi", "Jacobi with SELL-C-σ storage"),
+                   ("eigen-E4", "ours-ic", "Incomplete Cholesky"))
 # (solver, what the rung adds, a short axis label), as in the results document's ladder tables.
 LADDER = {
     "eigen-E0": [("L0-naive", "textbook CG, no tuning", "textbook"),
@@ -49,8 +52,8 @@ def powers(groups):
     return sorted({p for solvers in groups.values() for entry in solvers.values() for p in entry["power"]})
 
 
-def gate_rows(groups, base, ours, speed):
-    rows, limit = summarize.evaluate_gate(groups, base, ours, speed=speed)
+def gate_rows(groups, base, ours, speed, histories=None):
+    rows, limit = summarize.evaluate_gate(groups, base, ours, speed=speed, histories=histories)
     out = []
     for row in rows:
         clean = {"matrix": row["matrix"], "generated": ":" in row["matrix"], "ok": bool(row["ok"]),
@@ -59,7 +62,7 @@ def gate_rows(groups, base, ours, speed):
             clean.update(ratio=number(row["ratio"]), ci_low=number(row["ci_low"]), ci_high=number(row["ci_high"]),
                          base_time=number(row["base_time"]), our_time=number(row["our_time"]),
                          base_spmv=number(row["base_spmv"]), our_spmv=number(row["our_spmv"]),
-                         noisy=bool(row["noisy"]))
+                         noisy=bool(row["noisy"]), note=row["note"])
         out.append(clean)
     return out, limit
 
@@ -75,12 +78,29 @@ def speed_section(path):
             "manifest": manifest(path)}
 
 
+def solver_rows(groups):
+    """Every solver's complete solves, one row per matrix and solver: iterations, time and whether verified."""
+    out = []
+    for (matrix, _), solvers in sorted(groups.items()):
+        for solver, entry in sorted(solvers.items()):
+            out.append({"matrix": matrix, "solver": solver, "spmv": number(summarize.median(entry["spmv"])),
+                        "time": number(summarize.median(entry["times"])), "ok": all(entry["verified"])})
+    return out
+
+
 def accuracy_section(path):
     groups = summarize.load_groups([str(path)], "solve_s")
+    histories = summarize.load_histories(path.parent / SOLUTIONS_DIR)
     base, ours = ACCURACY_PAIR
-    rows, _ = gate_rows(groups, base, ours, speed=False)
+    rows, _ = gate_rows(groups, base, ours, False, histories)
+    others = []
+    for other_base, other_ours, name in ACCURACY_OTHERS:
+        other_rows, _ = gate_rows(groups, other_base, other_ours, False, histories)
+        if any(not r["missing"] for r in other_rows):
+            others.append({"name": name, "base": other_base, "ours": other_ours, "rows": other_rows,
+                           "passed": all(r["ok"] for r in other_rows)})
     return {"passed": bool(rows) and all(r["ok"] for r in rows), "base": base, "ours": ours, "rows": rows,
-            "power": powers(groups), "manifest": manifest(path)}
+            "others": others, "solvers": solver_rows(groups), "power": powers(groups), "manifest": manifest(path)}
 
 
 def ladder_section(path):
@@ -166,13 +186,18 @@ def one_matrix_run(path):
     test = path.stem.rsplit("-", 1)[1]
     if test == "speed":
         groups = summarize.load_groups([str(path)], "per_spmv_s")
-        pairs = [(name, base, ours, True) for base, ours, name in SPEED_PAIRS]
+        pairs = [(name, base, ours, True, False) for base, ours, name in SPEED_PAIRS]
     else:
         groups = summarize.load_groups([str(path)], "solve_s")
-        pairs = [("Jacobi", *ACCURACY_PAIR, False)]
+        # The other pairs count only when measured, so a run made before they existed still reads as it did.
+        pairs = [("Jacobi", *ACCURACY_PAIR, False, False)] + [(name, base, ours, False, True)
+                                                             for base, ours, name in ACCURACY_OTHERS]
+    histories = summarize.load_histories(path.parent / ONE_SOLUTIONS_DIR)
     out = []
-    for name, base, ours, speed in pairs:
-        rows, _ = gate_rows(groups, base, ours, speed)
+    for name, base, ours, speed, optional in pairs:
+        rows, _ = gate_rows(groups, base, ours, speed, histories)
+        if optional:
+            rows = [r for r in rows if not r["missing"]]
         if rows:
             out.append({"name": name, "ratio": rows[0].get("ratio"), "ok": rows[0]["ok"]})
     matrices = [m for m, _ in groups]

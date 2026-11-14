@@ -64,6 +64,13 @@ class Steps(unittest.TestCase):
             accuracy = {s["id"]: s for s in steps.steps(settings_in(pathlib.Path(d)))}["accuracy"]
         argv = accuracy["commands"][0]["argv"]
         self.assertEqual(argv[argv.index("--solutions") + 1], str(ROOT / "results" / "test-box" / "solutions"))
+        self.assertEqual(argv[argv.index("--solvers") + 1],
+                         "eigen-E1,ours-jacobi,ours-sell-jacobi,ours-sgs,eigen-E4,ours-ic,ours-ic-fixed,ours-ic0")
+        self.assertEqual(argv[argv.index("--compare") + 1], "same-precond")
+        gate = accuracy["commands"][1]["argv"]
+        self.assertEqual(gate[gate.index("--solutions") + 1], str(ROOT / "results" / "test-box" / "solutions"))
+        self.assertEqual(gate[-6:], ["--gate", "eigen-E1=ours-jacobi", "--gate", "eigen-E1=ours-sell-jacobi",
+                                     "--gate", "eigen-E4=ours-ic"])
         self.assertIn(ROOT / "results" / "test-box" / "solutions", accuracy["replaces"])
         speed = {s["id"]: s for s in steps.steps(settings_in(pathlib.Path(d)))}["speed"]
         self.assertNotIn("--solutions", speed["commands"][0]["argv"])
@@ -117,7 +124,15 @@ class Steps(unittest.TestCase):
                     full_bench, full_gate = [c["argv"] for c in full[test]["commands"]]
                     self.assertEqual(bench[bench.index("--matrices") + 1], name)
                     self.assertEqual(without_matrices(bench)[:-1], without_matrices(full_bench)[:-1])
-                    self.assertEqual(gate[:2] + gate[3:], full_gate[:2] + full_gate[3:])
+                    def same_everywhere(argv):  # without the CSV, and without the pictures folder the gate reads
+                        argv = argv[:2] + argv[3:]
+                        if "--solutions" in argv:
+                            del argv[argv.index("--solutions") + 1]
+                        return argv
+                    self.assertEqual(same_everywhere(gate), same_everywhere(full_gate))
+                    if test == "accuracy":
+                        self.assertEqual(gate[gate.index("--solutions") + 1],
+                                         bench[bench.index("--solutions") + 1])
                     self.assertTrue(one["commands"][1]["gate"])
                     out = pathlib.Path(bench[-1])
                     self.assertEqual((gate[2], out.parent), (bench[-1], ROOT / "results" / "test-box"))
@@ -223,6 +238,41 @@ class Results(unittest.TestCase):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps({"matrix": matrix, "n": 4, "grid": 2, "problem": "random", "x_scale": 1.0,
                                     "comparisons": []}), encoding="utf-8")
+
+    def accuracy_rows(self):
+        def row(solver, spmv, precond):
+            return dict(matrix="m", solver=solver, spmv_count=spmv, per_spmv_s=1, solve_s=2, status="Converged",
+                        tol="1e-8", rel_res_true="1e-9", mode="solve", precond=precond)
+        return [row("eigen-E1", 100, "jacobi"), row("ours-jacobi", 100, "jacobi"),
+                row("eigen-E4", 30, "incomplete-cholesky"), row("ours-ic", 40, "incomplete-cholesky"),
+                row("ours-ic0", 25, "ic0")]
+
+    def test_the_other_accuracy_pairs_are_listed_and_do_not_decide_g1(self):
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d) / "box"
+            folder.mkdir()
+            self.write_csv(folder / steps.ACCURACY_CSV, self.accuracy_rows())
+            accuracy = results.machine(folder)["accuracy"]
+        self.assertTrue(accuracy["passed"])  # Jacobi, the G1 pair
+        self.assertEqual([(o["ours"], o["base"], o["passed"]) for o in accuracy["others"]],
+                         [("ours-ic", "eigen-E4", False)])  # 40 against 30 with no history; SELL was not measured
+        self.assertEqual([(s["solver"], s["spmv"], s["time"], s["ok"]) for s in accuracy["solvers"]][-1],
+                         ("ours-jacobi", 100, 2.0, True))
+        self.assertEqual(len(accuracy["solvers"]), 5)
+
+    def test_a_saved_history_lets_a_plateau_pass(self):
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d) / "box"
+            folder.mkdir()
+            self.write_csv(folder / steps.ACCURACY_CSV, self.accuracy_rows())
+            history = [1.0] * 30 + [1.02e-8] + [2e-8] * 9 + [9e-9]  # at the line when Eigen stopped after 30
+            (folder / "solutions").mkdir()
+            (folder / "solutions" / "m.json").write_text(json.dumps(
+                {"matrix": "m", "n": 4, "grid": 2, "problem": "random", "x_scale": 1.0, "comparisons": [],
+                 "histories": [{"solver": "ours-ic", "residuals": history}]}), encoding="utf-8")
+            other = results.machine(folder)["accuracy"]["others"][0]
+        self.assertTrue(other["passed"])
+        self.assertEqual(other["rows"][0]["note"], "plateau")
 
     def test_solution_pictures_of_the_accuracy_step_belong_to_the_machine(self):
         with tempfile.TemporaryDirectory() as d:

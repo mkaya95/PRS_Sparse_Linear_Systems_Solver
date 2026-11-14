@@ -89,16 +89,18 @@ Plug in the charger and close other applications first. `run_bench.py` refuses t
     python3 scripts/summarize.py $R/g1-real.csv --metric iteration --gate eigen-E0=ours --gate eigen-E1=ours-jacobi
     ```
 
-4. Measure accuracy, which takes about 15 minutes. Each solver runs until it converges or reaches the limit, on the six smaller matrices, and must meet the tolerance within 1% of Eigen's iteration count:
+4. Measure accuracy, which takes about an hour. Each solver runs until it converges or reaches the limit, on the six smaller matrices, with every preconditioner. Each of ours that has an Eigen counterpart must meet the tolerance in Eigen's iteration count within 1%, or fewer:
 
     ```bash
     python3 scripts/run_bench.py --build build/release --data-dir ~/p08/data --maxit 30000 --repeat 3 --warmup 0 \
         --matrices ecology2,apache2,tmt_sym,G3_circuit,thermal2,hood \
-        --solvers eigen-E1,ours-jacobi --solutions $R/solutions --out $R/g1-real-solve.csv
-    python3 scripts/summarize.py $R/g1-real-solve.csv --gate eigen-E1=ours-jacobi
+        --solvers eigen-E1,ours-jacobi,ours-sell-jacobi,ours-sgs,eigen-E4,ours-ic,ours-ic-fixed,ours-ic0 \
+        --solutions $R/solutions --compare same-precond --out $R/g1-real-solve.csv
+    python3 scripts/summarize.py $R/g1-real-solve.csv --solutions $R/solutions \
+        --gate eigen-E1=ours-jacobi --gate eigen-E1=ours-sell-jacobi --gate eigen-E4=ours-ic
     ```
 
-    `--solutions` saves, for each matrix, how far our answer is from Eigen's and from the true answer, as `$R/solutions/MATRIX.json`. The Results tab draws them.
+    `--solutions` saves, for each matrix, how far our answer is from its Eigen counterpart's and from the true answer, and how the residual fell iteration by iteration, as `$R/solutions/MATRIX.json`. The Results tab draws the differences. The gate reads the residuals: more iterations than Eigen still pass as `VERIFIED (plateau)` when our residual at Eigen's stopping iteration was within 5% of the tolerance, because rounding then decides who crosses the line first.
 
 5. Check the answers against SciPy, which needs `pip install scipy`:
 
