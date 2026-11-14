@@ -13,7 +13,7 @@
 namespace ssolve {
 
 // Solves A x = b for an SPD backend matrix, stopping when ‖r‖ < tol · ‖b‖ on the recursive residual,
-// so Converged here says nothing about the true residual. Pass inv_diag = nullptr for plain CG.
+// so Converged here says nothing about the true residual.
 // x holds the solution on return, and the initial guess on entry if options.use_initial_guess is set.
 SolveResult cg(const Backend& backend, Preconditioner& precond, const double* b, double* x, const SolveOptions& options);
 

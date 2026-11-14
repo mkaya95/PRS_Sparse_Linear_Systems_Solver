@@ -12,11 +12,11 @@ flowchart TD
     D -->|"No"| F["Create demo RHS: b = A·1"]
     E --> G["Validate tolerance and iteration limit"]
     F --> G
-    G --> H{"Jacobi selected?"}
-    H -->|"Yes"| I["Build inverse diagonal; require finite positive entries"]
-    H -->|"No"| J["Create sequential CSR backend"]
-    I --> J
-    J --> K["Run CG from zero initial guess"]
+    G --> J["Create the CSR or SELL-C-σ backend"]
+    J --> H{"Preconditioner selected?"}
+    H -->|"Yes"| I["Build it: inverse diagonal, Gauss-Seidel sweeps or incomplete Cholesky factor"]
+    H -->|"No"| K["Run CG from zero initial guess"]
+    I --> K
     K --> L{"CG result"}
     L -->|"Breakdown"| M["Report breakdown and reason"]
     L -->|"MaxIterations"| N["Report nonconvergence"]
@@ -40,14 +40,15 @@ flowchart TD
    system `b = A*1`.
 4. **Validate solver options.** The tolerance must be finite and positive;
    the maximum iteration count must be nonnegative (`0` selects the default).
-5. **Prepare the preconditioner and backend.** The preconditioner is none, Jacobi,
+5. **Prepare the backend and the preconditioner.** The solver first constructs the
+   sequential CSR backend, or the SELL-C-σ backend with `--format sell`; both share
+   the same vector kernels. The preconditioner is none, Jacobi,
    symmetric Gauss-Seidel (`sgs`, from HPCG's reference kernel) or incomplete
    Cholesky (`ic`, from Eigen's IncompleteCholesky with natural ordering). CG runs
    one loop for all of them: none and Jacobi merge their work into the vector
    updates, the other two store z = M⁻¹r. Plain CG needs no preconditioner.
    Jacobi requires every diagonal and inverse-diagonal value to be finite and
-   positive. The solver then constructs the sequential CSR backend, or the SELL-C-σ
-   backend with `--format sell`; both share the same vector kernels.
+   positive.
 6. **Run CG.** The normal CLI path starts with `x = 0`. Invalid curvature or
    non-finite intermediate arithmetic returns `Breakdown`. Reaching the
    iteration limit returns `MaxIterations`; neither indicates success.
