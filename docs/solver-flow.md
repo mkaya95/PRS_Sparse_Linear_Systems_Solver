@@ -40,7 +40,11 @@ flowchart TD
    system `b = A*1`.
 4. **Validate solver options.** The tolerance must be finite and positive;
    the maximum iteration count must be nonnegative (`0` selects the default).
-5. **Prepare the backend and the preconditioner.** The solver first constructs the
+5. **Prepare the backend and the preconditioner.** With `--order rcm`, the solver first
+   renumbers the unknowns by reverse Cuthill-McKee (from SciPy's `reverse_cuthill_mckee`)
+   and builds P A Pᵀ; the backend and the preconditioner then see only that matrix, CG
+   solves for P x from P b, and the answer is put back in the original order before it
+   is verified against the original matrix. The solver then constructs the
    sequential CSR backend, or the SELL-C-σ backend with `--format sell`; both share
    the same vector kernels. The preconditioner is none, Jacobi,
    symmetric Gauss-Seidel (`sgs`, from HPCG's reference kernel) or incomplete

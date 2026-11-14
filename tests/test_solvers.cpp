@@ -431,6 +431,13 @@ TEST(the_preconditioner_variants_are_registered) {
   CHECK(ssolve_bench::find_solver("ours-ic").precond == Precond::IncompleteCholesky);
   CHECK(ssolve_bench::find_solver("ours-ic-fixed").precond == Precond::IncompleteCholeskyFixed);
   CHECK(ssolve_bench::find_solver("ours-ic0").precond == Precond::IncompleteCholeskyZero);
+  CHECK(ssolve_bench::find_solver("ours-sell-sgs").precond == Precond::SymGaussSeidel);
+  CHECK(ssolve_bench::find_solver("ours-sell-ic").precond == Precond::IncompleteCholesky);
+  CHECK(ssolve_bench::find_solver("ours-sell-ic0").precond == Precond::IncompleteCholeskyZero);
+  CHECK(ssolve_bench::find_solver("ours-rcm-jacobi").precond == Precond::Jacobi);
+  CHECK(ssolve_bench::find_solver("ours-rcm-ic0").precond == Precond::IncompleteCholeskyZero);
+  CHECK(ssolve_bench::find_solver("ours-sell-rcm-jacobi").precond == Precond::Jacobi);
+  CHECK(ssolve_bench::find_solver("ours-sell-rcm-ic0").precond == Precond::IncompleteCholeskyZero);
   CHECK(ssolve_bench::find_solver("eigen-E4").precond == Precond::IncompleteCholesky);
 }
 

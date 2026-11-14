@@ -21,6 +21,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import download_matrices  # noqa: E402
 import run_bench as run_bench_script  # noqa: E402
 import summarize  # noqa: E402
+import sweep_sell  # noqa: E402
 
 BUILD_DIR = None  # set in __main__
 
@@ -477,7 +478,59 @@ class ScipyCheck(unittest.TestCase):
         self.assertIn("FAIL", done.stdout)
 
 
+class SellSweep(unittest.TestCase):
+    def test_only_allowed_layouts_are_swept(self):
+        self.assertEqual(sweep_sell.implementations([4, 8], [1, 4, 8]),
+                         ["sell-c4-s1", "sell-c4-s4", "sell-c4-s8", "sell-c8-s1", "sell-c8-s8"])
+
+    def test_the_summary_pairs_rounds_and_finds_the_break_even(self):
+        def timing(impl, repeat, seconds):
+            return dict(matrix="m", impl=impl, kernel="spmv", repeat=str(repeat), seconds=str(seconds))
+        timings = [timing("L3-acc2", 0, 10.0), timing("L3-acc2", 1, 20.0),
+                   timing("sell-c8-s1", 0, 8.0), timing("sell-c8-s1", 1, 16.0),
+                   timing("sell-c4-s1", 0, 11.0), timing("sell-c4-s1", 1, 22.0),
+                   dict(timing("sell-c8-s1", 0, 99.0), kernel="dot")]
+        layouts = [dict(matrix="m", impl="sell-c8-s1", stored_per_nnz="1.25", build_s="30"),
+                   dict(matrix="m", impl="sell-c4-s1", stored_per_nnz="1.5", build_s="30")]
+        lines = sweep_sell.summary(timings, layouts)["m"]
+        self.assertEqual(lines[0], ("sell-c8-s1", 1.25, 0.8, 10.0))  # medians 15 and 12: 30 s / 3 s saved
+        self.assertEqual(lines[1][0], "sell-c4-s1")
+        self.assertAlmostEqual(lines[1][2], 1.1)
+        self.assertIsNone(lines[1][3])  # slower than CSR, so the conversion never pays
+
+    def test_a_sweep_measures_every_layout_and_prints_a_table(self):
+        with tempfile.TemporaryDirectory() as d:
+            suite = os.path.join(d, "suite.json")
+            with open(suite, "w", encoding="utf-8") as f:
+                json.dump({"generated": [{"stencil": "poisson2d", "n": [30]}], "files": []}, f)
+            out = os.path.join(d, "sweep.csv")
+            command = [sys.executable, str(ROOT / "scripts" / "sweep_sell.py"), "--build", BUILD_DIR, "--suite", suite,
+                       "--out", out, "--chunks", "4,8", "--sigmas", "1,8", "--repeat", "2", "--min-ms", "1",
+                       "--pin", "none", "--allow-battery"]
+            done = subprocess.run(command, capture_output=True, text=True)
+            self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+            with open(out, newline="", encoding="utf-8") as f:
+                rows = list(csv.DictReader(f))
+            self.assertEqual({r["kernel"] for r in rows}, {"spmv"})
+            self.assertEqual(len(rows), 2 * 5)  # CSR and four layouts, two rounds
+            with open(os.path.join(d, "sweep-layout.csv"), newline="", encoding="utf-8") as f:
+                layouts = list(csv.DictReader(f))
+            self.assertEqual([r["impl"] for r in layouts], ["sell-c4-s1", "sell-c4-s8", "sell-c8-s1", "sell-c8-s8"])
+            self.assertTrue(all(float(r["stored_per_nnz"]) >= 1 for r in layouts))
+            self.assertIn("| sell-c8-s8 |", done.stdout)
+            self.assertIn("Fastest: sell-c", done.stdout)
+            again = subprocess.run(command, capture_output=True, text=True)
+            self.assertNotEqual(again.returncode, 0)
+            self.assertIn("exists", again.stderr)
+
+
 class BenchKernels(unittest.TestCase):
+    def test_an_unknown_kernel_is_refused(self):
+        done = subprocess.run([os.path.join(BUILD_DIR, "bench_kernels"), "--matrix", "poisson2d:10", "--impl", "L0",
+                               "--kernel", "spmv,gemm"], capture_output=True, text=True)
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("gemm", done.stderr)
+
     def run_kernels(self, impl, out):
         return subprocess.run(
             [os.path.join(BUILD_DIR, "bench_kernels"), "--matrix", "poisson2d:50", "--impl", impl,
@@ -848,6 +901,27 @@ class SolveCommand(unittest.TestCase):
         self.assertEqual(done.returncode, 1)
         self.assertIn("ilu", done.stderr)
         self.assertIn("none, jacobi, sgs, ic, ic-fixed or ic0", done.stderr)
+
+    def test_gauss_seidel_and_incomplete_cholesky_are_selectable(self):
+        done = self.run_solve("--matrix", "poisson2d:5", "--order", "amd")
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("natural or rcm", done.stderr)
+
+    def test_reordering_solves_the_same_system(self):
+        with tempfile.TemporaryDirectory() as d:
+            answers = []
+            for order in ("natural", "rcm"):
+                out = os.path.join(d, f"{order}.txt")
+                done = self.run_solve("--matrix", "poisson3d:9", "--problem", "random", "--precond", "ic0",
+                                      "--order", order, "--out", out)
+                self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+                self.assertIn(f"ordering       {order}", done.stdout)
+                with open(out, encoding="utf-8") as f:
+                    answers.append([float(line) for line in f])
+            # The same unknowns in the same places: a solution left in the new order would differ everywhere.
+            self.assertEqual(len(answers[0]), 729)
+            self.assertLess(max(abs(x - y) for x, y in zip(*answers)), 1e-6)
+            self.assertGreater(max(answers[0]) - min(answers[0]), 0.1)
 
     def test_gauss_seidel_and_incomplete_cholesky_are_selectable(self):
         for precond in ("sgs", "ic", "ic-fixed", "ic0"):

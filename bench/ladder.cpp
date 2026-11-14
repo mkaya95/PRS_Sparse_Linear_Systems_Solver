@@ -19,6 +19,7 @@
 #include "ssolve/cg.hpp"
 #include "ssolve/cg_common.hpp"
 #include "ssolve/kernels_common.hpp"
+#include "ssolve/sell.hpp"
 #include "ssolve/timer.hpp"
 #include "ssolve/verify.hpp"
 
@@ -323,6 +324,27 @@ KernelSet make_kernels(const CsrMatrix& a) {
 
 }  // namespace
 
+namespace {
+
+bool parse_sell_name(const std::string& name, int& chunk, long long& sigma) {
+  char rest = 0;
+  return std::sscanf(name.c_str(), "sell-c%d-s%lld%c", &chunk, &sigma, &rest) == 2 && sigma > 0 &&
+         sigma <= std::numeric_limits<Index>::max();
+}
+
+}  // namespace
+
+bool sell_layout(const std::string& name, const CsrMatrix& a, double& stored_per_nnz, double& build_seconds) {
+  int chunk = 0;
+  long long sigma = 0;
+  if (!parse_sell_name(name, chunk, sigma)) return false;
+  const double start = wall_seconds();
+  const SellMatrix s = sell_from_csr(a, chunk, static_cast<Index>(sigma));
+  build_seconds = wall_seconds() - start;
+  stored_per_nnz = a.nnz() > 0 ? static_cast<double>(s.stored()) / static_cast<double>(a.nnz()) : 1.0;
+  return true;
+}
+
 std::vector<std::string> ladder_kernel_names() {
   return {"L0", "L1", "L2", "L3-acc2", "L3-unroll4", "L3-simdrow"};
 }
@@ -337,9 +359,7 @@ KernelSet ladder_kernels(const std::string& name, const CsrMatrix& a) {
   // sell-c<C>-s<sigma>: the SELL backend's SpMV, with L3-acc2's vector kernels.
   int chunk = 0;
   long long sigma = 0;
-  char rest = 0;
-  if (std::sscanf(name.c_str(), "sell-c%d-s%lld%c", &chunk, &sigma, &rest) == 2 && sigma > 0 &&
-      sigma <= std::numeric_limits<Index>::max()) {
+  if (parse_sell_name(name, chunk, sigma)) {
     KernelSet set = make_kernels<KAcc2>(a);
     const std::shared_ptr<const Backend> backend = make_sell_backend(a, chunk, static_cast<Index>(sigma));
     set.spmv = [backend](const double* x, double* y) { backend->spmv(x, y); };
