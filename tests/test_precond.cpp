@@ -8,6 +8,7 @@
 #include "ssolve/backend.hpp"
 #include "ssolve/cg.hpp"
 #include "ssolve/generators.hpp"
+#include "ssolve/ic0.hpp"
 #include "ssolve/incomplete_cholesky.hpp"
 #include "ssolve/preconditioner.hpp"
 #include "ssolve/sgs.hpp"
@@ -218,3 +219,145 @@ TEST(the_factory_builds_sgs) {
 }
 
 TEST_MAIN()
+
+namespace {
+
+// The matrix of Kershaw (1978): SPD, with eigenvalues of about 0.17 and 5.83, yet IC(0) without a
+// shift reaches the pivot -5.
+CsrMatrix kershaw() {
+  const double rows[4][4] = {{3, -2, 0, 2}, {-2, 3, -2, 0}, {0, -2, 3, -2}, {2, 0, -2, 3}};
+  Coo coo;
+  coo.n_rows = 4;
+  coo.n_cols = 4;
+  for (Index i = 0; i < 4; ++i) {
+    for (Index j = 0; j < 4; ++j) {
+      if (rows[i][j] != 0.0) coo.add(i, j, rows[i][j]);
+    }
+  }
+  return csr_from_coo(coo);
+}
+
+}  // namespace
+
+TEST(ic_fixed_equals_the_copy_where_nothing_is_dropped) {
+  // Both bugs act only on entries outside the pattern, and a tridiagonal matrix has none.
+  const CsrMatrix a = path(40);
+  const CholeskyFactor copied = incomplete_cholesky(a);
+  const CholeskyFactor fixed = incomplete_cholesky(a, 1e-3, EigenBugs::Fixed);
+  for (std::size_t k = 0; k < copied.val.size(); ++k) CHECK_EQ(fixed.val[k], copied.val[k]);
+}
+
+TEST(ic_fixed_needs_fewer_iterations_than_the_copy) {
+  const CsrMatrix a = make_stencil(Stencil::Point27, 12);
+  const std::size_t n = static_cast<std::size_t>(a.n_rows);
+  const AlignedArray<double> b = rhs_for_unit_solution(a);
+  const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
+  AlignedArray<double> x(n);
+  const std::unique_ptr<Preconditioner> copied = make_preconditioner(Precond::IncompleteCholesky, a);
+  const std::unique_ptr<Preconditioner> fixed = make_preconditioner(Precond::IncompleteCholeskyFixed, a);
+  const SolveResult with_copied = verified_cg(a, *backend, *copied, b.data(), x.data(), {});
+  const SolveResult with_fixed = verified_cg(a, *backend, *fixed, b.data(), x.data(), {});
+  CHECK(with_fixed.status == SolveStatus::Converged);
+  CHECK(with_fixed.spmv_count < with_copied.spmv_count);
+  for (std::size_t i = 0; i < n; ++i) CHECK_NEAR(x[i], 1.0, 1e-6);
+}
+
+TEST(ic0_is_exact_without_fill) {
+  // A tridiagonal matrix has no fill to drop, so M = A and CG is done after one SpMV.
+  const CsrMatrix a = path(50);
+  const std::size_t n = 50;
+  const Ic0Factor f = ic0(a);
+  CHECK_EQ(f.shift, 0.0);
+  CHECK_EQ(f.attempts, 1);
+  const std::vector<double> r = wave(n, 0.5);
+  std::vector<double> z(n), az(n);
+  ic0_apply(f, r.data(), z.data());
+  spmv_reference(a, z.data(), az.data());
+  for (std::size_t i = 0; i < n; ++i) CHECK_NEAR(az[i], r[i], 1e-12);
+
+  const AlignedArray<double> b = rhs_for_unit_solution(a);
+  const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
+  const std::unique_ptr<Preconditioner> m = make_preconditioner(Precond::IncompleteCholeskyZero, a);
+  AlignedArray<double> x(n);
+  const SolveResult result = verified_cg(a, *backend, *m, b.data(), x.data(), {});
+  CHECK(result.status == SolveStatus::Converged);
+  CHECK_EQ(result.spmv_count, std::int64_t{1});
+}
+
+TEST(ic0_keeps_the_pattern_of_the_lower_triangle) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 6);
+  const Ic0Factor f = ic0(a);
+  CHECK_EQ(f.n, a.n_rows);
+  for (Index i = 0; i < a.n_rows; ++i) {
+    std::int64_t at = f.row_ptr[i];
+    for (std::int64_t k = a.row_ptr[i]; k < a.row_ptr[i + 1]; ++k) {
+      if (a.col[k] < i) CHECK_EQ(f.col[at++], a.col[k]);
+    }
+    CHECK_EQ(at, f.row_ptr[i + 1]);
+  }
+}
+
+TEST(ic0_reproduces_the_scaled_matrix_on_its_pattern) {
+  // The defining property of IC(0): L L^T equals S A S wherever A has an entry.
+  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 5);
+  const std::size_t n = static_cast<std::size_t>(a.n_rows);
+  const Ic0Factor f = ic0(a);
+  std::vector<double> l(n * n, 0.0);
+  for (std::size_t i = 0; i < n; ++i) {
+    for (std::int64_t k = f.row_ptr[i]; k < f.row_ptr[i + 1]; ++k) l[i * n + static_cast<std::size_t>(f.col[k])] = f.val[k];
+    l[i * n + i] = 1.0 / f.inv_diag[i];
+  }
+  for (std::size_t i = 0; i < n; ++i) {
+    for (std::int64_t k = a.row_ptr[i]; k < a.row_ptr[i + 1]; ++k) {
+      const std::size_t j = static_cast<std::size_t>(a.col[k]);
+      double product = 0.0;
+      for (std::size_t m = 0; m < n; ++m) product += l[i * n + m] * l[j * n + m];
+      CHECK_NEAR(product, a.val[k] * f.scale[i] * f.scale[j], 1e-13);
+    }
+  }
+}
+
+TEST(ic0_apply_is_symmetric) {
+  const CsrMatrix a = make_stencil(Stencil::Point27, 4);
+  const std::size_t n = static_cast<std::size_t>(a.n_rows);
+  const Ic0Factor f = ic0(a);
+  const std::vector<double> u = wave(n, 0.1), v = wave(n, 1.9);
+  std::vector<double> mu(n), mv(n);
+  ic0_apply(f, u.data(), mu.data());
+  ic0_apply(f, v.data(), mv.data());
+  CHECK_NEAR(dot(u, mv), dot(v, mu), 1e-12 * std::fabs(dot(u, mv)));
+}
+
+TEST(ic0_shifts_on_kershaws_matrix_and_still_solves) {
+  const CsrMatrix a = kershaw();
+  const Ic0Factor f = ic0(a);
+  CHECK(f.shift > 0.0);
+  CHECK(f.attempts > 1);
+  const AlignedArray<double> b = rhs_for_unit_solution(a);
+  const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
+  const std::unique_ptr<Preconditioner> m = make_preconditioner(Precond::IncompleteCholeskyZero, a);
+  AlignedArray<double> x(4);
+  const SolveResult result = verified_cg(a, *backend, *m, b.data(), x.data(), {});
+  CHECK(result.status == SolveStatus::Converged);
+  for (std::size_t i = 0; i < 4; ++i) CHECK_NEAR(x[i], 1.0, 1e-7);
+}
+
+TEST(ic0_needs_a_positive_diagonal) {
+  CHECK_THROWS_WITH(ic0(diagonal({1, -1})), "positive diagonal");
+  CHECK_THROWS_WITH(ic0(two_by_two(0.0, 1.0)), "positive diagonal");
+}
+
+TEST(ic0_cg_needs_fewer_iterations_than_jacobi) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson3D, 12);
+  const std::size_t n = static_cast<std::size_t>(a.n_rows);
+  const AlignedArray<double> b = rhs_for_unit_solution(a);
+  const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
+  AlignedArray<double> x_ic(n), x_jacobi(n);
+  const std::unique_ptr<Preconditioner> ic = make_preconditioner(Precond::IncompleteCholeskyZero, a);
+  const std::unique_ptr<Preconditioner> jacobi = make_jacobi_preconditioner(a);
+  const SolveResult with_ic = verified_cg(a, *backend, *ic, b.data(), x_ic.data(), {});
+  const SolveResult with_jacobi = verified_cg(a, *backend, *jacobi, b.data(), x_jacobi.data(), {});
+  CHECK(with_ic.status == SolveStatus::Converged);
+  CHECK(with_ic.spmv_count < with_jacobi.spmv_count);
+  for (std::size_t i = 0; i < n; ++i) CHECK_NEAR(x_ic[i], 1.0, 1e-6);
+}

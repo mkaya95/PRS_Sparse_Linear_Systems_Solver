@@ -1,6 +1,11 @@
 // Times each CG kernel for several implementations, so a gap can be traced to its source.
 //
 // Usage: bench_kernels --matrix SPEC --impl eigen,L0,... [--warmup 1] [--repeat 10] [--min-ms 50] [--csv FILE]
+//                      [--kernel spmv,dot,...] [--layout FILE]
+//
+// --kernel times only the kernels named (spmv, dot, axpy, norm2, xpby), which a sweep over many SpMV
+// implementations needs. --layout FILE appends one CSV row per sell-c<C>-s<sigma> implementation: the
+// entries it stores per non-zero and the seconds its conversion from CSR takes.
 //
 // An implementation named sell-c<C>-s<sigma>, such as sell-c8-s256, times the SELL-C-sigma SpMV.
 //
@@ -49,7 +54,7 @@ double kernel_bytes(const std::string& kernel, double n, double nnz) {
 
 int main(int argc, char** argv) {
   try {
-    const ssolve_cli::Args args(argc, argv, {"matrix", "impl", "repeat", "warmup", "min-ms", "csv"});
+    const ssolve_cli::Args args(argc, argv, {"matrix", "impl", "repeat", "warmup", "min-ms", "csv", "kernel", "layout"});
     const std::string spec = args.required("matrix");
     const int repeats = args.get_count("repeat", 10, 1);
     const int warmups = args.get_count("warmup", 1);
@@ -68,6 +73,17 @@ int main(int argc, char** argv) {
     }
     if (implementations.empty()) throw std::runtime_error("no implementations selected");
 
+    const std::vector<std::string> all_kernels = {"spmv", "dot", "axpy", "norm2", "xpby"};
+    std::vector<std::string> kernels;
+    std::stringstream wanted(args.get("kernel", "spmv,dot,axpy,norm2,xpby"));
+    for (std::string kernel; std::getline(wanted, kernel, ',');) {
+      if (std::find(all_kernels.begin(), all_kernels.end(), kernel) == all_kernels.end()) {
+        throw std::runtime_error("unknown kernel '" + kernel + "': use spmv, dot, axpy, norm2 or xpby");
+      }
+      kernels.push_back(kernel);
+    }
+    if (kernels.empty()) throw std::runtime_error("no kernels selected");
+
     std::vector<std::string> columns = manifest_columns();
     for (const char* column :
          {"matrix", "n", "nnz", "impl", "kernel", "repeat", "calls", "seconds", "gb_per_s", "warmup", "repeats",
@@ -79,12 +95,22 @@ int main(int argc, char** argv) {
 
     const Manifest manifest = collect_manifest();
     const std::string matrix_name = matrix_display_name(spec);
+    if (args.has("layout")) {
+      CsvWriter layout(args.required("layout"), {"matrix", "impl", "stored_per_nnz", "build_s", "matrix_id"});
+      for (const Implementation& impl : implementations) {
+        double stored_per_nnz = 0.0, build_seconds = 0.0;
+        if (sell_layout(impl.name, a, stored_per_nnz, build_seconds)) {
+          layout.write_row({matrix_name, impl.name, fmt_double(stored_per_nnz), fmt_double(build_seconds), fingerprint});
+        }
+      }
+    }
     Vectors vectors(n);
     for (std::int64_t round = -static_cast<std::int64_t>(warmups); round < repeats; ++round) {
       const int repeat = static_cast<int>(round);
       // Rotate who goes first, because the first run in a round is measurably slower.
       if (repeat > 0) std::rotate(implementations.begin(), implementations.begin() + 1, implementations.end());
-      for (const char* kernel : {"spmv", "dot", "axpy", "norm2", "xpby"}) {
+      for (const std::string& kernel_name : kernels) {
+        const char* const kernel = kernel_name.c_str();
         for (const Implementation& impl : implementations) {
           const Sample sample = measure_kernel(kernel, impl.kernels, vectors, min_seconds);
           if (repeat < 0) continue;

@@ -25,4 +25,8 @@ std::vector<std::string> ladder_kernel_names();  // L0, L1, ...
 // Throws if the name is unknown.
 KernelSet ladder_kernels(const std::string& name, const ssolve::CsrMatrix& a);
 
+// For a name of the form sell-c<C>-s<sigma>: entries stored per non-zero (1 means no padding) and the
+// seconds one conversion from CSR takes. Returns false for any other name.
+bool sell_layout(const std::string& name, const ssolve::CsrMatrix& a, double& stored_per_nnz, double& build_seconds);
+
 }  // namespace ssolve_bench

@@ -393,12 +393,23 @@ function renderCharts(withSpeed) {
 
   const accOwner = (m && m.accuracy && m.accuracy.rows) ? m : ui.machines.find((x) => x.accuracy && x.accuracy.rows);
   const acc = accOwner && accOwner.accuracy;
-  $("#accuracy").innerHTML = acc ? `<tr><th>Matrix</th><th>Iterations, ours / Eigen</th><th>Time / Eigen</th><th></th></tr>` +
-    acc.rows.map((r) => `<tr><td>${esc(r.matrix)}</td>
+  const gateRows = (rows) => rows.map((r) => `<tr><td>${esc(r.matrix)}</td>
       <td class="num">${r.missing ? "-" : `${r.our_spmv.toLocaleString()} / ${r.base_spmv.toLocaleString()}`}</td>
       <td class="num">${r.ratio == null ? "-" : r.ratio.toFixed(3)}</td>
-      <td>${r.ok ? "verified" : `<b style="color:var(--red)">fail</b>`}</td></tr>`).join("") +
-    `<tr><td colspan="4" class="note">Jacobi CG against Eigen E1 on ${esc(accOwner.name)}. Verified: same iteration count within 1%, every true residual within 1e-8.</td></tr>`
+      <td>${r.ok ? `verified${r.note ? ` (${esc(r.note)})` : ""}` : `<b style="color:var(--red)">fail</b>`}</td></tr>`).join("");
+  const others = acc ? (acc.others || []).map((o) =>
+    `<tr><th colspan="4">${esc(o.name)}: ${esc(o.ours)} against ${esc(o.base.replace("eigen-", "Eigen "))}</th></tr>` + gateRows(o.rows)).join("") : "";
+  const measured = acc ? (acc.solvers || []).filter((s) => !s.solver.startsWith("eigen-")) : [];
+  const allSolvers = measured.length > 2
+    ? `<tr><th colspan="4">Every solver of ours</th></tr><tr><th>Matrix</th><th>Solver</th><th>Iterations</th><th>Solve time</th></tr>` +
+      measured.map((s) => `<tr><td>${esc(s.matrix)}</td><td>${esc(s.solver)}</td>
+      <td class="num">${s.spmv == null ? "-" : s.spmv.toLocaleString()}</td>
+      <td class="num">${s.time == null ? "-" : `${s.time.toFixed(2)} s`}${s.ok ? "" : ` <b style="color:var(--red)">not verified</b>`}</td></tr>`).join("")
+    : "";
+  $("#accuracy").innerHTML = acc ? `<tr><th>Matrix</th><th>Iterations, ours / Eigen</th><th>Time / Eigen</th><th></th></tr>` +
+    gateRows(acc.rows) +
+    `<tr><td colspan="4" class="note">Jacobi CG against Eigen E1 on ${esc(accOwner.name)}. Verified: every true residual within 1e-8, and our iteration count within 1% of Eigen's, or lower, or higher only while the residual lingered within 5% of the stopping line (plateau).</td></tr>` +
+    others + allSolvers
     : `<tr><td class="empty">No accuracy results yet.</td></tr>`;
   renderSolutions(accOwner || null);
 

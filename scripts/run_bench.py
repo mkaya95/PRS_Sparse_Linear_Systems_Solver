@@ -129,7 +129,11 @@ def main():
     parser.add_argument("--label", default=None)
     parser.add_argument("--solutions", default=None,
                         help="folder for each matrix's solution pictures, written by bench_cg as NAME.json")
+    parser.add_argument("--compare", choices=("all", "same-precond"), default=None,
+                        help="which pairs of solvers --solutions draws, passed to bench_cg, which defaults to all")
     args = parser.parse_args()
+    if args.compare is not None and args.solutions is None:
+        parser.error("--compare needs --solutions")
 
     power = detect_power() if args.power == "auto" else args.power
     if power == "battery" and not args.allow_battery:
@@ -166,6 +170,8 @@ def main():
         if args.solutions is not None:
             os.makedirs(args.solutions, exist_ok=True)
             command += ["--solutions", os.path.join(args.solutions, f"{safe_name(name)}.json")]
+        if args.compare is not None:
+            command += ["--compare", args.compare]
         try:
             done = subprocess.run(command, capture_output=True, text=True, timeout=args.timeout)
         except subprocess.TimeoutExpired as error:

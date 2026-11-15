@@ -151,8 +151,8 @@ def steps(settings):
          "replaces": []},
         {"id": "speed", "title": "Speed", "about": "100 iterations per solver, at most 1.05 times Eigen", "minutes": 20,
          "commands": measure["speed"], "replaces": [speed_csv]},
-        {"id": "accuracy", "title": "Accuracy", "about": "complete solves to 1e-8 on the six smaller matrices",
-         "minutes": 15, "commands": measure["accuracy"], "replaces": [accuracy_csv, pictures]},
+        {"id": "accuracy", "title": "Accuracy", "about": "complete solves to 1e-8 on the six smaller matrices, every preconditioner",
+         "minutes": 60, "commands": measure["accuracy"], "replaces": [accuracy_csv, pictures]},
         {"id": "scipy", "title": "SciPy check", "about": "our answer on apache2, judged by SciPy", "minutes": 1,
          "commands": [command([PYTHON, SCRIPTS / "check_against_scipy.py", "--build", release,
                                "--matrix", data / "apache2.mtx"])],
@@ -170,14 +170,22 @@ def speed_commands(release, data, out, matrices=None):
                      "--gate", "eigen-E0=ours", "--gate", "eigen-E1=ours-jacobi"], gate=True)]
 
 
+# Every solver the Accuracy step runs, and the pairs it gates: each of ours against its Eigen counterpart.
+# Gauss-Seidel, the corrected incomplete Cholesky and IC(0) have no counterpart, so they are only measured.
+ACCURACY_SOLVERS = "eigen-E1,ours-jacobi,ours-sell-jacobi,ours-sgs,eigen-E4,ours-ic,ours-ic-fixed,ours-ic0"
+ACCURACY_GATES = (("eigen-E1", "ours-jacobi"), ("eigen-E1", "ours-sell-jacobi"), ("eigen-E4", "ours-ic"))
+
+
 def accuracy_commands(release, data, out, matrices, solutions):
-    """The Accuracy step's complete solves and gate, on the named matrices. Each matrix's solution
-    pictures, our answer against Eigen's and against the true one, go to solutions/NAME.json."""
+    """The Accuracy step's complete solves and gates, on the named matrices. Each matrix's solution
+    pictures (our answer against its Eigen counterpart's and against the true one) and convergence
+    histories go to solutions/NAME.json, which the gates read."""
+    gates = [arg for base, ours in ACCURACY_GATES for arg in ("--gate", f"{base}={ours}")]
     return [command([PYTHON, SCRIPTS / "run_bench.py", "--build", release, "--data-dir", data,
                      "--maxit", "30000", "--repeat", "3", "--warmup", "0",
-                     "--matrices", matrices, "--solvers", "eigen-E1,ours-jacobi",
-                     "--solutions", solutions, "--out", out]),
-            command([PYTHON, SCRIPTS / "summarize.py", out, "--gate", "eigen-E1=ours-jacobi"], gate=True)]
+                     "--matrices", matrices, "--solvers", ACCURACY_SOLVERS,
+                     "--solutions", solutions, "--compare", "same-precond", "--out", out]),
+            command([PYTHON, SCRIPTS / "summarize.py", out, "--solutions", solutions, *gates], gate=True)]
 
 
 def single_choices(settings):

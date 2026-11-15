@@ -60,7 +60,9 @@ SolveResult cg_with_history(const Backend& backend, Preconditioner& precond, con
   if (options.use_initial_guess) throw std::runtime_error("cg_with_history starts from x = 0");
   std::vector<double> rr;
   const RecordingBackend recording(backend, rr);
-  const SolveResult result = cg(recording, precond, b, x, options);
+  SolveOptions plain = options;
+  plain.history = nullptr;  // this function is the recorder; cg() must not call back into it
+  const SolveResult result = cg(recording, precond, b, x, plain);
 
   history.clear();
   if (rr.empty()) {

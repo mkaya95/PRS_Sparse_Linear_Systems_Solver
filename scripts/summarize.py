@@ -4,23 +4,30 @@
 Examples:
   python3 scripts/summarize.py results/my-laptop/fixed.csv --metric iteration --gate eigen-E0=ours
   python3 scripts/summarize.py results/my-laptop/solve.csv --gate eigen-E0=ours --gate eigen-E1=ours-jacobi
+  python3 scripts/summarize.py results/my-laptop/solve.csv --solutions results/my-laptop/solutions --gate eigen-E4=ours-ic
   python3 scripts/summarize.py results/my-laptop/kernels.csv --kernel-baseline eigen
 
 G1 has two gates, because a complete solve on every real matrix with many repeats takes days:
   Speed (--metric iteration): fixed-iteration runs, at most 1.05x the base time per iteration
       and the same iteration count within 1% or 1 iteration. --time-ratio changes the limit.
   Accuracy (the default metric): complete solves, with every true residual within the
-      tolerance and the same iteration count rule. --time-ratio adds a limit on solve time.
+      tolerance. Our iteration count must then be within 1% or 1 iteration of the base's, or lower,
+      or higher only because the residual lingered at the stopping line: with --solutions DIR (the
+      folder bench_cg --solutions wrote), our recorded residual at the base's stopping iteration
+      must be within 5% of the tolerance. --time-ratio adds a limit on solve time.
 Medians and 95% nonparametric confidence intervals follow Hoefler and Belli (SC15).
 """
 import argparse
 import collections
 import csv
+import json
 import math
+import pathlib
 import sys
 
 TIME_RATIO_LIMIT = 1.05
 NOISY_CI_FRACTION = 0.10
+PLATEAU_LIMIT = 1.05  # our residual at the base's stopping iteration, as a multiple of the tolerance
 
 
 def median(values):
@@ -63,6 +70,42 @@ def spmv_passes(base, ours):
     return abs(ours - base) <= max(1, 0.01 * base)
 
 
+def load_histories(folder):
+    """Returns {matrix: {solver: [residual before iteration 1, after iteration 1, ...]}} from the
+    solution files bench_cg --solutions wrote into folder. A file that cannot be read is skipped."""
+    histories = {}
+    for path in sorted(pathlib.Path(folder).glob("*.json")):
+        try:
+            with open(path, encoding="utf-8") as f:
+                entry = json.load(f)
+            matrix = entry["matrix"]
+            found = {h["solver"]: h["residuals"] for h in entry.get("histories", [])}
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+        if isinstance(matrix, str):
+            histories[matrix] = found
+    return histories
+
+
+def iterations_verdict(base_spmv, our_spmv, tol, history):
+    """How an accuracy gate judges the two iteration counts: (passes, note).
+
+    The counts agree within 1% or 1 iteration, or ours is lower. Ours may be higher only when the
+    residual lingered at the stopping line, so that rounding decided who crossed first: our recorded
+    residual at the base's stopping iteration is then within PLATEAU_LIMIT of the tolerance.
+    """
+    if spmv_passes(base_spmv, our_spmv):
+        return True, ""
+    if our_spmv < base_spmv:
+        return True, "fewer iterations"
+    at = int(base_spmv)
+    if history is not None and tol is not None and at < len(history):
+        residual = history[at]
+        if isinstance(residual, (int, float)) and math.isfinite(residual) and residual <= PLATEAU_LIMIT * tol:
+            return True, "plateau"
+    return False, ""
+
+
 def paired_ratios(base, ours):
     """Ratio ours/base within each round both ran. Each argument maps a round to a time.
 
@@ -84,7 +127,7 @@ def record_round(entry, row, value):
 
 def new_entry():
     return {"times": [], "spmv": [], "status": set(), "rounds": {}, "seen": collections.Counter(),
-            "verified": [], "fixed_ok": [], "precond": set(), "power": set()}
+            "verified": [], "fixed_ok": [], "precond": set(), "power": set(), "tol": set()}
 
 
 def load_groups(paths, metric="solve_s"):
@@ -121,6 +164,8 @@ def load_groups(paths, metric="solve_s"):
                     and math.isfinite(residual)
                 )
                 entry["power"].add(row.get("power", "unknown"))
+                if math.isfinite(tolerance):
+                    entry["tol"].add(tolerance)
                 record_round(entry, row, time)
     return groups
 
@@ -146,10 +191,12 @@ def check_configuration(configurations, key, row, fields=None):
     configurations[key] = signature
 
 
-def evaluate_gate(groups, base, ours, time_ratio=None, speed=False):
+def evaluate_gate(groups, base, ours, time_ratio=None, speed=False, histories=None):
     """Returns one dict per matrix, with "ok" saying whether it passes, and the limit applied.
 
-    A speed gate reads fixed-iteration runs and always has a limit. An accuracy gate reads complete solves.
+    A speed gate reads fixed-iteration runs and always has a limit. An accuracy gate reads complete solves
+    and judges the iteration counts with iterations_verdict, using histories (from load_histories) if given;
+    its "note" is then "", "fewer iterations" or "plateau".
     A row whose "missing" is True has only one of the two solvers.
     """
     if speed and time_ratio is None:
@@ -165,21 +212,30 @@ def evaluate_gate(groups, base, ours, time_ratio=None, speed=False):
         ratio, low, high = ratio_with_ci(solvers[base], solvers[ours])
         base_spmv = median(solvers[base]["spmv"])
         our_spmv = median(solvers[ours]["spmv"])
+        note = ""
+        if speed:
+            counts_ok = spmv_passes(base_spmv, our_spmv)
+        else:
+            tolerances = solvers[ours]["tol"]
+            history = (histories or {}).get(matrix, {}).get(ours.split("@")[0])
+            counts_ok, note = iterations_verdict(base_spmv, our_spmv,
+                                                 next(iter(tolerances)) if len(tolerances) == 1 else None, history)
         ok = (all(solvers[base][evidence]) and all(solvers[ours][evidence])
               and solvers[base]["precond"] == solvers[ours]["precond"]
-              and spmv_passes(base_spmv, our_spmv))
+              and counts_ok)
         if time_ratio is not None:
             ok = ok and ratio <= time_ratio
         rows.append(dict(matrix=matrix, maxit=maxit, limit=limit, missing=False, ok=ok,
                          base_time=median(solvers[base]["times"]), our_time=median(solvers[ours]["times"]),
                          ratio=ratio, ci_low=low, ci_high=high, base_spmv=base_spmv, our_spmv=our_spmv,
+                         note=note if ok else "",
                          noisy=low is not None and high - low > NOISY_CI_FRACTION))
     return rows, time_ratio
 
 
-def print_gate(groups, base, ours, time_ratio=None, speed=False):
+def print_gate(groups, base, ours, time_ratio=None, speed=False, histories=None):
     print(f"\n### {'Speed' if speed else 'Accuracy'} gate: {ours} against {base}\n")
-    rows, time_ratio = evaluate_gate(groups, base, ours, time_ratio, speed)
+    rows, time_ratio = evaluate_gate(groups, base, ours, time_ratio, speed, histories)
     print("| Matrix | Limit | Base (us) | Ours (us) | Ratio | Ratio 95% CI | Base iterations | Our iterations | Result |")
     print("| --- | --- | --- | --- | --- | --- | --- | --- | --- |")
     for row in rows:
@@ -190,7 +246,8 @@ def print_gate(groups, base, ours, time_ratio=None, speed=False):
         print(
             f"| {row['matrix']} | {row['limit']} | {row['base_time'] * 1e6:.2f} | {row['our_time'] * 1e6:.2f} | "
             f"{row['ratio']:.3f} | {interval} | {row['base_spmv']:g} | {row['our_spmv']:g} | "
-            f"{('PASS' if time_ratio is not None else 'VERIFIED') if row['ok'] else 'FAIL'} |"
+            f"{('PASS' if time_ratio is not None else 'VERIFIED') if row['ok'] else 'FAIL'}"
+            f"{' (' + row['note'] + ')' if row['note'] else ''} |"
         )
     passed = sum(row["ok"] for row in rows)
     print(f"\n{passed} of {len(rows)} matrices pass.")
@@ -284,6 +341,8 @@ def main():
     parser.add_argument("--ladder", metavar="A,B,C", help="print one row per rung of the optimization ladder")
     parser.add_argument("--metric", choices=("solve", "end-to-end", "iteration"), default="solve")
     parser.add_argument("--time-ratio", type=float, help="explicit maximum ours/base ratio for gates")
+    parser.add_argument("--solutions", metavar="DIR",
+                        help="folder of bench_cg --solutions files, whose histories the accuracy gate reads")
     args = parser.parse_args()
 
     if args.kernel_baseline:
@@ -303,6 +362,7 @@ def main():
         return 1
     if any("battery" in entry["power"] for solvers in groups.values() for entry in solvers.values()):
         print("WARNING: some of these results were measured on battery, so their timings are not reliable.")
+    histories = load_histories(args.solutions) if args.solutions else None
     if args.ladder:
         print_ladder(groups, args.ladder.split(","))
     elif args.gate:
@@ -311,7 +371,8 @@ def main():
             if "=" not in gate:
                 parser.error(f"--gate needs BASE=OURS, got '{gate}'")
             base, ours = gate.split("=", 1)
-            passed = print_gate(groups, base, ours, args.time_ratio, speed=args.metric == "iteration") and passed
+            passed = print_gate(groups, base, ours, args.time_ratio, speed=args.metric == "iteration",
+                                histories=histories) and passed
         return 0 if passed else 2
     else:
         print_all(groups)

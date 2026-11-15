@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdint>
 #include <stdexcept>
+#include <vector>
 
 namespace ssolve {
 
@@ -28,7 +29,14 @@ inline const char* to_string(SolveStatus status) {
   return "Unknown";
 }
 
-enum class Precond { None, Jacobi, SymGaussSeidel, IncompleteCholesky };
+enum class Precond {
+  None,
+  Jacobi,
+  SymGaussSeidel,
+  IncompleteCholesky,       // Eigen's, operation for operation
+  IncompleteCholeskyFixed,  // Eigen's with its two bugs corrected
+  IncompleteCholeskyZero    // IC(0): the factor keeps exactly the pattern of A
+};
 
 inline const char* to_string(Precond precond) {
   switch (precond) {
@@ -40,6 +48,10 @@ inline const char* to_string(Precond precond) {
       return "sgs";
     case Precond::IncompleteCholesky:
       return "incomplete-cholesky";
+    case Precond::IncompleteCholeskyFixed:
+      return "incomplete-cholesky-fixed";
+    case Precond::IncompleteCholeskyZero:
+      return "ic0";
   }
   return "unknown";
 }
@@ -48,6 +60,9 @@ struct SolveOptions {
   double tol = 1e-8;
   std::int64_t max_iterations = 0;  // 0 means 2n, Eigen's default
   bool use_initial_guess = false;   // false solves from x = 0, whatever x holds
+  // If set, cg() fills it as cg_with_history does: the recursive ‖r‖ / ‖b‖ before the first iteration
+  // and after each one. Left empty with use_initial_guess. Solvers that are not cg() ignore it.
+  std::vector<double>* history = nullptr;
 };
 
 inline void validate_options(const SolveOptions& options) {

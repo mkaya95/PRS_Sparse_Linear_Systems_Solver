@@ -109,6 +109,14 @@ TEST(json_has_every_field_and_null_for_empty_cells) {
   CHECK(contains(json, "\"cells\":[0,0,0,0,1,null,null,null,null]"));
 }
 
+TEST(json_lists_each_convergence_history) {
+  const std::string none = solutions_json("m", 2, "unit", 2.0, {});
+  CHECK(contains(none, "\"comparisons\":[],\"histories\":[]}"));
+  const std::string json = solutions_json("m", 2, "unit", 2.0, {}, {{"ours", {1.0, 0.123456, 1e-9}}, {"b", {}}});
+  CHECK(contains(json, "\"histories\":[{\"solver\":\"ours\",\"residuals\":[1,0.1235,1e-09]},"
+                       "{\"solver\":\"b\",\"residuals\":[]}]}"));
+}
+
 TEST(json_writes_null_for_a_non_finite_summary) {
   const std::vector<double> a = {1, 2};
   const std::vector<double> b = {1, std::numeric_limits<double>::infinity()};

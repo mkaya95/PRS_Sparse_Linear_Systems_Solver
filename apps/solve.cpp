@@ -27,6 +27,7 @@
 #include "ssolve/cg.hpp"
 #include "ssolve/generators.hpp"
 #include "ssolve/preconditioner.hpp"
+#include "ssolve/reorder.hpp"
 #include "ssolve/sell.hpp"
 #include "ssolve/timer.hpp"
 #include "ssolve/verify.hpp"
@@ -49,7 +50,7 @@ void write_lines(const std::string& path, const Values& values, const char* what
 int main(int argc, char** argv) {
   try {
     const ssolve_cli::Args args(argc, argv, {"matrix", "rhs", "problem", "precond", "tol", "maxit", "out", "history",
-                                                  "format", "chunk", "sigma"});
+                                                  "format", "chunk", "sigma", "order"});
     const std::string spec = args.required("matrix");
     const std::string precond = args.get("precond", "none");
     Precond kind = Precond::None;
@@ -59,10 +60,19 @@ int main(int argc, char** argv) {
       kind = Precond::SymGaussSeidel;
     } else if (precond == "ic") {
       kind = Precond::IncompleteCholesky;
+    } else if (precond == "ic-fixed") {
+      kind = Precond::IncompleteCholeskyFixed;
+    } else if (precond == "ic0") {
+      kind = Precond::IncompleteCholeskyZero;
     } else if (precond != "none") {
-      throw std::runtime_error("unknown preconditioner '" + precond + "': use none, jacobi, sgs or ic");
+      throw std::runtime_error("unknown preconditioner '" + precond +
+                               "': use none, jacobi, sgs, ic, ic-fixed or ic0");
     }
     if (args.has("rhs") && args.has("problem")) throw std::runtime_error("give either --rhs or --problem, not both");
+    const std::string order_name = args.get("order", "natural");
+    if (order_name != "natural" && order_name != "rcm") {
+      throw std::runtime_error("unknown order '" + order_name + "': use natural or rcm");
+    }
     const std::string format = args.get("format", "csr");
     if (format != "csr" && format != "sell") throw std::runtime_error("unknown format '" + format + "': use csr or sell");
     if (format != "sell" && (args.has("chunk") || args.has("sigma"))) {
@@ -89,34 +99,56 @@ int main(int argc, char** argv) {
     const double preparation_seconds = wall_seconds() - end_to_end_start;
 
     const double setup_start = wall_seconds();
+    // With --order rcm the backend and the preconditioner see P A Pᵀ, and the solve runs on P b.
+    std::vector<Index> order;
+    CsrMatrix reordered;
+    std::string ordering = "natural";
+    if (order_name == "rcm") {
+      order = reverse_cuthill_mckee(a);
+      reordered = permute_symmetric(a, order);
+      char text[96];
+      std::snprintf(text, sizeof text, "rcm (bandwidth %lld, was %lld)", static_cast<long long>(bandwidth(reordered)),
+                    static_cast<long long>(bandwidth(a)));
+      ordering = text;
+    }
+    const CsrMatrix& system = order.empty() ? a : reordered;
     std::unique_ptr<Backend> backend;
     std::string storage = "csr";
     if (format == "sell") {
-      SellMatrix sell = sell_from_csr(a, static_cast<int>(chunk), static_cast<Index>(sigma));
+      SellMatrix sell = sell_from_csr(system, static_cast<int>(chunk), static_cast<Index>(sigma));
       char text[96];
       std::snprintf(text, sizeof text, "sell (C = %lld, sigma = %lld, stored/nnz = %.2f)", chunk, sigma,
                     a.nnz() > 0 ? static_cast<double>(sell.stored()) / static_cast<double>(a.nnz()) : 1.0);
       storage = text;
       backend = make_sell_backend(std::move(sell));
     } else {
-      backend = make_seq_backend(clone(a));
+      backend = make_seq_backend(clone(system));
     }
-    const std::unique_ptr<Preconditioner> preconditioner = make_preconditioner(kind, a);
+    const std::unique_ptr<Preconditioner> preconditioner = make_preconditioner(kind, system);
     const double setup_seconds = wall_seconds() - setup_start;
 
     std::vector<double> history;
+    SolveOptions run_options = options;
+    if (args.has("history")) run_options.history = &history;
     SolveResult result;
-    if (args.has("history")) {
-      result = cg_with_history(*backend, *preconditioner, b.data(), x.data(), options, history);
-      verify_result(a, b.data(), x.data(), options, result);
+    if (order.empty()) {
+      result = verified_cg(a, *backend, *preconditioner, b.data(), x.data(), run_options);
     } else {
-      result = verified_cg(a, *backend, *preconditioner, b.data(), x.data(), options);
+      // b goes in and x comes back in the file's order, inside the solve time.
+      const double solve_start = wall_seconds();
+      AlignedArray<double> new_b(x.size()), new_x(x.size());
+      to_new_order(order, b.data(), new_b.data());
+      result = cg(*backend, *preconditioner, new_b.data(), new_x.data(), run_options);
+      to_original_order(order, new_x.data(), x.data());
+      result.solve_seconds = wall_seconds() - solve_start;
+      verify_result(a, b.data(), x.data(), options, result);
     }
     const double end_to_end_seconds = wall_seconds() - end_to_end_start;
 
     std::printf("matrix         %s\n", spec.c_str());
     std::printf("size           n = %d, nnz = %lld\n", a.n_rows, static_cast<long long>(a.nnz()));
     std::printf("format         %s\n", storage.c_str());
+    std::printf("ordering       %s\n", ordering.c_str());
     std::printf("preconditioner %s\n", precond.c_str());
     std::printf("status         %s\n", to_string(result.status));
     if (result.detail[0] != '\0') std::printf("reason         %s\n", result.detail);

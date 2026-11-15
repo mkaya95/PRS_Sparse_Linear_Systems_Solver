@@ -1,6 +1,6 @@
 # P08: Sparse Linear Systems Solver
 
-A sequential FP64 CSR CG/Jacobi solver, benchmarked against Eigen. How it works: [solver flow](docs/solver-flow.md) and [benchmark flow](docs/benchmark-flow.md). Measurements: [docs/results](docs/results).
+A sequential FP64 conjugate gradient solver with CSR or SELL-C-σ storage and Jacobi, symmetric Gauss-Seidel or incomplete Cholesky preconditioning, benchmarked against Eigen. How it works: [solver flow](docs/solver-flow.md) and [benchmark flow](docs/benchmark-flow.md). Measurements: [docs/results](docs/results).
 
 ## Install
 
@@ -41,6 +41,13 @@ On WSL2, keep the build tree and matrices in the Linux filesystem, because `/mnt
 
 To build only the solver, without Eigen and the benchmarks, run `cmake --build build/release --target solve`.
 
+For a profiler such as Intel VTune or `perf`, use the `profile` preset: the release flags plus symbols and frame pointers, so the profiler can name functions and source lines.
+
+```bash
+cmake --preset profile -DCMAKE_CXX_COMPILER=g++
+cmake --build build/profile --target solve bench_cg
+```
+
 ## Run the solver
 
 ```bash
@@ -49,9 +56,10 @@ build/release/solve --matrix poisson3d:100 --precond ic
 build/release/solve --matrix path/to/ldoor.mtx --tol 1e-8 --maxit 5000 --out x.txt
 build/release/solve --matrix path/to/A.mtx --rhs b.txt --out x.txt
 build/release/solve --matrix poisson3d:100 --format sell --chunk 8 --sigma 256
+build/release/solve --matrix path/to/ldoor.mtx --precond ic0 --order rcm
 ```
 
-The matrix must be symmetric positive definite. `--precond` is `none` (the default), `jacobi`, `sgs` (symmetric Gauss-Seidel) or `ic` (incomplete Cholesky). Without `--rhs`, the solver uses b = A·1. A `--rhs` file holds exactly n numbers separated by whitespace. `--problem random` instead uses the right-hand side the benchmarks use. `--history h.txt` writes ‖r‖ / ‖b‖ before the first iteration and after each one, one value per line. `--format sell` stores the matrix as SELL-C-σ instead of CSR: chunks of C rows (4, 8, 16 or 32), sorted by length inside windows of σ rows; the output shows how much padding that adds.
+The matrix must be symmetric positive definite. `--precond` is `none` (the default), `jacobi`, `sgs` (symmetric Gauss-Seidel), `ic` (incomplete Cholesky, Eigen's operation for operation), `ic-fixed` (the same with Eigen's two bugs corrected) or `ic0` (incomplete Cholesky that keeps exactly the matrix's own pattern). Without `--rhs`, the solver uses b = A·1. A `--rhs` file holds exactly n numbers separated by whitespace. `--problem random` instead uses the right-hand side the benchmarks use. `--history h.txt` writes ‖r‖ / ‖b‖ before the first iteration and after each one, one value per line. `--format sell` stores the matrix as SELL-C-σ instead of CSR: chunks of C rows (4, 8, 16 or 32), sorted by length inside windows of σ rows; the output shows how much padding that adds. `--order rcm` first renumbers the unknowns by reverse Cuthill-McKee, which pulls the non-zeros towards the diagonal; the answer is written in the file's original order.
 
 The exit status is 0 if the solve converged and its true residual was verified, 2 if it did not converge, and 1 for invalid input.
 
@@ -89,21 +97,29 @@ Plug in the charger and close other applications first. `run_bench.py` refuses t
     python3 scripts/summarize.py $R/g1-real.csv --metric iteration --gate eigen-E0=ours --gate eigen-E1=ours-jacobi
     ```
 
-4. Measure accuracy, which takes about 15 minutes. Each solver runs until it converges or reaches the limit, on the six smaller matrices, and must meet the tolerance within 1% of Eigen's iteration count:
+4. Measure accuracy, which takes about an hour. Each solver runs until it converges or reaches the limit, on the six smaller matrices, with every preconditioner. Each of ours that has an Eigen counterpart must meet the tolerance in Eigen's iteration count within 1%, or fewer:
 
     ```bash
     python3 scripts/run_bench.py --build build/release --data-dir ~/p08/data --maxit 30000 --repeat 3 --warmup 0 \
         --matrices ecology2,apache2,tmt_sym,G3_circuit,thermal2,hood \
-        --solvers eigen-E1,ours-jacobi --solutions $R/solutions --out $R/g1-real-solve.csv
-    python3 scripts/summarize.py $R/g1-real-solve.csv --gate eigen-E1=ours-jacobi
+        --solvers eigen-E1,ours-jacobi,ours-sell-jacobi,ours-sgs,eigen-E4,ours-ic,ours-ic-fixed,ours-ic0 \
+        --solutions $R/solutions --compare same-precond --out $R/g1-real-solve.csv
+    python3 scripts/summarize.py $R/g1-real-solve.csv --solutions $R/solutions \
+        --gate eigen-E1=ours-jacobi --gate eigen-E1=ours-sell-jacobi --gate eigen-E4=ours-ic
     ```
 
-    `--solutions` saves, for each matrix, how far our answer is from Eigen's and from the true answer, as `$R/solutions/MATRIX.json`. The Results tab draws them.
+    `--solutions` saves, for each matrix, how far our answer is from its Eigen counterpart's and from the true answer, and how the residual fell iteration by iteration, as `$R/solutions/MATRIX.json`. The Results tab draws the differences. The gate reads the residuals: more iterations than Eigen still pass as `VERIFIED (plateau)` when our residual at Eigen's stopping iteration was within 5% of the tolerance, because rounding then decides who crosses the line first.
 
 5. Check the answers against SciPy, which needs `pip install scipy`:
 
     ```bash
     python3 scripts/check_against_scipy.py --build build/release --matrix ~/p08/data/apache2.mtx
+    ```
+
+6. Sweep the SELL-C-σ settings, which takes about 15 minutes. It times the matrix-vector product for each chunk size C and sorting window σ against CSR, and prints the padding, the time ratio and the number of products after which converting to SELL has paid off:
+
+    ```bash
+    python3 scripts/sweep_sell.py --build build/release --data-dir ~/p08/data --out $R/sell-sweep.csv
     ```
 
 Use a new CSV file for each measurement, because a CSV from a different commit or machine is rejected rather than pooled. The full set of commands is in [the results document](docs/results/g1-i5-1335U-wsl2.md).

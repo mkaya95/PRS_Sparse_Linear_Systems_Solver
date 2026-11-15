@@ -13,6 +13,17 @@
       }
     },
     {
+      "name": "profile",
+      "displayName": "Profilers: the release flags plus symbols and frame pointers",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_FLAGS_RELEASE": "-O3 -DNDEBUG -g -fno-omit-frame-pointer",
+        "SSOLVE_NATIVE": "ON"
+      }
+    },
+    {
       "name": "debug",
       "displayName": "Tests: address and undefined-behaviour sanitizers",
       "generator": "Ninja",
