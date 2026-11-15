@@ -1,0 +1,410 @@
+Function,CPU Time,CPU Time:Effective Time,CPU Time:Spin Time,CPU Time:Overhead Time,Instructions Retired,Microarchitecture Usage(%),Microarchitecture Usage:Microarchitecture Usage(%),Microarchitecture Usage:CPI Rate,Module,Function (Full),Source File,Start Address
+ssolve::SymGaussSeidel::apply,19.630409,19.630409,0.0,0.0,162007500000,33.0,33.0,0.550083,solve,"ssolve::SymGaussSeidel::apply(double const*, double*) const",sgs.cpp,0x1e240
+row_times_vector,8.103966,8.103966,0.0,0.0,63010000000,31.2,31.2,0.573957,solve,row_times_vector,seq_backend.cpp,0xd898
+ssolve::SeqVectorBackend::cg_update,1.646635,1.646635,0.0,0.0,3060000000,8.2,8.2,2.338235,solve,"ssolve::SeqVectorBackend::cg_update(double, double const*, double const*, double*, double*) const",seq_vectors.hpp,0xe0f0
+ssolve::SeqVectorBackend::xpby,0.884415,0.884415,0.0,0.0,1832500000,8.9,8.9,1.897681,solve,"ssolve::SeqVectorBackend::xpby(double const*, double, double*) const",seq_vectors.hpp,0xe040
+ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot,0.777244,0.777244,0.0,0.0,4757500000,31.7,31.7,0.784025,solve,"ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot(double const*, double*) const",seq_backend.cpp,0xd860
+__memset_avx2_unaligned_erms,0.769231,0.769231,0.0,0.0,0,10.2,10.2,,libc.so.6,__memset_avx2_unaligned_erms,memset-vec-unaligned-erms.S,0x189480
+ssolve::SeqVectorBackend::dot,0.401643,0.401643,0.0,0.0,1815000000,16.3,16.3,1.336088,solve,"ssolve::SeqVectorBackend::dot(double const*, double const*) const",seq_vectors.hpp,0xdf20
+__GI_____strtod_l_internal,0.153245,0.153245,0.0,0.0,2547500000,47.8,47.8,0.306183,libc.so.6,__GI_____strtod_l_internal,strtod_l.c,0x4e390
+ssolve::csr_from_coo,0.070112,0.070112,0.0,0.0,307500000,21.2,21.2,1.008130,solve,ssolve::csr_from_coo(ssolve::Coo const&),aligned_array.hpp,0x5d90
+native_write_msr_safe,0.068109,0.068109,0.0,0.0,45000000,32.2,32.2,7.555556,vmlinux,native_write_msr_safe,[Unknown],0xffffffff9a346de0
+str_to_mpn,0.067107,0.067107,0.0,0.0,1182500000,47.9,47.9,0.270613,libc.so.6,str_to_mpn,strtod_l.c,0x4dbc4
+[sep5],0.055088,0.055088,0.0,0.0,320000000,31.4,31.4,0.648438,sep5,[sep5],[Unknown],0x0
+next,0.047075,0.047075,0.0,0.0,695000000,47.8,47.8,0.291367,solve,next,mtx_reader.cpp,0x8f5d
+native_irq_return_iret,0.046074,0.046074,0.0,0.0,0,28.9,28.9,,vmlinux,native_irq_return_iret,[Unknown],0xffffffff9a001248
+__memmove_avx_unaligned_erms,0.040064,0.040064,0.0,0.0,220000000,26.9,26.9,1.295455,libc.so.6,__memmove_avx_unaligned_erms,memmove-vec-unaligned-erms.S,0x188a80
+parse_integer,0.029046,0.029046,0.0,0.0,332500000,47.8,47.8,0.308271,solve,parse_integer,mtx_reader.cpp,0x29519
+parse_integer,0.022035,0.022035,0.0,0.0,367500000,47.5,47.5,0.346939,solve,parse_integer,mtx_reader.cpp,0x29200
+str_to_mpn,0.020032,0.020032,0.0,0.0,190000000,47.9,47.9,0.302632,libc.so.6,str_to_mpn,strtod_l.c,0x4db90
+sync_regs,0.020032,0.020032,0.0,0.0,5000000,25.2,25.2,17.500000,vmlinux,sync_regs,[Unknown],0xffffffff9b596b80
+__mpn_lshift,0.019030,0.019030,0.0,0.0,187500000,47.8,47.8,0.293333,libc.so.6,__mpn_lshift,lshift.S,0x595c0
+next,0.018029,0.018029,0.0,0.0,312500000,47.8,47.8,0.272000,solve,next,mtx_reader.cpp,0x8f5d
+__mpn_mul,0.016026,0.016026,0.0,0.0,142500000,48.2,48.2,0.350877,libc.so.6,__mpn_mul,mul.c,0x59730
+_copy_to_iter,0.015024,0.015024,0.0,0.0,2500000,2.8,2.8,30.000000,vmlinux,_copy_to_iter,[Unknown],0xffffffff9ab9d120
+round_and_return,0.015024,0.015024,0.0,0.0,262500000,48.1,48.1,0.285714,libc.so.6,round_and_return,strtod_l.c,0x289e6
+ssolve::validate_cg_matrix,0.015024,0.015024,0.0,0.0,90000000,20.0,20.0,0.611111,solve,ssolve::validate_cg_matrix(ssolve::CsrMatrixT<long> const&),verify.cpp,0x8690
+count_memcg_events,0.014022,0.014022,0.0,0.0,40000000,25.2,25.2,1.812500,vmlinux,count_memcg_events,[Unknown],0xffffffff9a7bde20
+ssolve::SymGaussSeidel::SymGaussSeidel,0.014022,0.014022,0.0,0.0,60000000,13.1,13.1,0.958333,solve,ssolve::SymGaussSeidel::SymGaussSeidel(ssolve::CsrMatrixT<long>),sgs.cpp,0x7be8
+update_curr,0.014022,0.014022,0.0,0.0,10000000,29.0,29.0,4.000000,vmlinux,update_curr,[Unknown],0xffffffff9a3e85a0
+parse_real,0.010016,0.010016,0.0,0.0,142500000,47.7,47.7,0.192982,solve,parse_real,mtx_reader.cpp,0x28a38
+ssolve::spmv_reference,0.010016,0.010016,0.0,0.0,67500000,31.1,31.1,0.592593,solve,"ssolve::spmv_reference(ssolve::CsrMatrixT<long> const&, double const*, double*)",verify.cpp,0x22138
+ssolve::spmv_reference,0.010016,0.010016,0.0,0.0,77500000,31.7,31.7,0.548387,solve,"ssolve::spmv_reference(ssolve::CsrMatrixT<long> const&, double const*, double*)",verify.cpp,0x2152c
+css_rstat_updated,0.009014,0.009014,0.0,0.0,52500000,27.5,27.5,0.523810,vmlinux,css_rstat_updated,[Unknown],0xffffffff9a4eda90
+native_sched_clock,0.009014,0.009014,0.0,0.0,45000000,31.5,31.5,0.611111,vmlinux,native_sched_clock,[Unknown],0xffffffff9b597ff0
+ssolve::spmv_reference,0.009014,0.009014,0.0,0.0,72500000,31.6,31.6,0.586207,solve,"ssolve::spmv_reference(ssolve::CsrMatrixT<long> const&, double const*, double*)",verify.cpp,0x220ba
+__strlen_avx2,0.008013,0.008013,0.0,0.0,65000000,47.8,47.8,0.807692,libc.so.6,__strlen_avx2,strlen-avx2.S,0x18b7c0
+lru_gen_add_folio,0.008013,0.008013,0.0,0.0,35000000,22.9,22.9,0.357143,vmlinux,lru_gen_add_folio,[Unknown],0xffffffff9a6a7160
+merge_duplicates,0.008013,0.008013,0.0,0.0,115000000,40.6,40.6,0.391304,solve,merge_duplicates,csr.cpp,0x5dde
+next,0.008013,0.008013,0.0,0.0,230000000,47.7,47.7,0.260870,solve,next,mtx_reader.cpp,0x8f5d
+__memchr_avx2,0.007011,0.007011,0.0,0.0,170000000,47.6,47.6,0.308824,libc.so.6,__memchr_avx2,memchr-avx2.S,0x188080
+fmax,0.007011,0.007011,0.0,0.0,72500000,59.6,59.6,0.517241,libm.so.6,fmax,s_fmax.S,0x3a160
+mas_walk,0.007011,0.007011,0.0,0.0,47500000,24.8,24.8,0.105263,vmlinux,mas_walk,[Unknown],0xffffffff9b56c200
+next,0.007011,0.007011,0.0,0.0,87500000,47.9,47.9,0.085714,solve,next,mtx_reader.cpp,0x28a44
+ssolve::rhs_for_random_solution,0.007011,0.007011,0.0,0.0,70000000,29.1,29.1,0.642857,solve,ssolve::rhs_for_random_solution(ssolve::CsrMatrixT<long> const&),generators.cpp,0x6c7c
+"std::uniform_real_distribution<double>::operator()<std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>>",0.007011,0.007011,0.0,0.0,52500000,25.0,25.0,0.619048,solve,"std::uniform_real_distribution<double>::operator()<std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>>(std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>&)",random.h,0x21e95
+__pte_offset_map_lock,0.006010,0.006010,0.0,0.0,15000000,25.8,25.8,3.666667,vmlinux,__pte_offset_map_lock,[Unknown],0xffffffff9a71e570
+_raw_spin_lock,0.006010,0.006010,0.0,0.0,2500000,28.3,28.3,4.000000,vmlinux,_raw_spin_lock,[Unknown],0xffffffff9b5aba80
+common_interrupt_return,0.006010,0.006010,0.0,0.0,17500000,29.5,29.5,1.571429,vmlinux,common_interrupt_return,[Unknown],0xffffffff9a001150
+__mpn_mul_1,0.005008,0.005008,0.0,0.0,80000000,47.8,47.8,0.218750,libc.so.6,__mpn_mul_1,mul_1.S,0x59bb0
+__rcu_read_lock,0.005008,0.005008,0.0,0.0,35000000,28.4,28.4,0.428571,vmlinux,__rcu_read_lock,[Unknown],0xffffffff9a4720b0
+__rcu_read_unlock,0.005008,0.005008,0.0,0.0,25000000,27.1,27.1,0.700000,vmlinux,__rcu_read_unlock,[Unknown],0xffffffff9a47e6a0
+do_user_addr_fault,0.005008,0.005008,0.0,0.0,20000000,25.5,25.5,0.375000,vmlinux,do_user_addr_fault,[Unknown],0xffffffff9a354040
+memcg1_commit_charge,0.005008,0.005008,0.0,0.0,5000000,22.9,22.9,3.500000,vmlinux,memcg1_commit_charge,[Unknown],0xffffffff9a7b6eb0
+native_read_msr,0.005008,0.005008,0.0,0.0,5000000,32.6,32.6,1.000000,vmlinux,native_read_msr,[Unknown],0xffffffff9a346ec0
+read_entry,0.005008,0.005008,0.0,0.0,90000000,47.6,47.6,0.194444,solve,read_entry,mtx_reader.cpp,0x8f4d
+scaled_norm,0.005008,0.005008,0.0,0.0,100000000,42.5,42.5,0.300000,solve,scaled_norm,verify.cpp,0x224a0
+sched_use_asym_prio,0.005008,0.005008,0.0,0.0,20000000,29.1,29.1,0.500000,vmlinux,sched_use_asym_prio,[Unknown],0xffffffff9a3e7470
+update_load_avg,0.005008,0.005008,0.0,0.0,7500000,31.1,31.1,1.333333,vmlinux,update_load_avg,[Unknown],0xffffffff9a3ea320
+validate,0.005008,0.005008,0.0,0.0,120000000,56.0,56.0,0.187500,solve,validate,csr.cpp,0x5e20
+__GI_strtod,0.004006,0.004006,0.0,0.0,15000000,47.5,47.5,0.833333,libc.so.6,__GI_strtod,strtod.c,0x4db70
+__free_one_page,0.004006,0.004006,0.0,0.0,35000000,47.1,47.1,0.428571,vmlinux,__free_one_page,[Unknown],0xffffffff9a737fd0
+__mpn_construct_double,0.004006,0.004006,0.0,0.0,87500000,47.8,47.8,0.057143,libc.so.6,__mpn_construct_double,mpn2dbl.c,0x5ae50
+_find_next_bit,0.004006,0.004006,0.0,0.0,12500000,30.9,30.9,0.400000,vmlinux,_find_next_bit,[Unknown],0xffffffff9aba0b10
+account_user_time,0.004006,0.004006,0.0,0.0,0,29.2,29.2,,vmlinux,account_user_time,[Unknown],0xffffffff9a410ca0
+get_mem_cgroup_from_mm,0.004006,0.004006,0.0,0.0,10000000,31.2,31.2,1.250000,vmlinux,get_mem_cgroup_from_mm,[Unknown],0xffffffff9a7bb5f0
+lru_add,0.004006,0.004006,0.0,0.0,5000000,25.9,25.9,3.000000,vmlinux,lru_add,[Unknown],0xffffffff9a6a7e90
+next_data,0.004006,0.004006,0.0,0.0,42500000,47.5,47.5,0.058824,solve,next_data,mtx_reader.cpp,0x28a44
+page_counter_try_charge,0.004006,0.004006,0.0,0.0,2500000,30.1,30.1,2.000000,vmlinux,page_counter_try_charge,[Unknown],0xffffffff9a7b4020
+rmqueue_bulk,0.004006,0.004006,0.0,0.0,30000000,22.0,22.0,0.583333,vmlinux,rmqueue_bulk,[Unknown],0xffffffff9a73d6b0
+round_away,0.004006,0.004006,0.0,0.0,40000000,47.9,47.9,0.312500,libc.so.6,round_away,rounding-mode.h,0x4df60
+ssolve::parse_matrix_market,0.004006,0.004006,0.0,0.0,127500000,47.5,47.5,0.098039,solve,"ssolve::parse_matrix_market(std::basic_string_view<char, std::char_traits<char>>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>> const&)",mtx_reader.cpp,0x8f4d
+"std::basic_string_view<char, std::char_traits<char>>::find",0.004006,0.004006,0.0,0.0,55000000,47.9,47.9,0.363636,solve,"std::basic_string_view<char, std::char_traits<char>>::find(char, unsigned long) const",string_view.tcc,0x28a78
+"std::uniform_real_distribution<double>::operator()<std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>>",0.004006,0.004006,0.0,0.0,25000000,25.0,25.0,0.900000,solve,"std::uniform_real_distribution<double>::operator()<std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>>(std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>&)",random.h,0x21edf
+update_cfs_group,0.004006,0.004006,0.0,0.0,10000000,30.4,30.4,1.750000,vmlinux,update_cfs_group,[Unknown],0xffffffff9a3f0910
+__alloc_frozen_pages_noprof,0.003005,0.003005,0.0,0.0,37500000,20.6,20.6,0.266667,vmlinux,__alloc_frozen_pages_noprof,[Unknown],0xffffffff9a7434b0
+__hrtimer_run_queues,0.003005,0.003005,0.0,0.0,7500000,31.3,31.3,1.333333,vmlinux,__hrtimer_run_queues,[Unknown],0xffffffff9a4a8b90
+__memmove_chk_avx_unaligned_erms,0.003005,0.003005,0.0,0.0,32500000,47.9,47.9,0.0,libc.so.6,__memmove_chk_avx_unaligned_erms,[Unknown],0x188a50
+__mod_node_page_state,0.003005,0.003005,0.0,0.0,30000000,32.9,32.9,0.166667,vmlinux,__mod_node_page_state,[Unknown],0xffffffff9a6d0c80
+__mpn_add_1,0.003005,0.003005,0.0,0.0,7500000,48.0,48.0,1.000000,libc.so.6,__mpn_add_1,gmp.h,0x4e1cf
+__raw_spin_lock_irqsave,0.003005,0.003005,0.0,0.0,0,33.1,33.1,,vmlinux,__raw_spin_lock_irqsave,[Unknown],0xffffffff9a436d80
+__update_load_avg_cfs_rq,0.003005,0.003005,0.0,0.0,20000000,30.0,30.0,0.500000,vmlinux,__update_load_avg_cfs_rq,[Unknown],0xffffffff9a40ee10
+__update_load_avg_se,0.003005,0.003005,0.0,0.0,30000000,29.9,29.9,0.583333,vmlinux,__update_load_avg_se,[Unknown],0xffffffff9a40e7c0
+_raw_spin_trylock,0.003005,0.003005,0.0,0.0,2500000,24.4,24.4,1.000000,vmlinux,_raw_spin_trylock,[Unknown],0xffffffff9b5ab300
+ct_nmi_exit,0.003005,0.003005,0.0,0.0,10000000,35.3,35.3,0.0,vmlinux,ct_nmi_exit,[Unknown],0xffffffff9b59bb40
+folio_add_lru,0.003005,0.003005,0.0,0.0,2500000,28.8,28.8,1.000000,vmlinux,folio_add_lru,[Unknown],0xffffffff9a6a9900
+folio_batch_move_lru,0.003005,0.003005,0.0,0.0,5000000,24.7,24.7,0.0,vmlinux,folio_batch_move_lru,[Unknown],0xffffffff9a6a9660
+func@0x4880,0.003005,0.003005,0.0,0.0,30000000,66.1,66.1,0.250000,solve,func@0x4880,[Unknown],0x4880
+ktime_get,0.003005,0.003005,0.0,0.0,7500000,26.9,26.9,1.333333,vmlinux,ktime_get,[Unknown],0xffffffff9a4acab0
+lock_vma_under_rcu,0.003005,0.003005,0.0,0.0,15000000,24.7,24.7,0.500000,vmlinux,lock_vma_under_rcu,[Unknown],0xffffffff9a6f9070
+native_write_msr,0.003005,0.003005,0.0,0.0,5000000,31.0,31.0,3.000000,vmlinux,native_write_msr,[Unknown],0xffffffff9a347070
+pte_offset_map_rw_nolock,0.003005,0.003005,0.0,0.0,15000000,19.6,19.6,0.166667,vmlinux,pte_offset_map_rw_nolock,[Unknown],0xffffffff9a71e4c0
+"std::basic_string_view<char, std::char_traits<char>>::operator[]",0.003005,0.003005,0.0,0.0,15000000,48.0,48.0,0.0,solve,"std::basic_string_view<char, std::char_traits<char>>::operator[](unsigned long) const",string_view,0x29603
+"std::vector<int, std::allocator<int>>::push_back",0.003005,0.003005,0.0,0.0,35000000,47.9,47.9,0.357143,solve,"std::vector<int, std::allocator<int>>::push_back(int const&)",stl_vector.h,0x2a5e2
+"std::vector<int, std::allocator<int>>::push_back",0.003005,0.003005,0.0,0.0,17500000,47.8,47.8,0.571429,solve,"std::vector<int, std::allocator<int>>::push_back(int const&)",stl_vector.h,0x2a4fa
+try_charge_memcg,0.003005,0.003005,0.0,0.0,25000000,24.0,24.0,0.100000,vmlinux,try_charge_memcg,[Unknown],0xffffffff9a7bfb00
+zap_present_ptes.constprop.0,0.003005,0.003005,0.0,0.0,45000000,41.4,41.4,0.611111,vmlinux,zap_present_ptes.constprop.0,[Unknown],0xffffffff9a701c40
+__GI_memcpy,0.002003,0.002003,0.0,0.0,12500000,47.9,47.9,0.400000,libc.so.6,__GI_memcpy,string_fortified.h,0x50480
+__folio_throttle_swaprate,0.002003,0.002003,0.0,0.0,5000000,28.8,28.8,1.000000,vmlinux,__folio_throttle_swaprate,[Unknown],0xffffffff9a76a450
+__hrtimer_next_event_base,0.002003,0.002003,0.0,0.0,5000000,31.4,31.4,0.0,vmlinux,__hrtimer_next_event_base,[Unknown],0xffffffff9a4a8840
+__lruvec_stat_mod_folio,0.002003,0.002003,0.0,0.0,22500000,30.4,30.4,0.555556,vmlinux,__lruvec_stat_mod_folio,[Unknown],0xffffffff9a7bb740
+__timekeeping_advance,0.002003,0.002003,0.0,0.0,5000000,27.2,27.2,1.500000,vmlinux,__timekeeping_advance,[Unknown],0xffffffff9a4ac090
+__tlb_remove_folio_pages_size.isra.0,0.002003,0.002003,0.0,0.0,10000000,42.7,42.7,0.250000,vmlinux,__tlb_remove_folio_pages_size.isra.0,[Unknown],0xffffffff9a714040
+_find_next_and_bit,0.002003,0.002003,0.0,0.0,0,33.5,33.5,,vmlinux,_find_next_and_bit,[Unknown],0xffffffff9aba0c10
+alloc_pages_mpol,0.002003,0.002003,0.0,0.0,12500000,26.3,26.3,0.200000,vmlinux,alloc_pages_mpol,[Unknown],0xffffffff9a780300
+clear_page_erms,0.002003,0.002003,0.0,0.0,0,24.9,24.9,,vmlinux,clear_page_erms,[Unknown],0xffffffff9b58e650
+do_anonymous_page,0.002003,0.002003,0.0,0.0,30000000,26.5,26.5,1.166667,vmlinux,do_anonymous_page,[Unknown],0xffffffff9a709760
+exc_page_fault,0.002003,0.002003,0.0,0.0,15000000,20.4,20.4,0.0,vmlinux,exc_page_fault,[Unknown],0xffffffff9b59ac80
+folio_remove_rmap_ptes,0.002003,0.002003,0.0,0.0,10000000,44.3,44.3,0.750000,vmlinux,folio_remove_rmap_ptes,[Unknown],0xffffffff9a721ce0
+fpregs_assert_state_consistent,0.002003,0.002003,0.0,0.0,5000000,25.9,25.9,1.000000,vmlinux,fpregs_assert_state_consistent,[Unknown],0xffffffff9a2f34a0
+func@0x4790,0.002003,0.002003,0.0,0.0,5000000,47.9,47.9,0.500000,solve,func@0x4790,[Unknown],0x4790
+get_page_from_freelist,0.002003,0.002003,0.0,0.0,15000000,24.9,24.9,0.333333,vmlinux,get_page_from_freelist,[Unknown],0xffffffff9a741d70
+lru_gen_del_folio.constprop.0,0.002003,0.002003,0.0,0.0,40000000,53.3,53.3,0.187500,vmlinux,lru_gen_del_folio.constprop.0,[Unknown],0xffffffff9a6a6db0
+mod_memcg_lruvec_state,0.002003,0.002003,0.0,0.0,57500000,35.7,35.7,0.347826,vmlinux,mod_memcg_lruvec_state,[Unknown],0xffffffff9a7bb360
+post_alloc_hook,0.002003,0.002003,0.0,0.0,17500000,24.5,24.5,0.0,vmlinux,post_alloc_hook,[Unknown],0xffffffff9a73ccd0
+read_tsc,0.002003,0.002003,0.0,0.0,2500000,32.1,32.1,2.000000,vmlinux,read_tsc,[Unknown],0xffffffff9a2ee9b0
+scaled_norm,0.002003,0.002003,0.0,0.0,12500000,43.8,43.8,0.400000,solve,scaled_norm,verify.cpp,0x22420
+scaled_norm,0.002003,0.002003,0.0,0.0,15000000,41.2,41.2,0.666667,solve,scaled_norm,verify.cpp,0x2238f
+scaled_norm,0.002003,0.002003,0.0,0.0,15000000,45.1,45.1,0.333333,solve,scaled_norm,verify.cpp,0x216de
+sched_tick,0.002003,0.002003,0.0,0.0,0,26.0,26.0,,vmlinux,sched_tick,[Unknown],0xffffffff9a3e25c0
+ssolve::AlignedArray<int>::data,0.002003,0.002003,0.0,0.0,5000000,41.2,41.2,0.500000,solve,ssolve::AlignedArray<int>::data(void),aligned_array.hpp,0x11b19
+ssolve::symmetry_defect,0.002003,0.002003,0.0,0.0,12500000,26.4,26.4,0.600000,solve,ssolve::symmetry_defect(ssolve::CsrMatrixT<long> const&),verify.cpp,0x85cd
+ssolve::true_relative_residual,0.002003,0.002003,0.0,0.0,5000000,18.9,18.9,0.500000,solve,"ssolve::true_relative_residual(ssolve::CsrMatrixT<long> const&, double const*, double const*)",basic_ios.h,0x85a5
+"std::basic_string_view<char, std::char_traits<char>>::substr",0.002003,0.002003,0.0,0.0,22500000,48.0,48.0,0.0,solve,"std::basic_string_view<char, std::char_traits<char>>::substr(unsigned long, unsigned long) const",string_view,0x291db
+"std::vector<double, std::allocator<double>>::push_back",0.002003,0.002003,0.0,0.0,27500000,47.8,47.8,0.727273,solve,"std::vector<double, std::allocator<double>>::push_back(double const&)",stl_vector.h,0x2a569
+task_tick_fair,0.002003,0.002003,0.0,0.0,0,30.2,30.2,,vmlinux,task_tick_fair,[Unknown],0xffffffff9a3f0a10
+vma_alloc_folio_noprof,0.002003,0.002003,0.0,0.0,10000000,23.3,23.3,0.500000,vmlinux,vma_alloc_folio_noprof,[Unknown],0xffffffff9a783440
+"with_rhs_scaling<ssolve::cg(const Backend&, Preconditioner&, double const*, double*, const SolveOptions&)::<lambda(double const*, double*)> >",0.002003,0.002003,0.0,0.0,12500000,44.4,44.4,0.200000,solve,"with_rhs_scaling<ssolve::cg(const Backend&, Preconditioner&, double const*, double*, const SolveOptions&)::<lambda(double const*, double*)> >",cg_common.hpp,0x7e12
+[kvm],0.001002,0.001002,0.0,0.0,2500000,31.7,31.7,1.000000,kvm,[kvm],[Unknown],0x0
+__GI_memcpy,0.001002,0.001002,0.0,0.0,17500000,47.6,47.6,0.428571,libc.so.6,__GI_memcpy,string_fortified.h,0x4ea9c
+__GI_memcpy,0.001002,0.001002,0.0,0.0,15000000,47.9,47.9,0.166667,libc.so.6,__GI_memcpy,string_fortified.h,0x50723
+__calc_delta.constprop.0,0.001002,0.001002,0.0,0.0,15000000,23.4,23.4,0.166667,vmlinux,__calc_delta.constprop.0,[Unknown],0xffffffff9a3e3f80
+__ct_user_enter,0.001002,0.001002,0.0,0.0,12500000,25.1,25.1,0.800000,vmlinux,__ct_user_enter,[Unknown],0xffffffff9b59b930
+__folio_batch_add_and_move,0.001002,0.001002,0.0,0.0,10000000,24.5,24.5,1.000000,vmlinux,__folio_batch_add_and_move,[Unknown],0xffffffff9a6a97e0
+__get_user_8,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,vmlinux,__get_user_8,[Unknown],0xffffffff9b58f9d0
+__handle_mm_fault,0.001002,0.001002,0.0,0.0,42500000,24.0,24.0,0.235294,vmlinux,__handle_mm_fault,[Unknown],0xffffffff9a70afd0
+__mod_lruvec_state,0.001002,0.001002,0.0,0.0,5000000,39.7,39.7,0.0,vmlinux,__mod_lruvec_state,[Unknown],0xffffffff9a7bddc0
+__mod_zone_page_state,0.001002,0.001002,0.0,0.0,30000000,34.4,34.4,0.0,vmlinux,__mod_zone_page_state,[Unknown],0xffffffff9a6d0bc0
+__set_next_task_fair.part.0,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,vmlinux,__set_next_task_fair.part.0,[Unknown],0xffffffff9a3e9260
+__vmf_anon_prepare,0.001002,0.001002,0.0,0.0,5000000,26.6,26.6,1.000000,vmlinux,__vmf_anon_prepare,[Unknown],0xffffffff9a703a80
+_dl_fixup,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,ld-linux-x86-64.so.2,_dl_fixup,dl-runtime.c,0x12af0
+alloc_anon_folio,0.001002,0.001002,0.0,0.0,7500000,26.1,26.1,1.666667,vmlinux,alloc_anon_folio,[Unknown],0xffffffff9a7092b0
+arch_scale_freq_tick,0.001002,0.001002,0.0,0.0,0,31.8,31.8,,vmlinux,arch_scale_freq_tick,[Unknown],0xffffffff9a304080
+blk_cgroup_congested,0.001002,0.001002,0.0,0.0,2500000,26.2,26.2,2.000000,vmlinux,blk_cgroup_congested,[Unknown],0xffffffff9ab21e70
+call_function_single_prep_ipi,0.001002,0.001002,0.0,0.0,0,26.6,26.6,0.0,vmlinux,call_function_single_prep_ipi,[Unknown],0xffffffff9a3dbcf0
+cg_loop,0.001002,0.001002,0.0,0.0,0,13.2,13.2,,solve,cg_loop,cg.cpp,0x7d9c
+charge_memcg,0.001002,0.001002,0.0,0.0,10000000,26.9,26.9,0.750000,vmlinux,charge_memcg,[Unknown],0xffffffff9a7c04d0
+filemap_get_read_batch,0.001002,0.001002,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,filemap_get_read_batch,[Unknown],0xffffffff9a691630
+filemap_read,0.001002,0.001002,0.0,0.0,0,2.7,2.7,0.0,vmlinux,filemap_read,[Unknown],0xffffffff9a694f50
+find_next_iomem_res,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,vmlinux,find_next_iomem_res,[Unknown],0xffffffff9a38c5f0
+folio_add_new_anon_rmap,0.001002,0.001002,0.0,0.0,7500000,28.0,28.0,1.000000,vmlinux,folio_add_new_anon_rmap,[Unknown],0xffffffff9a7215f0
+folios_put_refs,0.001002,0.001002,0.0,0.0,22500000,39.0,39.0,0.555556,vmlinux,folios_put_refs,[Unknown],0xffffffff9a6a9400
+fq_flush_timeout,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,vmlinux,fq_flush_timeout,[Unknown],0xffffffff9aefd1d0
+free_frozen_page_commit,0.001002,0.001002,0.0,0.0,22500000,56.6,56.6,0.111111,vmlinux,free_frozen_page_commit,[Unknown],0xffffffff9a739e40
+free_pages_and_swap_cache,0.001002,0.001002,0.0,0.0,7500000,53.4,53.4,1.666667,vmlinux,free_pages_and_swap_cache,[Unknown],0xffffffff9a762480
+free_pcppages_bulk,0.001002,0.001002,0.0,0.0,0,50.1,50.1,,vmlinux,free_pcppages_bulk,[Unknown],0xffffffff9a7397e0
+free_unref_folios,0.001002,0.001002,0.0,0.0,40000000,51.9,51.9,0.312500,vmlinux,free_unref_folios,[Unknown],0xffffffff9a740850
+func@0x286f0,0.001002,0.001002,0.0,0.0,10000000,48.0,48.0,0.500000,libc.so.6,func@0x286f0,[Unknown],0x286f0
+func@0x4820,0.001002,0.001002,0.0,0.0,7500000,48.1,48.1,0.666667,solve,func@0x4820,[Unknown],0x4820
+get_jiffies_update,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,vmlinux,get_jiffies_update,[Unknown],0xffffffff9a4c33c0
+hrtimer_interrupt,0.001002,0.001002,0.0,0.0,5000000,30.1,30.1,1.000000,vmlinux,hrtimer_interrupt,[Unknown],0xffffffff9a4a9b90
+idle_cpu,0.001002,0.001002,0.0,0.0,2500000,30.4,30.4,4.000000,vmlinux,idle_cpu,[Unknown],0xffffffff9a419f10
+irqentry_exit_to_user_mode,0.001002,0.001002,0.0,0.0,5000000,35.3,35.3,2.000000,vmlinux,irqentry_exit_to_user_mode,[Unknown],0xffffffff9b59b390
+native_apic_msr_eoi,0.001002,0.001002,0.0,0.0,0,27.5,27.5,,vmlinux,native_apic_msr_eoi,[Unknown],0xffffffff9a338110
+native_read_msr_safe,0.001002,0.001002,0.0,0.0,0,33.7,33.7,0.0,vmlinux,native_read_msr_safe,[Unknown],0xffffffff9a346e40
+nmi_handle.part.0,0.001002,0.001002,0.0,0.0,32500000,35.4,35.4,0.153846,vmlinux,nmi_handle.part.0,[Unknown],0xffffffff9a2e3cc0
+nmi_restore,0.001002,0.001002,0.0,0.0,0,24.3,24.3,,vmlinux,nmi_restore,[Unknown],0xffffffff9a001869
+nohz_balancer_kick,0.001002,0.001002,0.0,0.0,12500000,30.1,30.1,0.800000,vmlinux,nohz_balancer_kick,[Unknown],0xffffffff9a3f9500
+notifier_call_chain,0.001002,0.001002,0.0,0.0,2500000,30.5,30.5,4.000000,vmlinux,notifier_call_chain,[Unknown],0xffffffff9a3c3050
+ntp_tick_length,0.001002,0.001002,0.0,0.0,2500000,31.0,31.0,2.000000,vmlinux,ntp_tick_length,[Unknown],0xffffffff9a4afa10
+pfn_pte,0.001002,0.001002,0.0,0.0,2500000,30.9,30.9,0.0,vmlinux,pfn_pte,[Unknown],0xffffffff9a6fd610
+pfn_to_dma_pte,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,vmlinux,pfn_to_dma_pte,[Unknown],0xffffffff9aee1dc0
+policy_nodemask,0.001002,0.001002,0.0,0.0,10000000,25.0,25.0,0.0,vmlinux,policy_nodemask,[Unknown],0xffffffff9a780170
+psi_group_change,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,vmlinux,psi_group_change,[Unknown],0xffffffff9a423f40
+pte_val,0.001002,0.001002,0.0,0.0,2500000,46.4,46.4,0.0,vmlinux,pte_val,[Unknown],0xffffffff9a6fa000
+pud_val,0.001002,0.001002,0.0,0.0,5000000,27.5,27.5,0.0,vmlinux,pud_val,[Unknown],0xffffffff9a6fa0d0
+reweight_entity,0.001002,0.001002,0.0,0.0,10000000,24.4,24.4,0.250000,vmlinux,reweight_entity,[Unknown],0xffffffff9a3f0690
+scaled_norm,0.001002,0.001002,0.0,0.0,15000000,43.6,43.6,0.500000,solve,scaled_norm,verify.cpp,0x21646
+sched_clock,0.001002,0.001002,0.0,0.0,5000000,33.4,33.4,0.500000,vmlinux,sched_clock,[Unknown],0xffffffff9a2efd90
+select_task_rq_fair,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,vmlinux,select_task_rq_fair,[Unknown],0xffffffff9a3f6b80
+should_we_balance,0.001002,0.001002,0.0,0.0,0,31.8,31.8,0.0,vmlinux,should_we_balance,[Unknown],0xffffffff9a3e9590
+ssolve::AlignedArray<double>::operator[],0.001002,0.001002,0.0,0.0,2500000,19.9,19.9,1.000000,solve,ssolve::AlignedArray<double>::operator[](unsigned long) const,aligned_array.hpp,0x22c71
+ssolve::AlignedArray<double>::operator[],0.001002,0.001002,0.0,0.0,5000000,30.1,30.1,0.0,solve,ssolve::AlignedArray<double>::operator[](unsigned long) const,aligned_array.hpp,0x19e9e
+ssolve::AlignedArray<long>::fill,0.001002,0.001002,0.0,0.0,5000000,28.3,28.3,1.000000,solve,ssolve::AlignedArray<long>::fill(long const&),aligned_array.hpp,0x11977
+"std::basic_string_view<char, std::char_traits<char>>::substr",0.001002,0.001002,0.0,0.0,17500000,49.8,49.8,0.0,solve,"std::basic_string_view<char, std::char_traits<char>>::substr(unsigned long, unsigned long) const",string_view,0x2a6ed
+std::isfinite,0.001002,0.001002,0.0,0.0,10000000,47.7,47.7,1.000000,solve,std::isfinite(double),cmath,0x2a7ce
+"std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>::_M_gen_rand",0.001002,0.001002,0.0,0.0,10000000,35.4,35.4,0.250000,solve,"std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>::_M_gen_rand(void)",random.tcc,0x19f40
+"std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>::operator()",0.001002,0.001002,0.0,0.0,32500000,53.5,53.5,0.076923,solve,"std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>::operator()(void)",random.tcc,0x19cf7
+"std::vector<double, std::allocator<double>>::push_back",0.001002,0.001002,0.0,0.0,7500000,48.9,48.9,0.666667,solve,"std::vector<double, std::allocator<double>>::push_back(double const&)",stl_vector.h,0x2a649
+"std::vector<int, std::allocator<int>>::push_back",0.001002,0.001002,0.0,0.0,25000000,47.8,47.8,0.300000,solve,"std::vector<int, std::allocator<int>>::push_back(int const&)",stl_vector.h,0x2a540
+"std::vector<long, std::allocator<long>>::operator[]",0.001002,0.001002,0.0,0.0,5000000,15.1,15.1,1.500000,solve,"std::vector<long, std::allocator<long>>::operator[](unsigned long)",stl_vector.h,0x11abb
+timer_lock_remote_bases,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,vmlinux,timer_lock_remote_bases,[Unknown],0xffffffff9a4a7940
+timerqueue_add,0.001002,0.001002,0.0,0.0,2500000,26.3,26.3,2.000000,vmlinux,timerqueue_add,[Unknown],0xffffffff9b581fa0
+uncharge_folio,0.001002,0.001002,0.0,0.0,15000000,52.9,52.9,0.0,vmlinux,uncharge_folio,[Unknown],0xffffffff9a7bdaa0
+update_min_vruntime,0.001002,0.001002,0.0,0.0,5000000,31.2,31.2,1.000000,vmlinux,update_min_vruntime,[Unknown],0xffffffff9a3e2dd0
+update_process_times,0.001002,0.001002,0.0,0.0,2500000,35.8,35.8,1.000000,vmlinux,update_process_times,[Unknown],0xffffffff9a4a7c10
+update_se,0.001002,0.001002,0.0,0.0,2500000,25.6,25.6,3.000000,vmlinux,update_se,[Unknown],0xffffffff9a3e8420
+update_vsyscall,0.001002,0.001002,0.0,0.0,2500000,30.2,30.2,4.000000,vmlinux,update_vsyscall,[Unknown],0xffffffff9a4c7dd0
+x86_thermal_enabled,0.001002,0.001002,0.0,0.0,0,20.0,20.0,0.0,vmlinux,x86_thermal_enabled,[Unknown],0xffffffff9b1b2010
+[Outside any known module],0.0,0.0,0.0,0.0,0,10.6,10.6,0.0,[Unknown],[Outside any known module],[Unknown],0x0
+[iwlmvm],0.0,0.0,0.0,0.0,0,29.0,29.0,0.0,iwlmvm,[iwlmvm],[Unknown],0x0
+[x86_pkg_temp_thermal],0.0,0.0,0.0,0.0,0,34.7,34.7,0.0,x86_pkg_temp_thermal,[x86_pkg_temp_thermal],[Unknown],0x0
+__GI___ctype_init,0.0,0.0,0.0,0.0,0,27.5,27.5,0.0,libc.so.6,__GI___ctype_init,ctype-info.c,0x3ba20
+___pte_offset_map,0.0,0.0,0.0,0.0,20000000,22.3,22.3,0.500000,vmlinux,___pte_offset_map,[Unknown],0xffffffff9a71e250
+__cgroup_account_cputime_field,0.0,0.0,0.0,0.0,2500000,30.4,30.4,6.000000,vmlinux,__cgroup_account_cputime_field,[Unknown],0xffffffff9a4ee6f0
+__cond_resched,0.0,0.0,0.0,0.0,0,18.4,18.4,0.0,vmlinux,__cond_resched,[Unknown],0xffffffff9b5a24b0
+__ct_user_exit,0.0,0.0,0.0,0.0,7500000,19.2,19.2,1.666667,vmlinux,__ct_user_exit,[Unknown],0xffffffff9b59ba40
+__file_ref_put,0.0,0.0,0.0,0.0,0,48.6,48.6,0.0,vmlinux,__file_ref_put,[Unknown],0xffffffff9a8166d0
+__folio_mod_stat,0.0,0.0,0.0,0.0,2500000,34.3,34.3,0.0,vmlinux,__folio_mod_stat,[Unknown],0xffffffff9a71f700
+__get_pfnblock_flags_mask.isra.0,0.0,0.0,0.0,0.0,0,18.4,18.4,0.0,vmlinux,__get_pfnblock_flags_mask.isra.0,[Unknown],0xffffffff9a737910
+"__gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double>>>::operator++",0.0,0.0,0.0,0.0,10000000,0.0,0.0,0.0,solve,"__gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double>>>::operator++(void)",stl_iterator.h,0x224ed
+"__gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double>>>::operator++",0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,solve,"__gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double>>>::operator++(void)",stl_iterator.h,0x2170d
+__irq_exit_rcu,0.0,0.0,0.0,0.0,0,30.7,30.7,0.0,vmlinux,__irq_exit_rcu,[Unknown],0xffffffff9a38b420
+__mem_cgroup_charge,0.0,0.0,0.0,0.0,5000000,27.0,27.0,2.000000,vmlinux,__mem_cgroup_charge,[Unknown],0xffffffff9a7c1a40
+__mem_cgroup_threshold,0.0,0.0,0.0,0.0,0,16.3,16.3,,vmlinux,__mem_cgroup_threshold,[Unknown],0xffffffff9a7b48b0
+__mem_cgroup_uncharge_folios,0.0,0.0,0.0,0.0,5000000,51.0,51.0,0.500000,vmlinux,__mem_cgroup_uncharge_folios,[Unknown],0xffffffff9a7c1d90
+__memmove_chk_avx_unaligned_erms,0.0,0.0,0.0,0.0,35000000,0.0,0.0,0.0,libc.so.6,__memmove_chk_avx_unaligned_erms,memmove-vec-unaligned-erms.S,0x188a50
+__note_gp_changes,0.0,0.0,0.0,0.0,0,33.9,33.9,0.0,vmlinux,__note_gp_changes,[Unknown],0xffffffff9a47a9c0
+__page_cache_release.part.0,0.0,0.0,0.0,0.0,27500000,54.7,54.7,0.0,vmlinux,__page_cache_release.part.0,[Unknown],0xffffffff9a6a91c0
+__pkru_allows_pkey,0.0,0.0,0.0,0.0,2500000,26.1,26.1,0.0,vmlinux,__pkru_allows_pkey,[Unknown],0xffffffff9a352900
+__pkru_allows_pkey,0.0,0.0,0.0,0.0,0,19.8,19.8,0.0,vmlinux,__pkru_allows_pkey,[Unknown],0xffffffff9a6fa510
+__remove_hrtimer,0.0,0.0,0.0,0.0,0,33.5,33.5,,vmlinux,__remove_hrtimer,[Unknown],0xffffffff9a4a8ad0
+__rmqueue_pcplist,0.0,0.0,0.0,0.0,15000000,28.3,28.3,0.500000,vmlinux,__rmqueue_pcplist,[Unknown],0xffffffff9a73e8f0
+__rseq_handle_notify_resume,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,__rseq_handle_notify_resume,[Unknown],0xffffffff9a68db70
+__run_timers,0.0,0.0,0.0,0.0,0,25.5,25.5,,vmlinux,__run_timers,[Unknown],0xffffffff9a4a68b0
+__schedule,0.0,0.0,0.0,0.0,0,28.0,28.0,0.0,vmlinux,__schedule,[Unknown],0xffffffff9b5a1ad0
+__smp_call_single_queue,0.0,0.0,0.0,0.0,0,28.2,28.2,0.0,vmlinux,__smp_call_single_queue,[Unknown],0xffffffff9a4d21d0
+__switch_to_asm,0.0,0.0,0.0,0.0,0,33.3,33.3,0.0,vmlinux,__switch_to_asm,[Unknown],0xffffffff9a289b50
+__sysvec_apic_timer_interrupt,0.0,0.0,0.0,0.0,0,30.4,30.4,,vmlinux,__sysvec_apic_timer_interrupt,[Unknown],0xffffffff9a32d0a0
+__tlb_remove_folio_pages,0.0,0.0,0.0,0.0,5000000,40.8,40.8,0.0,vmlinux,__tlb_remove_folio_pages,[Unknown],0xffffffff9a714260
+__update_blocked_fair,0.0,0.0,0.0,0.0,0,29.8,29.8,,vmlinux,__update_blocked_fair,[Unknown],0xffffffff9a3ea740
+_dl_map_object,0.0,0.0,0.0,0.0,0,16.9,16.9,0.0,ld-linux-x86-64.so.2,_dl_map_object,dl-load.c,0x92f0
+_dl_new_hash,0.0,0.0,0.0,0.0,0,27.6,27.6,0.0,ld-linux-x86-64.so.2,_dl_new_hash,dl-new-hash.h,0xb103
+_find_first_bit,0.0,0.0,0.0,0.0,0,19.2,19.2,0.0,vmlinux,_find_first_bit,[Unknown],0xffffffff9aba08f0
+_mid_memalign,0.0,0.0,0.0,0.0,0,63.9,63.9,0.0,libc.so.6,_mid_memalign,malloc.c,0xad990
+_raw_spin_lock_irq,0.0,0.0,0.0,0.0,0,16.9,16.9,0.0,vmlinux,_raw_spin_lock_irq,[Unknown],0xffffffff9b5abb60
+_raw_spin_unlock,0.0,0.0,0.0,0.0,7500000,27.5,27.5,0.0,vmlinux,_raw_spin_unlock,[Unknown],0xffffffff9b5abc30
+_raw_spin_unlock_irqrestore,0.0,0.0,0.0,0.0,2500000,32.7,32.7,1.000000,vmlinux,_raw_spin_unlock_irqrestore,[Unknown],0xffffffff9b5ab370
+account_process_tick,0.0,0.0,0.0,0.0,0,18.4,18.4,0.0,vmlinux,account_process_tick,[Unknown],0xffffffff9a411250
+account_system_index_time,0.0,0.0,0.0,0.0,0,18.4,18.4,0.0,vmlinux,account_system_index_time,[Unknown],0xffffffff9a410f20
+acct_account_cputime,0.0,0.0,0.0,0.0,2500000,33.5,33.5,1.000000,vmlinux,acct_account_cputime,[Unknown],0xffffffff9a532760
+alloc_iova_fast,0.0,0.0,0.0,0.0,0,26.7,26.7,0.0,vmlinux,alloc_iova_fast,[Unknown],0xffffffff9af020c0
+arch_asym_cpu_priority,0.0,0.0,0.0,0.0,7500000,31.4,31.4,0.333333,vmlinux,arch_asym_cpu_priority,[Unknown],0xffffffff9a349650
+arch_exit_to_user_mode_prepare.isra.0,0.0,0.0,0.0,0.0,7500000,26.9,26.9,1.333333,vmlinux,arch_exit_to_user_mode_prepare.isra.0,[Unknown],0xffffffff9a493960
+arch_scale_cpu_capacity,0.0,0.0,0.0,0.0,0,32.5,32.5,0.0,vmlinux,arch_scale_cpu_capacity,[Unknown],0xffffffff9a303c60
+asm_exc_page_fault,0.0,0.0,0.0,0.0,2500000,25.6,25.6,3.000000,vmlinux,asm_exc_page_fault,[Unknown],0xffffffff9a000b90
+asm_sysvec_apic_timer_interrupt,0.0,0.0,0.0,0.0,0,26.8,26.8,,vmlinux,asm_sysvec_apic_timer_interrupt,[Unknown],0xffffffff9a000ef0
+available_idle_cpu,0.0,0.0,0.0,0.0,0,30.6,30.6,0.0,vmlinux,available_idle_cpu,[Unknown],0xffffffff9a419fa0
+avg_vruntime,0.0,0.0,0.0,0.0,0,31.8,31.8,0.0,vmlinux,avg_vruntime,[Unknown],0xffffffff9a3f0300
+calc_global_load,0.0,0.0,0.0,0.0,0,30.1,30.1,,vmlinux,calc_global_load,[Unknown],0xffffffff9a42f9b0
+calc_global_load_tick,0.0,0.0,0.0,0.0,0,31.8,31.8,0.0,vmlinux,calc_global_load_tick,[Unknown],0xffffffff9a42fbf0
+check_cpu_stall,0.0,0.0,0.0,0.0,0,7.8,7.8,0.0,vmlinux,check_cpu_stall,[Unknown],0xffffffff9a47cf20
+clflush_cache_range,0.0,0.0,0.0,0.0,0,25.5,25.5,0.0,vmlinux,clflush_cache_range,[Unknown],0xffffffff9a35a980
+clockevents_program_event,0.0,0.0,0.0,0.0,0,33.8,33.8,0.0,vmlinux,clockevents_program_event,[Unknown],0xffffffff9a4beb40
+context_tracking_recursion_enter,0.0,0.0,0.0,0.0,5000000,28.9,28.9,1.000000,vmlinux,context_tracking_recursion_enter,[Unknown],0xffffffff9b59b6b0
+cpuacct_account_field,0.0,0.0,0.0,0.0,0,32.5,32.5,0.0,vmlinux,cpuacct_account_field,[Unknown],0xffffffff9a42b3d0
+cpuacct_charge,0.0,0.0,0.0,0.0,0,31.5,31.5,,vmlinux,cpuacct_charge,[Unknown],0xffffffff9a42b320
+default_do_nmi,0.0,0.0,0.0,0.0,5000000,32.8,32.8,0.0,vmlinux,default_do_nmi,[Unknown],0xffffffff9b597730
+dl_server_update,0.0,0.0,0.0,0.0,2500000,33.6,33.6,0.0,vmlinux,dl_server_update,[Unknown],0xffffffff9a412990
+do_lookup_x,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,ld-linux-x86-64.so.2,do_lookup_x,dl-lookup.c,0xa530
+early_xen_iret_patch,0.0,0.0,0.0,0.0,0,34.1,34.1,,vmlinux,early_xen_iret_patch,[Unknown],0xffffffff9a00123c
+end_repeat_nmi,0.0,0.0,0.0,0.0,0,22.4,22.4,0.0,vmlinux,end_repeat_nmi,[Unknown],0xffffffff9a00180f
+enqueue_hrtimer,0.0,0.0,0.0,0.0,2500000,31.6,31.6,0.0,vmlinux,enqueue_hrtimer,[Unknown],0xffffffff9a4a8780
+error_entry,0.0,0.0,0.0,0.0,12500000,29.1,29.1,1.000000,vmlinux,error_entry,[Unknown],0xffffffff9a001550
+exc_nmi,0.0,0.0,0.0,0.0,35000000,28.2,28.2,0.214286,vmlinux,exc_nmi,[Unknown],0xffffffff9b5978b0
+folio_add_lru_vma,0.0,0.0,0.0,0.0,5000000,47.1,47.1,0.0,vmlinux,folio_add_lru_vma,[Unknown],0xffffffff9a6aa130
+folio_mapping,0.0,0.0,0.0,0.0,5000000,18.7,18.7,0.0,vmlinux,folio_mapping,[Unknown],0xffffffff9a6cf540
+fq_ring_free_locked,0.0,0.0,0.0,0.0,0,29.4,29.4,0.0,vmlinux,fq_ring_free_locked,[Unknown],0xffffffff9aefc7f0
+free_swap_cache,0.0,0.0,0.0,0.0,0,41.6,41.6,0.0,vmlinux,free_swap_cache,[Unknown],0xffffffff9a762360
+func@0x28500,0.0,0.0,0.0,0.0,10000000,47.8,47.8,0.250000,libc.so.6,func@0x28500,[Unknown],0x28500
+func@0x47b0,0.0,0.0,0.0,0.0,10000000,47.9,47.9,0.250000,solve,func@0x47b0,[Unknown],0x47b0
+generic_exec_single,0.0,0.0,0.0,0.0,0,36.9,36.9,0.0,vmlinux,generic_exec_single,[Unknown],0xffffffff9a4d2350
+get_nohz_timer_target,0.0,0.0,0.0,0.0,0,31.8,31.8,0.0,vmlinux,get_nohz_timer_target,[Unknown],0xffffffff9a3d9ac0
+get_rounding_mode,0.0,0.0,0.0,0.0,47500000,47.9,47.9,0.157895,libc.so.6,get_rounding_mode,get-rounding-mode.h,0x289e6
+get_vma_policy,0.0,0.0,0.0,0.0,15000000,26.8,26.8,0.166667,vmlinux,get_vma_policy,[Unknown],0xffffffff9a7832d0
+handle_mm_fault,0.0,0.0,0.0,0.0,22500000,23.7,23.7,0.222222,vmlinux,handle_mm_fault,[Unknown],0xffffffff9a70b720
+handle_pte_fault,0.0,0.0,0.0,0.0,12500000,18.1,18.1,0.400000,vmlinux,handle_pte_fault,[Unknown],0xffffffff9a70adc0
+handle_softirqs,0.0,0.0,0.0,0.0,0,31.6,31.6,0.0,vmlinux,handle_softirqs,[Unknown],0xffffffff9a38b0d0
+housekeeping_cpumask,0.0,0.0,0.0,0.0,0,31.0,31.0,0.0,vmlinux,housekeeping_cpumask,[Unknown],0xffffffff9a41e120
+housekeeping_test_cpu,0.0,0.0,0.0,0.0,0,21.2,21.2,0.0,vmlinux,housekeeping_test_cpu,[Unknown],0xffffffff9a422840
+hrtimer_forward,0.0,0.0,0.0,0.0,2500000,33.3,33.3,2.000000,vmlinux,hrtimer_forward,[Unknown],0xffffffff9a4a80d0
+hrtimer_try_to_cancel.part.0,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,hrtimer_try_to_cancel.part.0,[Unknown],0xffffffff9a4a9570
+invoke_rcu_core,0.0,0.0,0.0,0.0,0,32.2,32.2,0.0,vmlinux,invoke_rcu_core,[Unknown],0xffffffff9a473fb0
+irq_enter_rcu,0.0,0.0,0.0,0.0,0,29.6,29.6,,vmlinux,irq_enter_rcu,[Unknown],0xffffffff9a38b840
+irq_exit_rcu,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,irq_exit_rcu,[Unknown],0xffffffff9a38b910
+irq_work_run_list,0.0,0.0,0.0,0.0,5000000,28.0,28.0,0.0,vmlinux,irq_work_run_list,[Unknown],0xffffffff9a5c3530
+irq_work_tick,0.0,0.0,0.0,0.0,0,27.5,27.5,0.0,vmlinux,irq_work_tick,[Unknown],0xffffffff9a5c39b0
+irqentry_enter,0.0,0.0,0.0,0.0,5000000,40.2,40.2,0.500000,vmlinux,irqentry_enter,[Unknown],0xffffffff9b59b330
+irqentry_enter_from_user_mode,0.0,0.0,0.0,0.0,2500000,28.7,28.7,2.000000,vmlinux,irqentry_enter_from_user_mode,[Unknown],0xffffffff9b59b2e0
+irqentry_exit,0.0,0.0,0.0,0.0,0,26.8,26.8,0.0,vmlinux,irqentry_exit,[Unknown],0xffffffff9b59b570
+irqentry_nmi_exit,0.0,0.0,0.0,0.0,12500000,34.1,34.1,0.0,vmlinux,irqentry_nmi_exit,[Unknown],0xffffffff9b59b270
+kick_ilb,0.0,0.0,0.0,0.0,2500000,32.1,32.1,0.0,vmlinux,kick_ilb,[Unknown],0xffffffff9a3e3b20
+kmem_cache_alloc_noprof,0.0,0.0,0.0,0.0,2500000,29.4,29.4,0.0,vmlinux,kmem_cache_alloc_noprof,[Unknown],0xffffffff9a756ab0
+kthread_blkcg,0.0,0.0,0.0,0.0,2500000,20.2,20.2,2.000000,vmlinux,kthread_blkcg,[Unknown],0xffffffff9a3bb890
+kthread_is_per_cpu,0.0,0.0,0.0,0.0,0,32.5,32.5,0.0,vmlinux,kthread_is_per_cpu,[Unknown],0xffffffff9a3bb670
+ktime_get_update_offsets_now,0.0,0.0,0.0,0.0,2500000,29.9,29.9,5.000000,vmlinux,ktime_get_update_offsets_now,[Unknown],0xffffffff9a4af260
+lapic_next_deadline,0.0,0.0,0.0,0.0,0,31.1,31.1,,vmlinux,lapic_next_deadline,[Unknown],0xffffffff9a32cef0
+mas_prev,0.0,0.0,0.0,0.0,0,36.1,36.1,0.0,vmlinux,mas_prev,[Unknown],0xffffffff9b573970
+mas_prev_setup.constprop.0,0.0,0.0,0.0,0.0,0,19.6,19.6,0.0,vmlinux,mas_prev_setup.constprop.0,[Unknown],0xffffffff9b56ca60
+mas_wr_node_store,0.0,0.0,0.0,0.0,0,36.9,36.9,0.0,vmlinux,mas_wr_node_store,[Unknown],0xffffffff9b5755b0
+mask_ioapic_irq,0.0,0.0,0.0,0.0,0,30.9,30.9,,vmlinux,mask_ioapic_irq,[Unknown],0xffffffff9a3326f0
+mem_cgroup_from_task,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,mem_cgroup_from_task,[Unknown],0xffffffff9a7b8380
+memcg1_check_events,0.0,0.0,0.0,0.0,7500000,20.8,20.8,0.666667,vmlinux,memcg1_check_events,[Unknown],0xffffffff9a7b5ec0
+memcg1_uncharge_batch,0.0,0.0,0.0,0.0,2500000,46.7,46.7,0.0,vmlinux,memcg1_uncharge_batch,[Unknown],0xffffffff9a7b71e0
+memcpy,0.0,0.0,0.0,0.0,25000000,49.5,49.5,0.200000,solve,memcpy,string_fortified.h,0x2a724
+memcpy,0.0,0.0,0.0,0.0,0,7.8,7.8,,vmlinux,memcpy,[Unknown],0xffffffff9b59c6c0
+mksaveddirty_shift,0.0,0.0,0.0,0.0,10000000,18.4,18.4,0.250000,vmlinux,mksaveddirty_shift,[Unknown],0xffffffff9a6fa220
+native_set_pte,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,native_set_pte,[Unknown],0xffffffff9a346b40
+next,0.0,0.0,0.0,0.0,5000000,47.9,47.9,0.500000,solve,next,mtx_reader.cpp,0x8f5d
+number,0.0,0.0,0.0,0.0,0,35.3,35.3,0.0,vmlinux,number,[Unknown],0xffffffff9b582530
+obj_cgroup_charge_pages,0.0,0.0,0.0,0.0,0,27.5,27.5,0.0,vmlinux,obj_cgroup_charge_pages,[Unknown],0xffffffff9a7c0240
+p4d_offset,0.0,0.0,0.0,0.0,10000000,50.4,50.4,0.0,vmlinux,p4d_offset,[Unknown],0xffffffff9a6fa8a0
+page_counter_cancel,0.0,0.0,0.0,0.0,0,45.5,45.5,0.0,vmlinux,page_counter_cancel,[Unknown],0xffffffff9a7b3ec0
+page_counter_uncharge,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,page_counter_uncharge,[Unknown],0xffffffff9a7b4140
+percpu_counter_add_batch,0.0,0.0,0.0,0.0,5000000,18.2,18.2,1.000000,vmlinux,percpu_counter_add_batch,[Unknown],0xffffffff9ac814a0
+perf_adjust_freq_unthr_context,0.0,0.0,0.0,0.0,5000000,30.4,30.4,0.0,vmlinux,perf_adjust_freq_unthr_context,[Unknown],0xffffffff9a670f40
+perf_event_task_tick,0.0,0.0,0.0,0.0,5000000,26.3,26.3,1.000000,vmlinux,perf_event_task_tick,[Unknown],0xffffffff9a674510
+pgd_none,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,pgd_none,[Unknown],0xffffffff9a6fa260
+place_entity,0.0,0.0,0.0,0.0,0,33.1,33.1,0.0,vmlinux,place_entity,[Unknown],0xffffffff9a3f0420
+pmd_val,0.0,0.0,0.0,0.0,7500000,47.1,47.1,0.0,vmlinux,pmd_val,[Unknown],0xffffffff9a6fa0a0
+profile_tick,0.0,0.0,0.0,0.0,0,32.9,32.9,,vmlinux,profile_tick,[Unknown],0xffffffff9a4a0f90
+propagate_entity_load_avg,0.0,0.0,0.0,0.0,0,18.0,18.0,,vmlinux,propagate_entity_load_avg,[Unknown],0xffffffff9a3e7560
+psi_task_switch,0.0,0.0,0.0,0.0,0,29.0,29.0,0.0,vmlinux,psi_task_switch,[Unknown],0xffffffff9a433440
+pte_mkwrite,0.0,0.0,0.0,0.0,5000000,22.2,22.2,0.500000,vmlinux,pte_mkwrite,[Unknown],0xffffffff9a357d00
+qi_check_fault,0.0,0.0,0.0,0.0,0,31.0,31.0,0.0,vmlinux,qi_check_fault,[Unknown],0xffffffff9aeeb850
+raw_notifier_call_chain,0.0,0.0,0.0,0.0,0,33.7,33.7,0.0,vmlinux,raw_notifier_call_chain,[Unknown],0xffffffff9a3c3210
+rb_erase,0.0,0.0,0.0,0.0,0,27.7,27.7,,vmlinux,rb_erase,[Unknown],0xffffffff9b57de60
+rb_insert_color,0.0,0.0,0.0,0.0,0,20.6,20.6,0.0,vmlinux,rb_insert_color,[Unknown],0xffffffff9b57e5e0
+rb_next,0.0,0.0,0.0,0.0,0,30.3,30.3,,vmlinux,rb_next,[Unknown],0xffffffff9b57e930
+rcu_accelerate_cbs,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,rcu_accelerate_cbs,[Unknown],0xffffffff9a472e80
+rcu_core,0.0,0.0,0.0,0.0,0,26.3,26.3,0.0,vmlinux,rcu_core,[Unknown],0xffffffff9a47ecc0
+rcu_pending,0.0,0.0,0.0,0.0,5000000,29.8,29.8,0.500000,vmlinux,rcu_pending,[Unknown],0xffffffff9a47d150
+rcu_sched_clock_irq,0.0,0.0,0.0,0.0,0,8.6,8.6,0.0,vmlinux,rcu_sched_clock_irq,[Unknown],0xffffffff9a480070
+refill_stock,0.0,0.0,0.0,0.0,5000000,0.0,0.0,0.0,vmlinux,refill_stock,[Unknown],0xffffffff9a7baeb0
+rmqueue.isra.0,0.0,0.0,0.0,0.0,30000000,22.6,22.6,0.0,vmlinux,rmqueue.isra.0,[Unknown],0xffffffff9a73ec20
+run_posix_cpu_timers,0.0,0.0,0.0,0.0,2500000,33.2,33.2,0.0,vmlinux,run_posix_cpu_timers,[Unknown],0xffffffff9a4bbf00
+sched_balance_domains,0.0,0.0,0.0,0.0,0,32.9,32.9,0.0,vmlinux,sched_balance_domains,[Unknown],0xffffffff9a3f8b60
+sched_balance_rq,0.0,0.0,0.0,0.0,0,34.1,34.1,0.0,vmlinux,sched_balance_rq,[Unknown],0xffffffff9a3f7a60
+sched_balance_trigger,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,sched_balance_trigger,[Unknown],0xffffffff9a3f99d0
+sched_clock_cpu,0.0,0.0,0.0,0.0,2500000,23.5,23.5,0.0,vmlinux,sched_clock_cpu,[Unknown],0xffffffff9a428c70
+sched_clock_noinstr,0.0,0.0,0.0,0.0,5000000,34.5,34.5,0.0,vmlinux,sched_clock_noinstr,[Unknown],0xffffffff9b598100
+sched_clock_tick,0.0,0.0,0.0,0.0,0,17.3,17.3,0.0,vmlinux,sched_clock_tick,[Unknown],0xffffffff9a42b0e0
+sched_core_idle_cpu,0.0,0.0,0.0,0.0,2500000,0.0,0.0,1.000000,vmlinux,sched_core_idle_cpu,[Unknown],0xffffffff9a41a0b0
+select_idle_sibling,0.0,0.0,0.0,0.0,0,30.6,30.6,0.0,vmlinux,select_idle_sibling,[Unknown],0xffffffff9a3ed9c0
+select_task_rq,0.0,0.0,0.0,0.0,0,33.7,33.7,0.0,vmlinux,select_task_rq,[Unknown],0xffffffff9a3dacd0
+set_ptes.isra.0,0.0,0.0,0.0,0.0,5000000,0.0,0.0,1.000000,vmlinux,set_ptes.isra.0,[Unknown],0xffffffff9a6fc510
+smp_call_function_many_cond,0.0,0.0,0.0,0.0,0,17.6,17.6,,vmlinux,smp_call_function_many_cond,[Unknown],0xffffffff9a4d1450
+ssolve::(anonymous namespace)::SgsPreconditioner::update,0.0,0.0,0.0,0.0,0,28.4,28.4,0.0,solve,"ssolve::(anonymous namespace)::SgsPreconditioner::update(ssolve::Backend const&, double, double const*, double const*, double*, double*)",sgs.cpp,0x1e370
+ssolve::AlignedArray<double>::operator[],0.0,0.0,0.0,0.0,0,40.8,40.8,,solve,ssolve::AlignedArray<double>::operator[](unsigned long),aligned_array.hpp,0x11b15
+ssolve::AlignedArray<double>::operator[],0.0,0.0,0.0,0.0,0,31.9,31.9,0.0,solve,ssolve::AlignedArray<double>::operator[](unsigned long) const,aligned_array.hpp,0x21582
+ssolve::AlignedArray<int>::operator[],0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,solve,ssolve::AlignedArray<int>::operator[](unsigned long) const,aligned_array.hpp,0x19ea2
+ssolve::AlignedArray<int>::operator[],0.0,0.0,0.0,0.0,5000000,28.6,28.6,0.500000,solve,ssolve::AlignedArray<int>::operator[](unsigned long) const,aligned_array.hpp,0x2214a
+ssolve::AlignedArray<int>::operator[],0.0,0.0,0.0,0.0,0,12.7,12.7,,solve,ssolve::AlignedArray<int>::operator[](unsigned long),aligned_array.hpp,0x1e1c2
+ssolve::AlignedArray<int>::operator[],0.0,0.0,0.0,0.0,0,32.2,32.2,0.0,solve,ssolve::AlignedArray<int>::operator[](unsigned long) const,aligned_array.hpp,0x220f2
+ssolve::AlignedArray<long>::operator[],0.0,0.0,0.0,0.0,5000000,0.0,0.0,0.0,solve,ssolve::AlignedArray<long>::operator[](unsigned long),aligned_array.hpp,0x11af5
+ssolve::AlignedArray<long>::size,0.0,0.0,0.0,0.0,0,21.6,21.6,0.0,solve,ssolve::AlignedArray<long>::size(void) const,aligned_array.hpp,0x113cd
+ssolve::narrow_row_ptr,0.0,0.0,0.0,0.0,0,20.5,20.5,,solve,ssolve::narrow_row_ptr(ssolve::CsrMatrixT<long>&&),csr.cpp,0x5cc7
+ssolve::random_solution,0.0,0.0,0.0,0.0,7500000,53.5,53.5,0.333333,solve,ssolve::random_solution(int),generators.cpp,0x6c3e
+"std::basic_string_view<char, std::char_traits<char>>::operator[]",0.0,0.0,0.0,0.0,7500000,0.0,0.0,0.0,solve,"std::basic_string_view<char, std::char_traits<char>>::operator[](unsigned long) const",string_view,0x290c8
+"std::basic_string_view<char, std::char_traits<char>>::operator[]",0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,solve,"std::basic_string_view<char, std::char_traits<char>>::operator[](unsigned long) const",string_view,0x29418
+"std::basic_string_view<char, std::char_traits<char>>::substr",0.0,0.0,0.0,0.0,15000000,47.9,47.9,0.333333,solve,"std::basic_string_view<char, std::char_traits<char>>::substr(unsigned long, unsigned long) const",string_view,0x28ad2
+"std::basic_string_view<char, std::char_traits<char>>::substr",0.0,0.0,0.0,0.0,25000000,47.6,47.6,0.100000,solve,"std::basic_string_view<char, std::char_traits<char>>::substr(unsigned long, unsigned long) const",string_view,0x294f3
+std::isfinite,0.0,0.0,0.0,0.0,0,59.2,59.2,0.0,solve,std::isfinite(double),cmath,0x22476
+std::isfinite,0.0,0.0,0.0,0.0,10000000,19.9,19.9,1.250000,solve,std::isfinite(double),cmath,0x22c86
+std::isfinite,0.0,0.0,0.0,0.0,0,13.2,13.2,,solve,std::isfinite(double),cmath,0x1e194
+std::isfinite,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,solve,std::isfinite(double),cmath,0x223f6
+std::isfinite,0.0,0.0,0.0,0.0,12500000,70.8,70.8,0.0,solve,std::isfinite(double),cmath,0x224fa
+std::isfinite,0.0,0.0,0.0,0.0,0,15.3,15.3,0.0,solve,std::isfinite(double),cmath,0x1e7e8
+std::isfinite,0.0,0.0,0.0,0.0,5000000,58.0,58.0,0.0,solve,std::isfinite(double),cmath,0x2171e
+std::isfinite,0.0,0.0,0.0,0.0,2500000,45.7,45.7,1.000000,solve,std::isfinite(double),cmath,0x21479
+std::isfinite,0.0,0.0,0.0,0.0,5000000,0.0,0.0,0.0,solve,std::isfinite(double),cmath,0x21696
+std::istream::seekg,0.0,0.0,0.0,0.0,0,21.2,21.2,0.0,libstdc++.so.6.0.33,std::istream::seekg(std::fpos<__mbstate_t>),[Unknown],0x138960
+"std::vector<int, std::allocator<int>>::push_back",0.0,0.0,0.0,0.0,50000000,47.8,47.8,0.0,solve,"std::vector<int, std::allocator<int>>::push_back(int const&)",stl_vector.h,0x2a61d
+"std::vector<long, std::allocator<long>>::operator[]",0.0,0.0,0.0,0.0,12500000,22.5,22.5,0.0,solve,"std::vector<long, std::allocator<long>>::operator[](unsigned long)",stl_vector.h,0x11860
+strnlen_user,0.0,0.0,0.0,0.0,0,15.3,15.3,0.0,vmlinux,strnlen_user,[Unknown],0xffffffff9ac8a140
+sysvec_apic_timer_interrupt,0.0,0.0,0.0,0.0,0,24.2,24.2,0.0,vmlinux,sysvec_apic_timer_interrupt,[Unknown],0xffffffff9b59a360
+task_tick_mm_cid,0.0,0.0,0.0,0.0,0,33.3,33.3,0.0,vmlinux,task_tick_mm_cid,[Unknown],0xffffffff9a3e2540
+task_work_add,0.0,0.0,0.0,0.0,0,33.9,33.9,0.0,vmlinux,task_work_add,[Unknown],0xffffffff9a3b6720
+task_work_run,0.0,0.0,0.0,0.0,0,30.6,30.6,0.0,vmlinux,task_work_run,[Unknown],0xffffffff9a3b6aa0
+tasklet_action_common,0.0,0.0,0.0,0.0,0,31.0,31.0,0.0,vmlinux,tasklet_action_common,[Unknown],0xffffffff9a38ba50
+tick_do_update_jiffies64,0.0,0.0,0.0,0.0,2500000,24.6,24.6,2.000000,vmlinux,tick_do_update_jiffies64,[Unknown],0xffffffff9a4c1f50
+tick_nohz_handler,0.0,0.0,0.0,0.0,2500000,33.6,33.6,0.0,vmlinux,tick_nohz_handler,[Unknown],0xffffffff9a4c20d0
+tick_program_event,0.0,0.0,0.0,0.0,2500000,33.3,33.3,0.0,vmlinux,tick_program_event,[Unknown],0xffffffff9a4c18f0
+timekeeping_adjust,0.0,0.0,0.0,0.0,0,33.6,33.6,,vmlinux,timekeeping_adjust,[Unknown],0xffffffff9a4ab280
+timekeeping_update_from_shadow,0.0,0.0,0.0,0.0,7500000,28.7,28.7,0.0,vmlinux,timekeeping_update_from_shadow,[Unknown],0xffffffff9a4aba60
+timerqueue_del,0.0,0.0,0.0,0.0,0,36.5,36.5,0.0,vmlinux,timerqueue_del,[Unknown],0xffffffff9b5820b0
+tlb_remove_table_rcu,0.0,0.0,0.0,0.0,0,20.4,20.4,0.0,vmlinux,tlb_remove_table_rcu,[Unknown],0xffffffff9a714150
+tmigr_handle_remote,0.0,0.0,0.0,0.0,0,25.8,25.8,0.0,vmlinux,tmigr_handle_remote,[Unknown],0xffffffff9a4c74c0
+tmigr_next_groupevt,0.0,0.0,0.0,0.0,0,30.2,30.2,0.0,vmlinux,tmigr_next_groupevt,[Unknown],0xffffffff9a4c56d0
+tmigr_requires_handle_remote,0.0,0.0,0.0,0.0,0,31.4,31.4,0.0,vmlinux,tmigr_requires_handle_remote,[Unknown],0xffffffff9a4c7610
+try_to_wake_up,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,try_to_wake_up,[Unknown],0xffffffff9a3e1120
+ttwu_queue_wakelist,0.0,0.0,0.0,0.0,0,31.8,31.8,0.0,vmlinux,ttwu_queue_wakelist,[Unknown],0xffffffff9a3d5820
+uncharge_batch,0.0,0.0,0.0,0.0,0,59.2,59.2,0.0,vmlinux,uncharge_batch,[Unknown],0xffffffff9a7bd9c0
+update_curr_dl_se,0.0,0.0,0.0,0.0,0,33.7,33.7,0.0,vmlinux,update_curr_dl_se,[Unknown],0xffffffff9a412150
+update_dl_rq_load_avg,0.0,0.0,0.0,0.0,0,34.5,34.5,0.0,vmlinux,update_dl_rq_load_avg,[Unknown],0xffffffff9a40ff80
+update_entity_lag,0.0,0.0,0.0,0.0,0,30.2,30.2,0.0,vmlinux,update_entity_lag,[Unknown],0xffffffff9a3f0390
+update_fast_timekeeper,0.0,0.0,0.0,0.0,12500000,38.0,38.0,0.600000,vmlinux,update_fast_timekeeper,[Unknown],0xffffffff9a4ab1d0
+update_rq_clock,0.0,0.0,0.0,0.0,5000000,37.3,37.3,0.500000,vmlinux,update_rq_clock,[Unknown],0xffffffff9a3d87a0
+update_rt_rq_load_avg,0.0,0.0,0.0,0.0,0,32.9,32.9,0.0,vmlinux,update_rt_rq_load_avg,[Unknown],0xffffffff9a40f420
+update_sg_lb_stats,0.0,0.0,0.0,0.0,0,29.8,29.8,0.0,vmlinux,update_sg_lb_stats,[Unknown],0xffffffff9a3ef6d0
+update_vdso_time_data,0.0,0.0,0.0,0.0,5000000,30.7,30.7,0.0,vmlinux,update_vdso_time_data,[Unknown],0xffffffff9a4c7c20
+update_wall_time,0.0,0.0,0.0,0.0,0,26.4,26.4,,vmlinux,update_wall_time,[Unknown],0xffffffff9a4aee80
+validate_xmit_xfrm,0.0,0.0,0.0,0.0,0,30.2,30.2,0.0,vmlinux,validate_xmit_xfrm,[Unknown],0xffffffff9b44bea0
+vm_normal_page,0.0,0.0,0.0,0.0,0,36.9,36.9,,vmlinux,vm_normal_page,[Unknown],0xffffffff9a700ce0
+vma_prepare,0.0,0.0,0.0,0.0,2500000,51.8,51.8,0.0,vmlinux,vma_prepare,[Unknown],0xffffffff9a72fac0
+vsnprintf,0.0,0.0,0.0,0.0,0,35.7,35.7,0.0,vmlinux,vsnprintf,[Unknown],0xffffffff9b5884c0
+wb_timer_fn,0.0,0.0,0.0,0.0,0,34.1,34.1,0.0,vmlinux,wb_timer_fn,[Unknown],0xffffffff9ab3acf0
+workqueue_softirq_action,0.0,0.0,0.0,0.0,0,31.0,31.0,0.0,vmlinux,workqueue_softirq_action,[Unknown],0xffffffff9a3b0d70
+x2apic_send_IPI,0.0,0.0,0.0,0.0,0,31.8,31.8,0.0,vmlinux,x2apic_send_IPI,[Unknown],0xffffffff9a338660
+xas_load,0.0,0.0,0.0,0.0,0,6.9,6.9,0.0,vmlinux,xas_load,[Unknown],0xffffffff9b58b4e0
+zap_pte_range,0.0,0.0,0.0,0.0,5000000,40.7,40.7,0.0,vmlinux,zap_pte_range,[Unknown],0xffffffff9a702450

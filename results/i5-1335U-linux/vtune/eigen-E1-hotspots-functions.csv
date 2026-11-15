@@ -1,0 +1,466 @@
+Function,CPU Time,CPU Time:Effective Time,CPU Time:Spin Time,CPU Time:Overhead Time,Instructions Retired,Microarchitecture Usage(%),Microarchitecture Usage:Microarchitecture Usage(%),Microarchitecture Usage:CPI Rate,Module,Function (Full),Source File,Start Address
+"Eigen::internal::sparse_time_dense_product_impl<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, double, (int)1, (bool)1>::processRow",17.694311,17.694311,0.0,0.0,144365000000,31.9,31.9,0.576750,bench_cg,"Eigen::internal::sparse_time_dense_product_impl<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, double, (int)1, (bool)1>::processRow(Eigen::internal::evaluator<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>> const&, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const&, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>&, double const&, long, long)",SparseDenseProduct.h,0x2e2a9
+_mm256_mul_pd,2.143429,2.143429,0.0,0.0,1450000000,6.2,6.2,7.560345,bench_cg,_mm256_mul_pd,avxintrin.h,0x2e5a0
+__memset_avx2_unaligned_erms,2.122396,2.122396,0.0,0.0,2500000,9.3,9.3,2419.000000,libc.so.6,__memset_avx2_unaligned_erms,memset-vec-unaligned-erms.S,0x189480
+_mm256_sub_pd,1.878005,1.878005,0.0,0.0,1477500000,7.5,7.5,6.164129,bench_cg,_mm256_sub_pd,avxintrin.h,0x2e480
+"Eigen::PlainObjectBase<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>::coeff",1.744792,1.744792,0.0,0.0,10075000000,32.4,32.4,0.777667,bench_cg,"Eigen::PlainObjectBase<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>::coeff(long, long) const",PlainObjectBase.h,0x2e319
+_mm256_add_pd,1.647636,1.647636,0.0,0.0,1337500000,8.2,8.2,5.097196,bench_cg,_mm256_add_pd,avxintrin.h,0x2e660
+_mm256_add_pd,1.143830,1.143830,0.0,0.0,1407500000,8.8,8.8,4.264654,bench_cg,_mm256_add_pd,avxintrin.h,0x2e400
+_mm256_add_pd,1.119792,1.119792,0.0,0.0,777500000,9.8,9.8,2.868167,bench_cg,_mm256_add_pd,avxintrin.h,0x2dd60
+"Eigen::SparseCompressedBase<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>>::InnerIterator::InnerIterator",0.727163,0.727163,0.0,0.0,11725000000,32.3,32.3,0.278465,bench_cg,"Eigen::SparseCompressedBase<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>>::InnerIterator::InnerIterator(Eigen::SparseCompressedBase<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>> const&, long)",SparseCompressedBase.h,0x2e2a9
+"Eigen::internal::sparse_time_dense_product_impl<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, double, (int)1, (bool)1>::run",0.667067,0.667067,0.0,0.0,8480000000,32.3,32.3,0.381191,bench_cg,"Eigen::internal::sparse_time_dense_product_impl<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, double, (int)1, (bool)1>::run(Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>> const&, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const&, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>&, double const&)",SparseDenseProduct.h,0x2e29c
+_mm256_fmadd_pd,0.647035,0.647035,0.0,0.0,762500000,7.9,7.9,5.101639,bench_cg,_mm256_fmadd_pd,fmaintrin.h,0x2de6d
+_mm256_fmadd_pd,0.487780,0.487780,0.0,0.0,782500000,8.0,8.0,3.948882,bench_cg,_mm256_fmadd_pd,fmaintrin.h,0x2de86
+_mm256_add_pd,0.447716,0.447716,0.0,0.0,705000000,10.0,10.0,1.308511,bench_cg,_mm256_add_pd,avxintrin.h,0x2dd65
+"Eigen::PlainObjectBase<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>::coeff",0.397636,0.397636,0.0,0.0,11387500000,32.6,32.6,0.152141,bench_cg,"Eigen::PlainObjectBase<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>::coeff(long, long) const",PlainObjectBase.h,0x2e300
+"Eigen::internal::redux_impl<Eigen::internal::scalar_sum_op<double, double>, Eigen::internal::redux_evaluator<Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const>>, (int)3, (int)0>::run<Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const>>",0.338542,0.338542,0.0,0.0,1025000000,10.0,10.0,0.680488,bench_cg,"Eigen::internal::redux_impl<Eigen::internal::scalar_sum_op<double, double>, Eigen::internal::redux_evaluator<Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const>>, (int)3, (int)0>::run<Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const>>(Eigen::internal::redux_evaluator<Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const>> const&, Eigen::internal::scalar_sum_op<double, double> const&, Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const&)",Redux.h,0x2dbf8
+_mm256_fmadd_pd,0.316506,0.316506,0.0,0.0,690000000,7.8,7.8,3.036232,bench_cg,_mm256_fmadd_pd,fmaintrin.h,0x2de80
+_mm256_fmadd_pd,0.296474,0.296474,0.0,0.0,682500000,7.9,7.9,2.835165,bench_cg,_mm256_fmadd_pd,fmaintrin.h,0x2de68
+"Eigen::internal::dense_assignment_loop_impl<Eigen::internal::generic_dense_assignment_kernel<Eigen::internal::evaluator<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, Eigen::internal::evaluator<Eigen::CwiseBinaryOp<Eigen::internal::scalar_sum_op<double, double>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const, Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const>>, Eigen::internal::assign_op<double, double>, (int)0>, (int)3, (int)0>::run",0.175280,0.175280,0.0,0.0,2205000000,8.2,8.2,0.304989,bench_cg,"Eigen::internal::dense_assignment_loop_impl<Eigen::internal::generic_dense_assignment_kernel<Eigen::internal::evaluator<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, Eigen::internal::evaluator<Eigen::CwiseBinaryOp<Eigen::internal::scalar_sum_op<double, double>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const, Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const>>, Eigen::internal::assign_op<double, double>, (int)0>, (int)3, (int)0>::run(Eigen::internal::generic_dense_assignment_kernel<Eigen::internal::evaluator<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, Eigen::internal::evaluator<Eigen::CwiseBinaryOp<Eigen::internal::scalar_sum_op<double, double>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const, Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const>>, Eigen::internal::assign_op<double, double>, (int)0>&)",AssignEvaluator.h,0x2e637
+__GI_____strtod_l_internal,0.175280,0.175280,0.0,0.0,2615000000,47.4,47.4,0.297323,libc.so.6,__GI_____strtod_l_internal,strtod_l.c,0x4e390
+"Eigen::internal::dense_assignment_loop_impl<Eigen::internal::generic_dense_assignment_kernel<Eigen::internal::evaluator<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, Eigen::internal::evaluator<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const>>, Eigen::internal::sub_assign_op<double, double>, (int)0>, (int)3, (int)0>::run",0.166266,0.166266,0.0,0.0,2075000000,7.5,7.5,0.377108,bench_cg,"Eigen::internal::dense_assignment_loop_impl<Eigen::internal::generic_dense_assignment_kernel<Eigen::internal::evaluator<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, Eigen::internal::evaluator<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const>>, Eigen::internal::sub_assign_op<double, double>, (int)0>, (int)3, (int)0>::run(Eigen::internal::generic_dense_assignment_kernel<Eigen::internal::evaluator<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, Eigen::internal::evaluator<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const>>, Eigen::internal::sub_assign_op<double, double>, (int)0>&)",AssignEvaluator.h,0x2e45f
+_mm256_store_pd,0.165264,0.165264,0.0,0.0,755000000,8.3,8.3,0.900662,bench_cg,_mm256_store_pd,avxintrin.h,0x2e66b
+"Eigen::internal::dense_assignment_loop_impl<Eigen::internal::generic_dense_assignment_kernel<Eigen::internal::evaluator<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, Eigen::internal::evaluator<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const, Eigen::ArrayWrapper<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const>>, Eigen::internal::assign_op<double, double>, (int)0>, (int)3, (int)0>::run",0.163261,0.163261,0.0,0.0,2072500000,6.3,6.3,0.340169,bench_cg,"Eigen::internal::dense_assignment_loop_impl<Eigen::internal::generic_dense_assignment_kernel<Eigen::internal::evaluator<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, Eigen::internal::evaluator<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const, Eigen::ArrayWrapper<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const>>, Eigen::internal::assign_op<double, double>, (int)0>, (int)3, (int)0>::run(Eigen::internal::generic_dense_assignment_kernel<Eigen::internal::evaluator<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, Eigen::internal::evaluator<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const, Eigen::ArrayWrapper<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const>>, Eigen::internal::assign_op<double, double>, (int)0>&)",AssignEvaluator.h,0x2e584
+_mm256_store_pd,0.154247,0.154247,0.0,0.0,780000000,7.5,7.5,0.977564,bench_cg,_mm256_store_pd,avxintrin.h,0x2e48c
+"Eigen::internal::dense_assignment_loop_impl<Eigen::internal::generic_dense_assignment_kernel<Eigen::internal::evaluator<Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>>, Eigen::internal::evaluator<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const>>, Eigen::internal::add_assign_op<double, double>, (int)0>, (int)3, (int)0>::run",0.147236,0.147236,0.0,0.0,2227500000,8.9,8.9,0.279461,bench_cg,"Eigen::internal::dense_assignment_loop_impl<Eigen::internal::generic_dense_assignment_kernel<Eigen::internal::evaluator<Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>>, Eigen::internal::evaluator<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const>>, Eigen::internal::add_assign_op<double, double>, (int)0>, (int)3, (int)0>::run(Eigen::internal::generic_dense_assignment_kernel<Eigen::internal::evaluator<Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>>, Eigen::internal::evaluator<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::CwiseNullaryOp<Eigen::internal::scalar_constant_op<double>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const>>, Eigen::internal::add_assign_op<double, double>, (int)0>&)",AssignEvaluator.h,0x2e392
+_mm256_store_pd,0.145232,0.145232,0.0,0.0,767500000,6.3,6.3,0.934853,bench_cg,_mm256_store_pd,avxintrin.h,0x2e5a0
+_mm256_store_pd,0.144231,0.144231,0.0,0.0,705000000,8.9,8.9,0.808511,bench_cg,_mm256_store_pd,avxintrin.h,0x2e40b
+native_write_msr_safe,0.079127,0.079127,0.0,0.0,25000000,26.6,26.6,14.200000,vmlinux,native_write_msr_safe,[Unknown],0xffffffff9a346de0
+ssolve::csr_from_coo,0.071114,0.071114,0.0,0.0,300000000,21.1,21.1,0.983333,bench_cg,ssolve::csr_from_coo(ssolve::Coo const&),aligned_array.hpp,0xad84
+"Eigen::internal::inner_product_impl<Eigen::internal::inner_product_evaluator<Eigen::internal::scalar_inner_product_op<double, double, (bool)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, (bool)1>::run",0.070112,0.070112,0.0,0.0,1067500000,8.1,8.1,0.391101,bench_cg,"Eigen::internal::inner_product_impl<Eigen::internal::inner_product_evaluator<Eigen::internal::scalar_inner_product_op<double, double, (bool)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, (bool)1>::run(Eigen::internal::inner_product_evaluator<Eigen::internal::scalar_inner_product_op<double, double, (bool)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>> const&)",InnerProduct.h,0x2dda0
+str_to_mpn,0.069111,0.069111,0.0,0.0,1147500000,47.6,47.6,0.291939,libc.so.6,str_to_mpn,strtod_l.c,0x4dbc4
+operator(),0.058093,0.058093,0.0,0.0,242500000,18.8,18.8,1.154639,bench_cg,operator(),verify.cpp,0x5b3a4
+[sep5],0.056090,0.056090,0.0,0.0,345000000,26.6,26.6,0.608696,sep5,[sep5],[Unknown],0x0
+operator(),0.055088,0.055088,0.0,0.0,347500000,18.9,18.9,0.769784,bench_cg,operator(),verify.cpp,0x5b3c0
+native_irq_return_iret,0.050080,0.050080,0.0,0.0,0,27.3,27.3,,vmlinux,native_irq_return_iret,[Unknown],0xffffffff9a001248
+next,0.047075,0.047075,0.0,0.0,685000000,47.5,47.5,0.270073,bench_cg,next,mtx_reader.cpp,0xdab5
+parse_integer,0.024038,0.024038,0.0,0.0,370000000,47.5,47.5,0.310811,bench_cg,parse_integer,mtx_reader.cpp,0x5e880
+parse_integer,0.023037,0.023037,0.0,0.0,392500000,47.3,47.3,0.203822,bench_cg,parse_integer,mtx_reader.cpp,0x5eb99
+__memmove_avx_unaligned_erms,0.022035,0.022035,0.0,0.0,160000000,34.9,34.9,0.843750,libc.so.6,__memmove_avx_unaligned_erms,memmove-vec-unaligned-erms.S,0x188a80
+_copy_to_iter,0.017027,0.017027,0.0,0.0,5000000,2.8,2.8,15.500000,vmlinux,_copy_to_iter,[Unknown],0xffffffff9ab9d120
+sync_regs,0.017027,0.017027,0.0,0.0,0,25.8,25.8,,vmlinux,sync_regs,[Unknown],0xffffffff9b596b80
+next,0.016026,0.016026,0.0,0.0,310000000,47.3,47.3,0.330645,bench_cg,next,mtx_reader.cpp,0xdab5
+next,0.016026,0.016026,0.0,0.0,220000000,47.4,47.4,0.386364,bench_cg,next,mtx_reader.cpp,0xdab5
+ssolve::validate_cg_matrix,0.014022,0.014022,0.0,0.0,87500000,19.8,19.8,0.600000,bench_cg,ssolve::validate_cg_matrix(ssolve::CsrMatrixT<long> const&),verify.cpp,0xd684
+__pte_offset_map_lock,0.013021,0.013021,0.0,0.0,17500000,27.1,27.1,2.714286,vmlinux,__pte_offset_map_lock,[Unknown],0xffffffff9a71e570
+__cgroup_account_cputime_field,0.012019,0.012019,0.0,0.0,0,19.0,19.0,,vmlinux,__cgroup_account_cputime_field,[Unknown],0xffffffff9a4ee6f0
+__memchr_avx2,0.012019,0.012019,0.0,0.0,147500000,47.3,47.3,0.355932,libc.so.6,__memchr_avx2,memchr-avx2.S,0x188080
+count_memcg_events,0.012019,0.012019,0.0,0.0,22500000,27.5,27.5,2.222222,vmlinux,count_memcg_events,[Unknown],0xffffffff9a7bde20
+__mpn_mul,0.011018,0.011018,0.0,0.0,202500000,47.4,47.4,0.185185,libc.so.6,__mpn_mul,mul.c,0x59730
+merge_duplicates,0.011018,0.011018,0.0,0.0,125000000,40.3,40.3,0.400000,bench_cg,merge_duplicates,csr.cpp,0xadd2
+ssolve::rhs_for_random_solution,0.011018,0.011018,0.0,0.0,75000000,29.4,29.4,0.600000,bench_cg,ssolve::rhs_for_random_solution(ssolve::CsrMatrixT<long> const&),generators.cpp,0xbc70
+update_curr,0.011018,0.011018,0.0,0.0,10000000,22.2,22.2,5.250000,vmlinux,update_curr,[Unknown],0xffffffff9a3e85a0
+"Eigen::SparseCompressedBase<Eigen::Map<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::Stride<(int)0, (int)0>>>::InnerIterator::InnerIterator",0.010016,0.010016,0.0,0.0,0,5.9,5.9,,bench_cg,"Eigen::SparseCompressedBase<Eigen::Map<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::Stride<(int)0, (int)0>>>::InnerIterator::InnerIterator(Eigen::SparseCompressedBase<Eigen::Map<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::Stride<(int)0, (int)0>>> const&, long)",SparseCompressedBase.h,0x255e7
+round_and_return,0.010016,0.010016,0.0,0.0,240000000,47.6,47.6,0.281250,libc.so.6,round_and_return,strtod_l.c,0x289e6
+"std::basic_string_view<char, std::char_traits<char>>::find",0.010016,0.010016,0.0,0.0,70000000,47.4,47.4,0.392857,bench_cg,"std::basic_string_view<char, std::char_traits<char>>::find(char, unsigned long) const",string_view.tcc,0x5e0f8
+str_to_mpn,0.010016,0.010016,0.0,0.0,160000000,47.7,47.7,0.250000,libc.so.6,str_to_mpn,strtod_l.c,0x4db90
+"Eigen::internal::sparse_time_dense_product_impl<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, double, (int)1, (bool)1>::processRow",0.009014,0.009014,0.0,0.0,62500000,31.8,31.8,0.480000,bench_cg,"Eigen::internal::sparse_time_dense_product_impl<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, double, (int)1, (bool)1>::processRow(Eigen::internal::evaluator<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>> const&, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>> const&, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>&, double const&, long, long)",SparseDenseProduct.h,0x2a057
+ssolve::spmv_reference,0.009014,0.009014,0.0,0.0,75000000,31.2,31.2,0.566667,bench_cg,"ssolve::spmv_reference(ssolve::CsrMatrixT<long> const&, double const*, double*)",verify.cpp,0x5c458
+ssolve::spmv_reference,0.009014,0.009014,0.0,0.0,67500000,30.7,30.7,0.592593,bench_cg,"ssolve::spmv_reference(ssolve::CsrMatrixT<long> const&, double const*, double*)",verify.cpp,0x5c3da
+ssolve::spmv_reference,0.009014,0.009014,0.0,0.0,72500000,30.9,30.9,0.551724,bench_cg,"ssolve::spmv_reference(ssolve::CsrMatrixT<long> const&, double const*, double*)",verify.cpp,0x5b84c
+fmax,0.008013,0.008013,0.0,0.0,77500000,64.6,64.6,0.290323,libm.so.6,fmax,s_fmax.S,0x3a160
+scaled_norm,0.008013,0.008013,0.0,0.0,75000000,43.3,43.3,0.433333,bench_cg,scaled_norm,verify.cpp,0x5c7c0
+ssolve::parse_matrix_market,0.008013,0.008013,0.0,0.0,125000000,48.0,48.0,0.140000,bench_cg,"ssolve::parse_matrix_market(std::basic_string_view<char, std::char_traits<char>>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>> const&)",mtx_reader.cpp,0xdaa5
+__strlen_avx2,0.007011,0.007011,0.0,0.0,55000000,47.4,47.4,0.909091,libc.so.6,__strlen_avx2,strlen-avx2.S,0x18b7c0
+native_sched_clock,0.007011,0.007011,0.0,0.0,65000000,26.6,26.6,0.384615,vmlinux,native_sched_clock,[Unknown],0xffffffff9b597ff0
+operator(),0.007011,0.007011,0.0,0.0,35000000,20.8,20.8,1.142857,bench_cg,operator(),verify.cpp,0x5b2f3
+parse_real,0.007011,0.007011,0.0,0.0,127500000,47.4,47.4,0.294118,bench_cg,parse_real,mtx_reader.cpp,0x5e0b8
+ssolve::matrix_fingerprint[abi:cxx11],0.007011,0.007011,0.0,0.0,35000000,18.7,18.7,0.214286,bench_cg,ssolve::matrix_fingerprint[abi:cxx11](ssolve::CsrMatrixT<long> const&),verify.cpp,0xd4ed
+"std::uniform_real_distribution<double>::operator()<std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>>",0.007011,0.007011,0.0,0.0,32500000,24.6,24.6,0.769231,bench_cg,"std::uniform_real_distribution<double>::operator()<std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>>(std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>&)",random.h,0x5c1ff
+task_tick_fair,0.007011,0.007011,0.0,0.0,2500000,18.9,18.9,6.000000,vmlinux,task_tick_fair,[Unknown],0xffffffff9a3f0a10
+"Eigen::DiagonalPreconditioner<double>::factorize<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>>",0.006010,0.006010,0.0,0.0,32500000,14.4,14.4,1.384615,bench_cg,"Eigen::DiagonalPreconditioner<double>::factorize<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>>(Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>> const&)",BasicPreconditioners.h,0x209eb
+"Eigen::SparseMatrix<double, (int)1, int>::insertBackByOuterInner",0.006010,0.006010,0.0,0.0,25000000,34.7,34.7,0.700000,bench_cg,"Eigen::SparseMatrix<double, (int)1, int>::insertBackByOuterInner(long, long)",SparseMatrix.h,0x25b18
+"Eigen::internal::CompressedStorage<double, int>::append",0.006010,0.006010,0.0,0.0,45000000,35.2,35.2,0.222222,bench_cg,"Eigen::internal::CompressedStorage<double, int>::append(double const&, long)",CompressedStorage.h,0x25b18
+__free_one_page,0.006010,0.006010,0.0,0.0,25000000,46.9,46.9,0.900000,vmlinux,__free_one_page,[Unknown],0xffffffff9a737fd0
+__mpn_lshift,0.006010,0.006010,0.0,0.0,165000000,47.3,47.3,0.287879,libc.so.6,__mpn_lshift,lshift.S,0x595c0
+do_anonymous_page,0.006010,0.006010,0.0,0.0,25000000,27.4,27.4,0.700000,vmlinux,do_anonymous_page,[Unknown],0xffffffff9a709760
+memcg1_commit_charge,0.006010,0.006010,0.0,0.0,7500000,25.2,25.2,2.333333,vmlinux,memcg1_commit_charge,[Unknown],0xffffffff9a7b6eb0
+notifier_call_chain,0.006010,0.006010,0.0,0.0,2500000,19.0,19.0,8.000000,vmlinux,notifier_call_chain,[Unknown],0xffffffff9a3c3050
+"Eigen::internal::CompressedStorage<double, int>::resize",0.005008,0.005008,0.0,0.0,25000000,35.4,35.4,0.800000,bench_cg,"Eigen::internal::CompressedStorage<double, int>::resize(long, double)",CompressedStorage.h,0x25b18
+__hrtimer_run_queues,0.005008,0.005008,0.0,0.0,12500000,21.1,21.1,1.200000,vmlinux,__hrtimer_run_queues,[Unknown],0xffffffff9a4a8b90
+__rcu_read_unlock,0.005008,0.005008,0.0,0.0,27500000,25.4,25.4,0.727273,vmlinux,__rcu_read_unlock,[Unknown],0xffffffff9a47e6a0
+__update_load_avg_cfs_rq,0.005008,0.005008,0.0,0.0,37500000,19.0,19.0,0.200000,vmlinux,__update_load_avg_cfs_rq,[Unknown],0xffffffff9a40ee10
+css_rstat_updated,0.005008,0.005008,0.0,0.0,45000000,31.1,31.1,0.333333,vmlinux,css_rstat_updated,[Unknown],0xffffffff9a4eda90
+error_entry,0.005008,0.005008,0.0,0.0,5000000,26.1,26.1,2.500000,vmlinux,error_entry,[Unknown],0xffffffff9a001550
+sched_use_asym_prio,0.005008,0.005008,0.0,0.0,5000000,21.7,21.7,4.500000,vmlinux,sched_use_asym_prio,[Unknown],0xffffffff9a3e7470
+update_cfs_group,0.005008,0.005008,0.0,0.0,7500000,19.4,19.4,4.666667,vmlinux,update_cfs_group,[Unknown],0xffffffff9a3f0910
+update_load_avg,0.005008,0.005008,0.0,0.0,12500000,22.8,22.8,1.000000,vmlinux,update_load_avg,[Unknown],0xffffffff9a3ea320
+validate,0.005008,0.005008,0.0,0.0,120000000,55.8,55.8,0.166667,bench_cg,validate,csr.cpp,0xae14
+__ct_user_exit,0.004006,0.004006,0.0,0.0,10000000,27.8,27.8,0.500000,vmlinux,__ct_user_exit,[Unknown],0xffffffff9b59ba40
+__lruvec_stat_mod_folio,0.004006,0.004006,0.0,0.0,17500000,27.4,27.4,0.285714,vmlinux,__lruvec_stat_mod_folio,[Unknown],0xffffffff9a7bb740
+_find_next_bit,0.004006,0.004006,0.0,0.0,7500000,24.9,24.9,1.333333,vmlinux,_find_next_bit,[Unknown],0xffffffff9aba0b10
+common_interrupt_return,0.004006,0.004006,0.0,0.0,15000000,,,2.333333,vmlinux,common_interrupt_return,[Unknown],0xffffffff9a001150
+ktime_get,0.004006,0.004006,0.0,0.0,5000000,23.7,23.7,0.500000,vmlinux,ktime_get,[Unknown],0xffffffff9a4acab0
+lock_vma_under_rcu,0.004006,0.004006,0.0,0.0,20000000,26.0,26.0,1.125000,vmlinux,lock_vma_under_rcu,[Unknown],0xffffffff9a6f9070
+next,0.004006,0.004006,0.0,0.0,107500000,47.3,47.3,0.046512,bench_cg,next,mtx_reader.cpp,0x5e0c4
+nmi_handle.part.0,0.004006,0.004006,0.0,0.0,25000000,17.4,17.4,0.300000,vmlinux,nmi_handle.part.0,[Unknown],0xffffffff9a2e3cc0
+round_away,0.004006,0.004006,0.0,0.0,35000000,47.3,47.3,0.142857,libc.so.6,round_away,rounding-mode.h,0x4df60
+sched_tick,0.004006,0.004006,0.0,0.0,0,23.9,23.9,,vmlinux,sched_tick,[Unknown],0xffffffff9a3e25c0
+ssolve::symmetry_defect,0.004006,0.004006,0.0,0.0,20000000,26.6,26.6,0.375000,bench_cg,ssolve::symmetry_defect(ssolve::CsrMatrixT<long> const&),verify.cpp,0xd5c1
+"std::basic_string_view<char, std::char_traits<char>>::operator[]",0.004006,0.004006,0.0,0.0,15000000,47.3,47.3,0.0,bench_cg,"std::basic_string_view<char, std::char_traits<char>>::operator[](unsigned long) const",string_view,0x5ec83
+"std::uniform_real_distribution<double>::operator()<std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>>",0.004006,0.004006,0.0,0.0,35000000,24.5,24.5,0.785714,bench_cg,"std::uniform_real_distribution<double>::operator()<std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>>(std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>&)",random.h,0x5c1b5
+"std::vector<double, std::allocator<double>>::push_back",0.004006,0.004006,0.0,0.0,22500000,47.2,47.2,0.333333,bench_cg,"std::vector<double, std::allocator<double>>::push_back(double const&)",stl_vector.h,0x5fcc9
+"std::vector<double, std::allocator<double>>::push_back",0.004006,0.004006,0.0,0.0,22500000,47.4,47.4,0.222222,bench_cg,"std::vector<double, std::allocator<double>>::push_back(double const&)",stl_vector.h,0x5fbe9
+"std::vector<int, std::allocator<int>>::push_back",0.004006,0.004006,0.0,0.0,37500000,47.5,47.5,0.400000,bench_cg,"std::vector<int, std::allocator<int>>::push_back(int const&)",stl_vector.h,0x5fb7a
+zap_present_ptes.constprop.0,0.004006,0.004006,0.0,0.0,30000000,37.7,37.7,1.000000,vmlinux,zap_present_ptes.constprop.0,[Unknown],0xffffffff9a701c40
+__folio_throttle_swaprate,0.003005,0.003005,0.0,0.0,5000000,26.6,26.6,2.000000,vmlinux,__folio_throttle_swaprate,[Unknown],0xffffffff9a76a450
+__mod_zone_page_state,0.003005,0.003005,0.0,0.0,20000000,34.8,34.8,0.250000,vmlinux,__mod_zone_page_state,[Unknown],0xffffffff9a6d0bc0
+__mpn_construct_double,0.003005,0.003005,0.0,0.0,85000000,47.3,47.3,0.470588,libc.so.6,__mpn_construct_double,mpn2dbl.c,0x5ae50
+__mpn_mul_1,0.003005,0.003005,0.0,0.0,52500000,47.6,47.6,0.238095,libc.so.6,__mpn_mul_1,mul_1.S,0x59bb0
+__update_load_avg_se,0.003005,0.003005,0.0,0.0,32500000,19.1,19.1,0.461538,vmlinux,__update_load_avg_se,[Unknown],0xffffffff9a40e7c0
+asm_exc_page_fault,0.003005,0.003005,0.0,0.0,0,29.7,29.7,,vmlinux,asm_exc_page_fault,[Unknown],0xffffffff9a000b90
+call_function_single_prep_ipi,0.003005,0.003005,0.0,0.0,2500000,22.9,22.9,3.000000,vmlinux,call_function_single_prep_ipi,[Unknown],0xffffffff9a3dbcf0
+clear_page_erms,0.003005,0.003005,0.0,0.0,2500000,25.3,25.3,8.000000,vmlinux,clear_page_erms,[Unknown],0xffffffff9b58e650
+func@0x286f0,0.003005,0.003005,0.0,0.0,30000000,47.4,47.4,0.250000,libc.so.6,func@0x286f0,[Unknown],0x286f0
+func@0x5950,0.003005,0.003005,0.0,0.0,5000000,47.3,47.3,0.500000,bench_cg,func@0x5950,[Unknown],0x5950
+lru_gen_add_folio,0.003005,0.003005,0.0,0.0,40000000,31.5,31.5,0.437500,vmlinux,lru_gen_add_folio,[Unknown],0xffffffff9a6a7160
+lru_gen_del_folio.constprop.0,0.003005,0.003005,0.0,0.0,15000000,52.4,52.4,0.500000,vmlinux,lru_gen_del_folio.constprop.0,[Unknown],0xffffffff9a6a6db0
+mas_walk,0.003005,0.003005,0.0,0.0,45000000,24.0,24.0,0.166667,vmlinux,mas_walk,[Unknown],0xffffffff9b56c200
+mod_memcg_lruvec_state,0.003005,0.003005,0.0,0.0,77500000,36.2,36.2,0.096774,vmlinux,mod_memcg_lruvec_state,[Unknown],0xffffffff9a7bb360
+native_apic_msr_eoi,0.003005,0.003005,0.0,0.0,0,21.0,21.0,0.0,vmlinux,native_apic_msr_eoi,[Unknown],0xffffffff9a338110
+read_entry,0.003005,0.003005,0.0,0.0,65000000,47.4,47.4,0.153846,bench_cg,read_entry,mtx_reader.cpp,0xdaa5
+rmqueue_bulk,0.003005,0.003005,0.0,0.0,25000000,25.2,25.2,0.800000,vmlinux,rmqueue_bulk,[Unknown],0xffffffff9a73d6b0
+task_tick_mm_cid,0.003005,0.003005,0.0,0.0,2500000,21.7,21.7,6.000000,vmlinux,task_tick_mm_cid,[Unknown],0xffffffff9a3e2540
+update_vsyscall,0.003005,0.003005,0.0,0.0,5000000,27.2,27.2,0.500000,vmlinux,update_vsyscall,[Unknown],0xffffffff9a4c7dd0
+"Eigen::internal::assign_sparse_to_sparse<Eigen::SparseMatrix<double, (int)1, int>, Eigen::Map<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::Stride<(int)0, (int)0>>>",0.002003,0.002003,0.0,0.0,62500000,34.4,34.4,0.600000,bench_cg,"Eigen::internal::assign_sparse_to_sparse<Eigen::SparseMatrix<double, (int)1, int>, Eigen::Map<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::Stride<(int)0, (int)0>>>(Eigen::SparseMatrix<double, (int)1, int>&, Eigen::Map<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::Stride<(int)0, (int)0>> const&)",SparseAssign.h,0x255a0
+[kvm],0.002003,0.002003,0.0,0.0,2500000,21.8,21.8,3.000000,kvm,[kvm],[Unknown],0x0
+__GI_memcpy,0.002003,0.002003,0.0,0.0,2500000,47.2,47.2,3.000000,libc.so.6,__GI_memcpy,string_fortified.h,0x50723
+__GI_strtod,0.002003,0.002003,0.0,0.0,22500000,47.5,47.5,0.444444,libc.so.6,__GI_strtod,strtod.c,0x4db70
+__alloc_frozen_pages_noprof,0.002003,0.002003,0.0,0.0,25000000,29.3,29.3,0.400000,vmlinux,__alloc_frozen_pages_noprof,[Unknown],0xffffffff9a7434b0
+__handle_mm_fault,0.002003,0.002003,0.0,0.0,22500000,30.5,30.5,0.666667,vmlinux,__handle_mm_fault,[Unknown],0xffffffff9a70afd0
+__rcu_read_lock,0.002003,0.002003,0.0,0.0,15000000,31.8,31.8,0.666667,vmlinux,__rcu_read_lock,[Unknown],0xffffffff9a4720b0
+__rmqueue_pcplist,0.002003,0.002003,0.0,0.0,12500000,25.4,25.4,0.200000,vmlinux,__rmqueue_pcplist,[Unknown],0xffffffff9a73e8f0
+__sysvec_apic_timer_interrupt,0.002003,0.002003,0.0,0.0,0,25.3,25.3,,vmlinux,__sysvec_apic_timer_interrupt,[Unknown],0xffffffff9a32d0a0
+_raw_spin_lock,0.002003,0.002003,0.0,0.0,5000000,24.9,24.9,1.500000,vmlinux,_raw_spin_lock,[Unknown],0xffffffff9b5aba80
+alloc_pages_mpol,0.002003,0.002003,0.0,0.0,7500000,29.0,29.0,0.0,vmlinux,alloc_pages_mpol,[Unknown],0xffffffff9a780300
+arch_exit_to_user_mode_prepare.isra.0,0.002003,0.002003,0.0,0.0,5000000,22.9,22.9,1.500000,vmlinux,arch_exit_to_user_mode_prepare.isra.0,[Unknown],0xffffffff9a493960
+folio_add_lru,0.002003,0.002003,0.0,0.0,0,25.4,25.4,,vmlinux,folio_add_lru,[Unknown],0xffffffff9a6a9900
+folio_batch_move_lru,0.002003,0.002003,0.0,0.0,2500000,26.0,26.0,4.000000,vmlinux,folio_batch_move_lru,[Unknown],0xffffffff9a6a9660
+fpregs_assert_state_consistent,0.002003,0.002003,0.0,0.0,0,17.9,17.9,,vmlinux,fpregs_assert_state_consistent,[Unknown],0xffffffff9a2f34a0
+func@0x5a00,0.002003,0.002003,0.0,0.0,5000000,47.8,47.8,0.500000,bench_cg,func@0x5a00,[Unknown],0x5a00
+func@0x5a90,0.002003,0.002003,0.0,0.0,12500000,68.1,68.1,0.800000,bench_cg,func@0x5a90,[Unknown],0x5a90
+get_rounding_mode,0.002003,0.002003,0.0,0.0,37500000,47.6,47.6,0.333333,libc.so.6,get_rounding_mode,get-rounding-mode.h,0x289e6
+hrtimer_interrupt,0.002003,0.002003,0.0,0.0,5000000,19.0,19.0,0.500000,vmlinux,hrtimer_interrupt,[Unknown],0xffffffff9a4a9b90
+irq_enter_rcu,0.002003,0.002003,0.0,0.0,0,18.8,18.8,,vmlinux,irq_enter_rcu,[Unknown],0xffffffff9a38b840
+lru_add,0.002003,0.002003,0.0,0.0,0,22.5,22.5,,vmlinux,lru_add,[Unknown],0xffffffff9a6a7e90
+memcg1_check_events,0.002003,0.002003,0.0,0.0,5000000,42.1,42.1,0.500000,vmlinux,memcg1_check_events,[Unknown],0xffffffff9a7b5ec0
+next_data,0.002003,0.002003,0.0,0.0,45000000,47.7,47.7,0.222222,bench_cg,next_data,mtx_reader.cpp,0x5e0c4
+ntp_tick_length,0.002003,0.002003,0.0,0.0,2500000,20.3,20.3,0.0,vmlinux,ntp_tick_length,[Unknown],0xffffffff9a4afa10
+perf_event_task_tick,0.002003,0.002003,0.0,0.0,2500000,21.0,21.0,1.000000,vmlinux,perf_event_task_tick,[Unknown],0xffffffff9a674510
+policy_nodemask,0.002003,0.002003,0.0,0.0,12500000,28.7,28.7,0.400000,vmlinux,policy_nodemask,[Unknown],0xffffffff9a780170
+psi_group_change,0.002003,0.002003,0.0,0.0,0,0.0,0.0,0.0,vmlinux,psi_group_change,[Unknown],0xffffffff9a423f40
+run_posix_cpu_timers,0.002003,0.002003,0.0,0.0,0,26.5,26.5,,vmlinux,run_posix_cpu_timers,[Unknown],0xffffffff9a4bbf00
+scaled_norm,0.002003,0.002003,0.0,0.0,25000000,42.3,42.3,0.300000,bench_cg,scaled_norm,verify.cpp,0x5b966
+"std::basic_string_view<char, std::char_traits<char>>::substr",0.002003,0.002003,0.0,0.0,17500000,47.2,47.2,0.714286,bench_cg,"std::basic_string_view<char, std::char_traits<char>>::substr(unsigned long, unsigned long) const",string_view,0x5e152
+std::isfinite,0.002003,0.002003,0.0,0.0,2500000,47.4,47.4,0.0,bench_cg,std::isfinite(double),cmath,0x5fe4e
+std::isfinite,0.002003,0.002003,0.0,0.0,15000000,19.6,19.6,1.000000,bench_cg,std::isfinite(double),cmath,0x5cfa6
+"std::vector<int, std::allocator<int>>::push_back",0.002003,0.002003,0.0,0.0,50000000,47.1,47.1,0.300000,bench_cg,"std::vector<int, std::allocator<int>>::push_back(int const&)",stl_vector.h,0x5fbc0
+tmigr_requires_handle_remote,0.002003,0.002003,0.0,0.0,5000000,23.2,23.2,0.0,vmlinux,tmigr_requires_handle_remote,[Unknown],0xffffffff9a4c7610
+update_min_vruntime,0.002003,0.002003,0.0,0.0,2500000,27.0,27.0,5.000000,vmlinux,update_min_vruntime,[Unknown],0xffffffff9a3e2dd0
+update_se,0.002003,0.002003,0.0,0.0,7500000,24.3,24.3,2.000000,vmlinux,update_se,[Unknown],0xffffffff9a3e8420
+"Eigen::DenseBase<Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const>>::sum",0.001002,0.001002,0.0,0.0,0,12.4,12.4,,bench_cg,"Eigen::DenseBase<Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const>>::sum(void) const",Redux.h,0x2dbe0
+"Eigen::SparseCompressedBase<Eigen::Map<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::Stride<(int)0, (int)0>>>::InnerIterator::InnerIterator",0.001002,0.001002,0.0,0.0,5000000,34.9,34.9,0.500000,bench_cg,"Eigen::SparseCompressedBase<Eigen::Map<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::Stride<(int)0, (int)0>>>::InnerIterator::InnerIterator(Eigen::SparseCompressedBase<Eigen::Map<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::Stride<(int)0, (int)0>>> const&, long)",SparseCompressedBase.h,0x25b30
+"Eigen::SparseCompressedBase<Eigen::Map<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::Stride<(int)0, (int)0>>>::InnerIterator::index",0.001002,0.001002,0.0,0.0,2500000,35.4,35.4,0.0,bench_cg,"Eigen::SparseCompressedBase<Eigen::Map<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::Stride<(int)0, (int)0>>>::InnerIterator::index(void) const",SparseCompressedBase.h,0x25c08
+"Eigen::SparseCompressedBase<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>>::InnerIterator::InnerIterator",0.001002,0.001002,0.0,0.0,12500000,14.2,14.2,0.0,bench_cg,"Eigen::SparseCompressedBase<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>>::InnerIterator::InnerIterator(Eigen::SparseCompressedBase<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>> const&, long)",SparseCompressedBase.h,0x20a0d
+"Eigen::internal::Assignment<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, Eigen::Solve<Eigen::DiagonalPreconditioner<double>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, Eigen::internal::assign_op<double, double>, Eigen::internal::Dense2Dense, void>::run",0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,bench_cg,"Eigen::internal::Assignment<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, Eigen::Solve<Eigen::DiagonalPreconditioner<double>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, Eigen::internal::assign_op<double, double>, Eigen::internal::Dense2Dense, void>::run(Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>&, Eigen::Solve<Eigen::DiagonalPreconditioner<double>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>> const&, Eigen::internal::assign_op<double, double> const&)",Solve.h,0x2e529
+Eigen::internal::check_size_for_overflow<double>,0.001002,0.001002,0.0,0.0,2500000,0.0,0.0,0.0,bench_cg,Eigen::internal::check_size_for_overflow<double>(unsigned long),Memory.h,0x25c58
+"Eigen::internal::squared_norm_impl<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, double>::run",0.001002,0.001002,0.0,0.0,0,7.5,7.5,0.0,bench_cg,"Eigen::internal::squared_norm_impl<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, double>::run(Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const&)",Dot.h,0x2e4e2
+__GI_memcpy,0.001002,0.001002,0.0,0.0,15000000,47.5,47.5,0.666667,libc.so.6,__GI_memcpy,string_fortified.h,0x50480
+__GI_memcpy,0.001002,0.001002,0.0,0.0,17500000,47.6,47.6,0.571429,libc.so.6,__GI_memcpy,string_fortified.h,0x4ea9c
+___pte_offset_map,0.001002,0.001002,0.0,0.0,37500000,31.7,31.7,0.0,vmlinux,___pte_offset_map,[Unknown],0xffffffff9a71e250
+__mem_cgroup_charge,0.001002,0.001002,0.0,0.0,5000000,32.9,32.9,1.000000,vmlinux,__mem_cgroup_charge,[Unknown],0xffffffff9a7c1a40
+__memmove_chk_avx_unaligned_erms,0.001002,0.001002,0.0,0.0,30000000,47.4,47.4,0.166667,libc.so.6,__memmove_chk_avx_unaligned_erms,[Unknown],0x188a50
+__page_cache_release.part.0,0.001002,0.001002,0.0,0.0,20000000,58.9,58.9,0.250000,vmlinux,__page_cache_release.part.0,[Unknown],0xffffffff9a6a91c0
+__pkru_allows_pkey,0.001002,0.001002,0.0,0.0,2500000,26.2,26.2,1.000000,vmlinux,__pkru_allows_pkey,[Unknown],0xffffffff9a352900
+__raw_spin_lock_irqsave,0.001002,0.001002,0.0,0.0,0,22.4,22.4,,vmlinux,__raw_spin_lock_irqsave,[Unknown],0xffffffff9a436d80
+__timekeeping_advance,0.001002,0.001002,0.0,0.0,2500000,22.4,22.4,0.0,vmlinux,__timekeeping_advance,[Unknown],0xffffffff9a4ac090
+__tlb_remove_folio_pages,0.001002,0.001002,0.0,0.0,0,47.8,47.8,,vmlinux,__tlb_remove_folio_pages,[Unknown],0xffffffff9a714260
+_mm256_add_pd,0.001002,0.001002,0.0,0.0,0,14.1,14.1,0.0,bench_cg,_mm256_add_pd,avxintrin.h,0x2a2f5
+_mm256_fmadd_pd,0.001002,0.001002,0.0,0.0,0,8.2,8.2,,bench_cg,_mm256_fmadd_pd,fmaintrin.h,0x2deb3
+_mm256_mul_pd,0.001002,0.001002,0.0,0.0,0,7.5,7.5,0.0,bench_cg,_mm256_mul_pd,avxintrin.h,0x2dc43
+_mm256_store_pd,0.001002,0.001002,0.0,0.0,0,22.2,22.2,,bench_cg,_mm256_store_pd,avxintrin.h,0x29fe0
+_raw_spin_trylock,0.001002,0.001002,0.0,0.0,2500000,26.6,26.6,3.000000,vmlinux,_raw_spin_trylock,[Unknown],0xffffffff9b5ab300
+_raw_spin_unlock,0.001002,0.001002,0.0,0.0,2500000,19.1,19.1,1.000000,vmlinux,_raw_spin_unlock,[Unknown],0xffffffff9b5abc30
+account_user_time,0.001002,0.001002,0.0,0.0,5000000,20.7,20.7,4.000000,vmlinux,account_user_time,[Unknown],0xffffffff9a410ca0
+acct_account_cputime,0.001002,0.001002,0.0,0.0,5000000,22.4,22.4,1.000000,vmlinux,acct_account_cputime,[Unknown],0xffffffff9a532760
+alloc_anon_folio,0.001002,0.001002,0.0,0.0,20000000,25.3,25.3,0.375000,vmlinux,alloc_anon_folio,[Unknown],0xffffffff9a7092b0
+arch_asym_cpu_priority,0.001002,0.001002,0.0,0.0,12500000,20.0,20.0,0.200000,vmlinux,arch_asym_cpu_priority,[Unknown],0xffffffff9a349650
+blk_cgroup_congested,0.001002,0.001002,0.0,0.0,5000000,27.5,27.5,1.000000,vmlinux,blk_cgroup_congested,[Unknown],0xffffffff9ab21e70
+blk_stat_timer_fn,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,vmlinux,blk_stat_timer_fn,[Unknown],0xffffffff9ab05470
+calc_global_load,0.001002,0.001002,0.0,0.0,0,24.6,24.6,,vmlinux,calc_global_load,[Unknown],0xffffffff9a42f9b0
+do_lookup_x,0.001002,0.001002,0.0,0.0,0,0.0,0.0,,ld-linux-x86-64.so.2,do_lookup_x,dl-lookup.c,0xa530
+exc_page_fault,0.001002,0.001002,0.0,0.0,17500000,27.5,27.5,0.0,vmlinux,exc_page_fault,[Unknown],0xffffffff9b59ac80
+folio_add_lru_vma,0.001002,0.001002,0.0,0.0,7500000,22.3,22.3,0.0,vmlinux,folio_add_lru_vma,[Unknown],0xffffffff9a6aa130
+folio_add_new_anon_rmap,0.001002,0.001002,0.0,0.0,7500000,24.2,24.2,0.666667,vmlinux,folio_add_new_anon_rmap,[Unknown],0xffffffff9a7215f0
+folio_remove_rmap_ptes,0.001002,0.001002,0.0,0.0,2500000,41.3,41.3,0.0,vmlinux,folio_remove_rmap_ptes,[Unknown],0xffffffff9a721ce0
+folios_put_refs,0.001002,0.001002,0.0,0.0,20000000,44.8,44.8,0.875000,vmlinux,folios_put_refs,[Unknown],0xffffffff9a6a9400
+free_pcppages_bulk,0.001002,0.001002,0.0,0.0,17500000,40.4,40.4,0.0,vmlinux,free_pcppages_bulk,[Unknown],0xffffffff9a7397e0
+free_unref_folios,0.001002,0.001002,0.0,0.0,57500000,48.6,48.6,0.130435,vmlinux,free_unref_folios,[Unknown],0xffffffff9a740850
+func@0x28500,0.001002,0.001002,0.0,0.0,7500000,47.4,47.4,0.666667,libc.so.6,func@0x28500,[Unknown],0x28500
+func@0x5990,0.001002,0.001002,0.0,0.0,10000000,47.6,47.6,0.250000,bench_cg,func@0x5990,[Unknown],0x5990
+get_mem_cgroup_from_mm,0.001002,0.001002,0.0,0.0,10000000,29.7,29.7,1.750000,vmlinux,get_mem_cgroup_from_mm,[Unknown],0xffffffff9a7bb5f0
+handle_pte_fault,0.001002,0.001002,0.0,0.0,20000000,25.1,25.1,0.250000,vmlinux,handle_pte_fault,[Unknown],0xffffffff9a70adc0
+housekeeping_test_cpu,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,vmlinux,housekeeping_test_cpu,[Unknown],0xffffffff9a422840
+idle_cpu,0.001002,0.001002,0.0,0.0,5000000,18.7,18.7,2.000000,vmlinux,idle_cpu,[Unknown],0xffffffff9a419f10
+irqentry_enter_from_user_mode,0.001002,0.001002,0.0,0.0,2500000,20.2,20.2,1.000000,vmlinux,irqentry_enter_from_user_mode,[Unknown],0xffffffff9b59b2e0
+irqentry_exit,0.001002,0.001002,0.0,0.0,2500000,30.4,30.4,1.000000,vmlinux,irqentry_exit,[Unknown],0xffffffff9b59b570
+irqentry_exit_to_user_mode,0.001002,0.001002,0.0,0.0,12500000,19.4,19.4,0.0,vmlinux,irqentry_exit_to_user_mode,[Unknown],0xffffffff9b59b390
+ktime_get_update_offsets_now,0.001002,0.001002,0.0,0.0,2500000,22.4,22.4,2.000000,vmlinux,ktime_get_update_offsets_now,[Unknown],0xffffffff9a4af260
+lapic_next_deadline,0.001002,0.001002,0.0,0.0,0,14.1,14.1,,vmlinux,lapic_next_deadline,[Unknown],0xffffffff9a32cef0
+native_write_msr,0.001002,0.001002,0.0,0.0,0,27.0,27.0,,vmlinux,native_write_msr,[Unknown],0xffffffff9a347070
+nohz_balancer_kick,0.001002,0.001002,0.0,0.0,5000000,20.0,20.0,5.500000,vmlinux,nohz_balancer_kick,[Unknown],0xffffffff9a3f9500
+page_counter_try_charge,0.001002,0.001002,0.0,0.0,0,27.3,27.3,,vmlinux,page_counter_try_charge,[Unknown],0xffffffff9a7b4020
+post_alloc_hook,0.001002,0.001002,0.0,0.0,27500000,28.7,28.7,0.090909,vmlinux,post_alloc_hook,[Unknown],0xffffffff9a73ccd0
+propagate_entity_load_avg,0.001002,0.001002,0.0,0.0,0,16.4,16.4,0.0,vmlinux,propagate_entity_load_avg,[Unknown],0xffffffff9a3e7560
+rb_next,0.001002,0.001002,0.0,0.0,0,20.3,20.3,,vmlinux,rb_next,[Unknown],0xffffffff9b57e930
+read_tsc,0.001002,0.001002,0.0,0.0,0,29.5,29.5,,vmlinux,read_tsc,[Unknown],0xffffffff9a2ee9b0
+reweight_entity,0.001002,0.001002,0.0,0.0,2500000,13.6,13.6,3.000000,vmlinux,reweight_entity,[Unknown],0xffffffff9a3f0690
+scaled_norm,0.001002,0.001002,0.0,0.0,10000000,42.9,42.9,0.250000,bench_cg,scaled_norm,verify.cpp,0x5c740
+scaled_norm,0.001002,0.001002,0.0,0.0,17500000,42.8,42.8,0.428571,bench_cg,scaled_norm,verify.cpp,0x5b9fe
+sched_clock,0.001002,0.001002,0.0,0.0,15000000,19.7,19.7,0.166667,vmlinux,sched_clock,[Unknown],0xffffffff9a2efd90
+ssolve::AlignedArray<double>::operator[],0.001002,0.001002,0.0,0.0,0,32.2,32.2,,bench_cg,ssolve::AlignedArray<double>::operator[](unsigned long) const,aligned_array.hpp,0x5b8a2
+ssolve::AlignedArray<int>::operator[],0.001002,0.001002,0.0,0.0,0,32.6,32.6,0.0,bench_cg,ssolve::AlignedArray<int>::operator[](unsigned long) const,aligned_array.hpp,0x5c46a
+ssolve::true_relative_residual,0.001002,0.001002,0.0,0.0,10000000,21.2,21.2,0.250000,bench_cg,"ssolve::true_relative_residual(ssolve::CsrMatrixT<long> const&, double const*, double const*)",basic_ios.h,0xd599
+"std::basic_string_view<char, std::char_traits<char>>::substr",0.001002,0.001002,0.0,0.0,12500000,47.2,47.2,0.400000,bench_cg,"std::basic_string_view<char, std::char_traits<char>>::substr(unsigned long, unsigned long) const",string_view,0x5eb73
+"std::basic_string_view<char, std::char_traits<char>>::substr",0.001002,0.001002,0.0,0.0,27500000,47.4,47.4,0.090909,bench_cg,"std::basic_string_view<char, std::char_traits<char>>::substr(unsigned long, unsigned long) const",string_view,0x5fd6d
+std::isfinite,0.001002,0.001002,0.0,0.0,0,46.4,46.4,,bench_cg,std::isfinite(double),cmath,0x5b799
+"std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>::operator()",0.001002,0.001002,0.0,0.0,20000000,50.6,50.6,0.625000,bench_cg,"std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>::operator()(void)",random.tcc,0x54017
+"std::vector<int, std::allocator<int>>::push_back",0.001002,0.001002,0.0,0.0,47500000,47.5,47.5,0.315789,bench_cg,"std::vector<int, std::allocator<int>>::push_back(int const&)",stl_vector.h,0x5fc62
+"std::vector<int, std::allocator<int>>::push_back",0.001002,0.001002,0.0,0.0,17500000,47.5,47.5,0.142857,bench_cg,"std::vector<int, std::allocator<int>>::push_back(int const&)",stl_vector.h,0x5fc9d
+strncpy,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,vmlinux,strncpy,[Unknown],0xffffffff9b580d90
+tick_program_event,0.001002,0.001002,0.0,0.0,0,15.6,15.6,0.0,vmlinux,tick_program_event,[Unknown],0xffffffff9a4c18f0
+update_curr_dl_se,0.001002,0.001002,0.0,0.0,0,19.2,19.2,0.0,vmlinux,update_curr_dl_se,[Unknown],0xffffffff9a412150
+update_fast_timekeeper,0.001002,0.001002,0.0,0.0,2500000,13.7,13.7,1.000000,vmlinux,update_fast_timekeeper,[Unknown],0xffffffff9a4ab1d0
+update_wall_time,0.001002,0.001002,0.0,0.0,2500000,17.6,17.6,2.000000,vmlinux,update_wall_time,[Unknown],0xffffffff9a4aee80
+vma_alloc_folio_noprof,0.001002,0.001002,0.0,0.0,17500000,26.3,26.3,0.285714,vmlinux,vma_alloc_folio_noprof,[Unknown],0xffffffff9a783440
+zap_pte_range,0.001002,0.001002,0.0,0.0,12500000,25.6,25.6,0.400000,vmlinux,zap_pte_range,[Unknown],0xffffffff9a702450
+"Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const>::rows",0.0,0.0,0.0,0.0,0,7.5,7.5,0.0,bench_cg,"Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const>::rows(void) const",CwiseUnaryOp.h,0x2dbe4
+"Eigen::MapBase<Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>, (int)0>::coeff",0.0,0.0,0.0,0.0,10000000,33.6,33.6,0.0,bench_cg,"Eigen::MapBase<Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>, (int)0>::coeff(long, long) const",MapBase.h,0x2a06a
+"Eigen::MapBase<Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>, (int)0>::coeff",0.0,0.0,0.0,0.0,2500000,32.2,32.2,4.000000,bench_cg,"Eigen::MapBase<Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>, (int)0>::coeff(long, long) const",MapBase.h,0x2a0d1
+"Eigen::MapBase<Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>, (int)1>::data",0.0,0.0,0.0,0.0,0,8.2,8.2,0.0,bench_cg,"Eigen::MapBase<Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>, (int)1>::data(void) const",MapBase.h,0x2e379
+"Eigen::SparseCompressedBase<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>>::InnerIterator::InnerIterator",0.0,0.0,0.0,0.0,5000000,31.4,31.4,0.500000,bench_cg,"Eigen::SparseCompressedBase<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>>::InnerIterator::InnerIterator(Eigen::SparseCompressedBase<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>> const&, long)",SparseCompressedBase.h,0x2a057
+"Eigen::SparseCompressedBase<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>>::InnerIterator::operator++",0.0,0.0,0.0,0.0,2500000,14.8,14.8,1.000000,bench_cg,"Eigen::SparseCompressedBase<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>>::InnerIterator::operator++(void)",SparseCompressedBase.h,0x20a60
+"Eigen::SparseMapBase<Eigen::Map<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::Stride<(int)0, (int)0>>, (int)0>::innerIndexPtr",0.0,0.0,0.0,0.0,0,31.8,31.8,0.0,bench_cg,"Eigen::SparseMapBase<Eigen::Map<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::Stride<(int)0, (int)0>>, (int)0>::innerIndexPtr(void) const",SparseMap.h,0x25b4e
+"Eigen::SparseMapBase<Eigen::Map<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::Stride<(int)0, (int)0>>, (int)0>::outerIndexPtr",0.0,0.0,0.0,0.0,2500000,34.9,34.9,0.0,bench_cg,"Eigen::SparseMapBase<Eigen::Map<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::Stride<(int)0, (int)0>>, (int)0>::outerIndexPtr(void) const",SparseMap.h,0x25b40
+"Eigen::SparseMapBase<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>, (int)0>::rows",0.0,0.0,0.0,0.0,0,8.2,8.2,0.0,bench_cg,"Eigen::SparseMapBase<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>, (int)0>::rows(void) const",SparseMap.h,0x2e230
+"Eigen::SparseMatrix<double, (int)1, int>::startVec",0.0,0.0,0.0,0.0,0,35.3,35.3,0.0,bench_cg,"Eigen::SparseMatrix<double, (int)1, int>::startVec(long)",SparseMatrix.h,0x25b30
+"Eigen::internal::CompressedStorage<double, int>::reallocate",0.0,0.0,0.0,0.0,17500000,0.0,0.0,0.0,bench_cg,"Eigen::internal::CompressedStorage<double, int>::reallocate(long)",CompressedStorage.h,0x25bc0
+"Eigen::internal::DenseStorage_impl<double, (int)-1, (int)-1, (int)1, (int)0>::rows",0.0,0.0,0.0,0.0,0,6.1,6.1,0.0,bench_cg,"Eigen::internal::DenseStorage_impl<double, (int)-1, (int)-1, (int)1, (int)0>::rows(void) const",DenseStorage.h,0x2e5fa
+"Eigen::internal::DenseStorage_impl<double, (int)-1, (int)-1, (int)1, (int)0>::rows",0.0,0.0,0.0,0.0,0,12.5,12.5,,bench_cg,"Eigen::internal::DenseStorage_impl<double, (int)-1, (int)-1, (int)1, (int)0>::rows(void) const",DenseStorage.h,0x2e529
+"Eigen::internal::DenseStorage_impl<double, (int)-1, (int)-1, (int)1, (int)0>::rows",0.0,0.0,0.0,0.0,0,17.3,17.3,,bench_cg,"Eigen::internal::DenseStorage_impl<double, (int)-1, (int)-1, (int)1, (int)0>::rows(void) const",DenseStorage.h,0x2e34e
+"Eigen::internal::conjugate_gradient<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const, (int)0, Eigen::Stride<(int)0, (int)0>>, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>, Eigen::DiagonalPreconditioner<double>>",0.0,0.0,0.0,0.0,0,12.9,12.9,0.0,bench_cg,"Eigen::internal::conjugate_gradient<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const, (int)0, Eigen::Stride<(int)0, (int)0>>, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>, Eigen::DiagonalPreconditioner<double>>(Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>> const&, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const, (int)0, Eigen::Stride<(int)0, (int)0>> const&, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>&, Eigen::DiagonalPreconditioner<double> const&, long&, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>::RealScalar&)",ConjugateGradient.h,0x2df60
+"Eigen::internal::default_inner_product_impl<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (bool)1>::run",0.0,0.0,0.0,0.0,0,5.9,5.9,0.0,bench_cg,"Eigen::internal::default_inner_product_impl<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (bool)1>::run(Eigen::MatrixBase<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>> const&, Eigen::MatrixBase<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>> const&)",InnerProduct.h,0x2e5fa
+"Eigen::internal::default_inner_product_impl<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (bool)1>::run",0.0,0.0,0.0,0.0,0,17.6,17.6,0.0,bench_cg,"Eigen::internal::default_inner_product_impl<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (bool)1>::run(Eigen::MatrixBase<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>> const&, Eigen::MatrixBase<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>> const&)",InnerProduct.h,0x2e34e
+"Eigen::internal::dense_assignment_loop_impl<Eigen::internal::generic_dense_assignment_kernel<Eigen::internal::evaluator<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, Eigen::internal::evaluator<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const, Eigen::ArrayWrapper<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const>>, Eigen::internal::assign_op<double, double>, (int)0>, (int)3, (int)0>::run",0.0,0.0,0.0,0.0,5000000,0.0,0.0,0.0,bench_cg,"Eigen::internal::dense_assignment_loop_impl<Eigen::internal::generic_dense_assignment_kernel<Eigen::internal::evaluator<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, Eigen::internal::evaluator<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const, Eigen::ArrayWrapper<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const>>, Eigen::internal::assign_op<double, double>, (int)0>, (int)3, (int)0>::run(Eigen::internal::generic_dense_assignment_kernel<Eigen::internal::evaluator<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>, Eigen::internal::evaluator<Eigen::CwiseBinaryOp<Eigen::internal::scalar_product_op<double, double>, Eigen::ArrayWrapper<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const, Eigen::ArrayWrapper<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const> const>>, Eigen::internal::assign_op<double, double>, (int)0>&)",AssignEvaluator.h,0x1e350
+"Eigen::internal::mapbase_evaluator<Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>::coeffRef",0.0,0.0,0.0,0.0,0,8.6,8.6,0.0,bench_cg,"Eigen::internal::mapbase_evaluator<Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>::coeffRef(long)",CoreEvaluators.h,0x2e43e
+"Eigen::internal::redux_impl<Eigen::internal::scalar_sum_op<double, double>, Eigen::internal::redux_evaluator<Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const, (int)0, Eigen::Stride<(int)0, (int)0>> const>>, (int)3, (int)0>::run<Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const, (int)0, Eigen::Stride<(int)0, (int)0>> const>>",0.0,0.0,0.0,0.0,2500000,0.0,0.0,1.000000,bench_cg,"Eigen::internal::redux_impl<Eigen::internal::scalar_sum_op<double, double>, Eigen::internal::redux_evaluator<Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const, (int)0, Eigen::Stride<(int)0, (int)0>> const>>, (int)3, (int)0>::run<Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const, (int)0, Eigen::Stride<(int)0, (int)0>> const>>(Eigen::internal::redux_evaluator<Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const, (int)0, Eigen::Stride<(int)0, (int)0>> const>> const&, Eigen::internal::scalar_sum_op<double, double> const&, Eigen::CwiseUnaryOp<Eigen::internal::squared_norm_functor<double, (bool)0>, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1> const, (int)0, Eigen::Stride<(int)0, (int)0>> const> const&)",Redux.h,0x2a194
+"Eigen::internal::sparse_time_dense_product_impl<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, double, (int)1, (bool)1>::run",0.0,0.0,0.0,0.0,0,29.8,29.8,0.0,bench_cg,"Eigen::internal::sparse_time_dense_product_impl<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, double, (int)1, (bool)1>::run(Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>> const&, Eigen::Map<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)0, Eigen::Stride<(int)0, (int)0>> const&, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>&, double const&)",SparseDenseProduct.h,0x2a046
+_ZN5Eigen8internal31unaligned_dense_assignment_loopIDv4_dLi32ELi32ELb1ELb0EE3runINS0_31generic_dense_assignment_kernelINS0_9evaluatorINS_6MatrixIdLin1ELi1ELi0ELin1ELi1EEEEENS6_INS_13CwiseBinaryOpINS0_13scalar_sum_opIddEEKS8_KNSA_INS0_17scalar_product_opIddEEKNS_14CwiseNullaryOpINS0_18scalar_constant_opIdEESD_EESD_EEEEEENS0_9assign_opIddEELi0EEEEEvRT_ll,0.0,0.0,0.0,0.0,0,8.1,8.1,0.0,bench_cg,_ZN5Eigen8internal31unaligned_dense_assignment_loopIDv4_dLi32ELi32ELb1ELb0EE3runINS0_31generic_dense_assignment_kernelINS0_9evaluatorINS_6MatrixIdLin1ELi1ELi0ELin1ELi1EEEEENS6_INS_13CwiseBinaryOpINS0_13scalar_sum_opIddEEKS8_KNSA_INS0_17scalar_product_opIddEEKNS_14CwiseNullaryOpINS0_18scalar_constant_opIdEESD_EESD_EEEEEENS0_9assign_opIddEELi0EEEEEvRT_ll,AssignEvaluator.h,0x2e64c
+_ZN5Eigen8internal31unaligned_dense_assignment_loopIDv4_dLi32ELi32ELb1ELb0EE3runINS0_31generic_dense_assignment_kernelINS0_9evaluatorINS_6MatrixIdLin1ELi1ELi0ELin1ELi1EEEEENS6_INS_13CwiseBinaryOpINS0_17scalar_product_opIddEEKNS_12ArrayWrapperIKS8_EESG_EEEENS0_9assign_opIddEELi0EEEEEvRT_ll,0.0,0.0,0.0,0.0,0,6.3,6.3,0.0,bench_cg,_ZN5Eigen8internal31unaligned_dense_assignment_loopIDv4_dLi32ELi32ELb1ELb0EE3runINS0_31generic_dense_assignment_kernelINS0_9evaluatorINS_6MatrixIdLin1ELi1ELi0ELin1ELi1EEEEENS6_INS_13CwiseBinaryOpINS0_17scalar_product_opIddEEKNS_12ArrayWrapperIKS8_EESG_EEEENS0_9assign_opIddEELi0EEEEEvRT_ll,AssignEvaluator.h,0x2e5bb
+_ZNK5Eigen8internal9evaluatorINS_15PlainObjectBaseINS_6MatrixIdLin1ELi1ELi0ELin1ELi1EEEEEE6packetILi32EDv4_dEET0_l,0.0,0.0,0.0,0.0,0,6.3,6.3,0.0,bench_cg,_ZNK5Eigen8internal9evaluatorINS_15PlainObjectBaseINS_6MatrixIdLin1ELi1ELi0ELin1ELi1EEEEEE6packetILi32EDv4_dEET0_l,CoreEvaluators.h,0x2de00
+__GI___close_nocancel,0.0,0.0,0.0,0.0,0,33.3,33.3,0.0,libc.so.6,__GI___close_nocancel,close_nocancel.c,0x11c630
+__bitmap_weight,0.0,0.0,0.0,0.0,0,7.8,7.8,0.0,vmlinux,__bitmap_weight,[Unknown],0xffffffff9ab96730
+__calc_delta.constprop.0,0.0,0.0,0.0,0.0,12500000,28.3,28.3,0.200000,vmlinux,__calc_delta.constprop.0,[Unknown],0xffffffff9a3e3f80
+__call_rcu_common,0.0,0.0,0.0,0.0,0,20.0,20.0,0.0,vmlinux,__call_rcu_common,[Unknown],0xffffffff9a47c160
+__cond_resched,0.0,0.0,0.0,0.0,0,26.7,26.7,0.0,vmlinux,__cond_resched,[Unknown],0xffffffff9b5a24b0
+__ct_user_enter,0.0,0.0,0.0,0.0,10000000,26.2,26.2,0.0,vmlinux,__ct_user_enter,[Unknown],0xffffffff9b59b930
+__folio_batch_add_and_move,0.0,0.0,0.0,0.0,5000000,26.8,26.8,1.000000,vmlinux,__folio_batch_add_and_move,[Unknown],0xffffffff9a6a97e0
+__folio_mod_stat,0.0,0.0,0.0,0.0,0,20.7,20.7,0.0,vmlinux,__folio_mod_stat,[Unknown],0xffffffff9a71f700
+__get_user_8,0.0,0.0,0.0,0.0,0,19.8,19.8,0.0,vmlinux,__get_user_8,[Unknown],0xffffffff9b58f9d0
+"__gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double>>>::operator++",0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,bench_cg,"__gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double>>>::operator++(void)",stl_iterator.h,0x5c785
+"__gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double>>>::operator++",0.0,0.0,0.0,0.0,7500000,0.0,0.0,0.0,bench_cg,"__gnu_cxx::__normal_iterator<double const*, std::vector<double, std::allocator<double>>>::operator++(void)",stl_iterator.h,0x5c80d
+__hrtimer_next_event_base,0.0,0.0,0.0,0.0,5000000,18.0,18.0,1.000000,vmlinux,__hrtimer_next_event_base,[Unknown],0xffffffff9a4a8840
+__irq_exit_rcu,0.0,0.0,0.0,0.0,0,15.1,15.1,,vmlinux,__irq_exit_rcu,[Unknown],0xffffffff9a38b420
+__mem_cgroup_threshold,0.0,0.0,0.0,0.0,0,32.5,32.5,,vmlinux,__mem_cgroup_threshold,[Unknown],0xffffffff9a7b48b0
+__mem_cgroup_uncharge_folios,0.0,0.0,0.0,0.0,0,60.2,60.2,0.0,vmlinux,__mem_cgroup_uncharge_folios,[Unknown],0xffffffff9a7c1d90
+__memmove_chk_avx_unaligned_erms,0.0,0.0,0.0,0.0,20000000,0.0,0.0,0.0,libc.so.6,__memmove_chk_avx_unaligned_erms,memmove-vec-unaligned-erms.S,0x188a50
+__mod_lruvec_state,0.0,0.0,0.0,0.0,10000000,30.8,30.8,0.250000,vmlinux,__mod_lruvec_state,[Unknown],0xffffffff9a7bddc0
+__mod_node_page_state,0.0,0.0,0.0,0.0,22500000,38.4,38.4,0.222222,vmlinux,__mod_node_page_state,[Unknown],0xffffffff9a6d0c80
+__mpn_add_1,0.0,0.0,0.0,0.0,7500000,47.0,47.0,0.0,libc.so.6,__mpn_add_1,gmp.h,0x4e1cf
+__pkru_allows_pkey,0.0,0.0,0.0,0.0,2500000,30.7,30.7,0.0,vmlinux,__pkru_allows_pkey,[Unknown],0xffffffff9a6fa510
+__remove_hrtimer,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,__remove_hrtimer,[Unknown],0xffffffff9a4a8ad0
+__rseq_handle_notify_resume,0.0,0.0,0.0,0.0,0,6.3,6.3,0.0,vmlinux,__rseq_handle_notify_resume,[Unknown],0xffffffff9a68db70
+__run_timers,0.0,0.0,0.0,0.0,0,18.8,18.8,,vmlinux,__run_timers,[Unknown],0xffffffff9a4a68b0
+__schedule,0.0,0.0,0.0,0.0,0,30.6,30.6,0.0,vmlinux,__schedule,[Unknown],0xffffffff9b5a1ad0
+__smp_call_single_queue,0.0,0.0,0.0,0.0,0,28.0,28.0,0.0,vmlinux,__smp_call_single_queue,[Unknown],0xffffffff9a4d21d0
+__switch_to_asm,0.0,0.0,0.0,0.0,0,5.9,5.9,0.0,vmlinux,__switch_to_asm,[Unknown],0xffffffff9a289b50
+__tlb_remove_folio_pages_size.isra.0,0.0,0.0,0.0,0.0,10000000,37.3,37.3,0.0,vmlinux,__tlb_remove_folio_pages_size.isra.0,[Unknown],0xffffffff9a714040
+__update_blocked_fair,0.0,0.0,0.0,0.0,0,27.5,27.5,,vmlinux,__update_blocked_fair,[Unknown],0xffffffff9a3ea740
+__vmf_anon_prepare,0.0,0.0,0.0,0.0,7500000,24.6,24.6,0.0,vmlinux,__vmf_anon_prepare,[Unknown],0xffffffff9a703a80
+_dl_lookup_symbol_x,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,ld-linux-x86-64.so.2,_dl_lookup_symbol_x,dl-lookup.c,0xb0d0
+_dl_new_hash,0.0,0.0,0.0,0.0,0,32.2,32.2,0.0,ld-linux-x86-64.so.2,_dl_new_hash,dl-new-hash.h,0xb103
+_find_first_bit,0.0,0.0,0.0,0.0,10000000,45.5,45.5,0.0,vmlinux,_find_first_bit,[Unknown],0xffffffff9aba08f0
+_find_next_and_bit,0.0,0.0,0.0,0.0,2500000,29.6,29.6,7.000000,vmlinux,_find_next_and_bit,[Unknown],0xffffffff9aba0c10
+_int_malloc,0.0,0.0,0.0,0.0,0,14.5,14.5,0.0,libc.so.6,_int_malloc,malloc.c,0xab570
+_mm256_add_pd,0.0,0.0,0.0,0.0,0,12.5,12.5,0.0,bench_cg,_mm256_add_pd,avxintrin.h,0x2a2f0
+_mm256_extractf128_pd,0.0,0.0,0.0,0.0,0,7.8,7.8,0.0,bench_cg,_mm256_extractf128_pd,avxintrin.h,0x2defe
+_mm256_maskload_pd,0.0,0.0,0.0,0.0,0,7.8,7.8,0.0,bench_cg,_mm256_maskload_pd,avxintrin.h,0x2e4ca
+_mm256_mul_pd,0.0,0.0,0.0,0.0,0,21.2,21.2,0.0,bench_cg,_mm256_mul_pd,avxintrin.h,0x1e368
+_mm256_mul_pd,0.0,0.0,0.0,0.0,0,14.5,14.5,,bench_cg,_mm256_mul_pd,avxintrin.h,0x2de0f
+_mm256_mul_pd,0.0,0.0,0.0,0.0,0,6.3,6.3,0.0,bench_cg,_mm256_mul_pd,avxintrin.h,0x2de4c
+_mm256_store_pd,0.0,0.0,0.0,0.0,5000000,21.7,21.7,1.000000,bench_cg,_mm256_store_pd,avxintrin.h,0x1e368
+_mm_add_pd,0.0,0.0,0.0,0.0,0,12.5,12.5,0.0,bench_cg,_mm_add_pd,emmintrin.h,0x2dc6e
+_raw_spin_lock_irq,0.0,0.0,0.0,0.0,2500000,0.0,0.0,4.000000,vmlinux,_raw_spin_lock_irq,[Unknown],0xffffffff9b5abb60
+_raw_spin_unlock_irqrestore,0.0,0.0,0.0,0.0,7500000,22.0,22.0,0.0,vmlinux,_raw_spin_unlock_irqrestore,[Unknown],0xffffffff9b5ab370
+account_process_tick,0.0,0.0,0.0,0.0,0,32.4,32.4,,vmlinux,account_process_tick,[Unknown],0xffffffff9a411250
+apparmor_file_free_security,0.0,0.0,0.0,0.0,0,20.0,20.0,0.0,vmlinux,apparmor_file_free_security,[Unknown],0xffffffff9aa769a0
+arch_check_zapped_pte,0.0,0.0,0.0,0.0,2500000,43.7,43.7,0.0,vmlinux,arch_check_zapped_pte,[Unknown],0xffffffff9a357dc0
+arch_scale_freq_tick,0.0,0.0,0.0,0.0,0,16.8,16.8,,vmlinux,arch_scale_freq_tick,[Unknown],0xffffffff9a304080
+asm_common_interrupt,0.0,0.0,0.0,0.0,0,32.9,32.9,0.0,vmlinux,asm_common_interrupt,[Unknown],0xffffffff9a000e40
+asm_sysvec_apic_timer_interrupt,0.0,0.0,0.0,0.0,0,26.5,26.5,0.0,vmlinux,asm_sysvec_apic_timer_interrupt,[Unknown],0xffffffff9a000ef0
+avg_vruntime,0.0,0.0,0.0,0.0,0,5.5,5.5,0.0,vmlinux,avg_vruntime,[Unknown],0xffffffff9a3f0300
+blake2s_update,0.0,0.0,0.0,0.0,0,30.2,30.2,0.0,vmlinux,blake2s_update,[Unknown],0xffffffff9abb0420
+calc_global_load_tick,0.0,0.0,0.0,0.0,0,27.6,27.6,0.0,vmlinux,calc_global_load_tick,[Unknown],0xffffffff9a42fbf0
+chacha_permute,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,chacha_permute,[Unknown],0xffffffff9abad790
+charge_memcg,0.0,0.0,0.0,0.0,5000000,26.8,26.8,0.0,vmlinux,charge_memcg,[Unknown],0xffffffff9a7c04d0
+check_cpu_stall,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,check_cpu_stall,[Unknown],0xffffffff9a47cf20
+clockevents_program_event,0.0,0.0,0.0,0.0,10000000,0.0,0.0,0.500000,vmlinux,clockevents_program_event,[Unknown],0xffffffff9a4beb40
+context_tracking_recursion_enter,0.0,0.0,0.0,0.0,0,25.9,25.9,0.0,vmlinux,context_tracking_recursion_enter,[Unknown],0xffffffff9b59b6b0
+copy_page_to_iter,0.0,0.0,0.0,0.0,0,2.7,2.7,0.0,vmlinux,copy_page_to_iter,[Unknown],0xffffffff9ab9d7a0
+cpuacct_account_field,0.0,0.0,0.0,0.0,2500000,24.7,24.7,2.000000,vmlinux,cpuacct_account_field,[Unknown],0xffffffff9a42b3d0
+cpuacct_charge,0.0,0.0,0.0,0.0,0,23.5,23.5,,vmlinux,cpuacct_charge,[Unknown],0xffffffff9a42b320
+ct_nmi_exit,0.0,0.0,0.0,0.0,12500000,33.1,33.1,1.000000,vmlinux,ct_nmi_exit,[Unknown],0xffffffff9b59bb40
+default_do_nmi,0.0,0.0,0.0,0.0,17500000,26.2,26.2,0.142857,vmlinux,default_do_nmi,[Unknown],0xffffffff9b597730
+dl_server_update,0.0,0.0,0.0,0.0,0,32.5,32.5,,vmlinux,dl_server_update,[Unknown],0xffffffff9a412990
+do_close_on_exec,0.0,0.0,0.0,0.0,0,16.5,16.5,0.0,vmlinux,do_close_on_exec,[Unknown],0xffffffff9a8186e0
+do_mmap,0.0,0.0,0.0,0.0,0,14.9,14.9,0.0,vmlinux,do_mmap,[Unknown],0xffffffff9a711850
+do_nocb_deferred_wakeup.isra.0,0.0,0.0,0.0,0.0,0,5.5,5.5,0.0,vmlinux,do_nocb_deferred_wakeup.isra.0,[Unknown],0xffffffff9a4743b0
+do_user_addr_fault,0.0,0.0,0.0,0.0,42500000,27.5,27.5,0.352941,vmlinux,do_user_addr_fault,[Unknown],0xffffffff9a354040
+elf_dynamic_do_Rela,0.0,0.0,0.0,0.0,0,15.7,15.7,0.0,ld-linux-x86-64.so.2,elf_dynamic_do_Rela,do-rel.h,0xf53d
+end_repeat_nmi,0.0,0.0,0.0,0.0,0,31.8,31.8,0.0,vmlinux,end_repeat_nmi,[Unknown],0xffffffff9a00180f
+enqueue_hrtimer,0.0,0.0,0.0,0.0,2500000,33.3,33.3,1.000000,vmlinux,enqueue_hrtimer,[Unknown],0xffffffff9a4a8780
+enqueue_task_fair,0.0,0.0,0.0,0.0,0,8.2,8.2,0.0,vmlinux,enqueue_task_fair,[Unknown],0xffffffff9a3f2c80
+error_return,0.0,0.0,0.0,0.0,0,21.2,21.2,0.0,vmlinux,error_return,[Unknown],0xffffffff9a001690
+exc_nmi,0.0,0.0,0.0,0.0,32500000,22.7,22.7,0.153846,vmlinux,exc_nmi,[Unknown],0xffffffff9b5978b0
+filemap_read,0.0,0.0,0.0,0.0,0,2.7,2.7,0.0,vmlinux,filemap_read,[Unknown],0xffffffff9a694f50
+folio_alloc_noprof,0.0,0.0,0.0,0.0,0,18.0,18.0,0.0,vmlinux,folio_alloc_noprof,[Unknown],0xffffffff9a780a20
+folio_mapping,0.0,0.0,0.0,0.0,2500000,22.2,22.2,0.0,vmlinux,folio_mapping,[Unknown],0xffffffff9a6cf540
+free_frozen_page_commit,0.0,0.0,0.0,0.0,17500000,51.7,51.7,0.0,vmlinux,free_frozen_page_commit,[Unknown],0xffffffff9a739e40
+free_iova_fast,0.0,0.0,0.0,0.0,0,25.3,25.3,0.0,vmlinux,free_iova_fast,[Unknown],0xffffffff9af01cf0
+free_pages_and_swap_cache,0.0,0.0,0.0,0.0,5000000,48.2,48.2,1.500000,vmlinux,free_pages_and_swap_cache,[Unknown],0xffffffff9a762480
+free_swap_cache,0.0,0.0,0.0,0.0,0,44.5,44.5,0.0,vmlinux,free_swap_cache,[Unknown],0xffffffff9a762360
+func@0x5750,0.0,0.0,0.0,0.0,0,40.8,40.8,0.0,bench_cg,func@0x5750,[Unknown],0x5750
+func@0x5880,0.0,0.0,0.0,0.0,0,8.1,8.1,,bench_cg,func@0x5880,[Unknown],0x5880
+generic_exec_single,0.0,0.0,0.0,0.0,5000000,31.0,31.0,0.0,vmlinux,generic_exec_single,[Unknown],0xffffffff9a4d2350
+get_page_from_freelist,0.0,0.0,0.0,0.0,17500000,27.4,27.4,0.142857,vmlinux,get_page_from_freelist,[Unknown],0xffffffff9a741d70
+get_vma_policy,0.0,0.0,0.0,0.0,10000000,26.9,26.9,0.250000,vmlinux,get_vma_policy,[Unknown],0xffffffff9a7832d0
+handle_mm_fault,0.0,0.0,0.0,0.0,25000000,25.1,25.1,0.300000,vmlinux,handle_mm_fault,[Unknown],0xffffffff9a70b720
+handle_softirqs,0.0,0.0,0.0,0.0,0,8.4,8.4,0.0,vmlinux,handle_softirqs,[Unknown],0xffffffff9a38b0d0
+hrtimer_forward,0.0,0.0,0.0,0.0,7500000,0.0,0.0,0.0,vmlinux,hrtimer_forward,[Unknown],0xffffffff9a4a80d0
+hrtimer_update_next_event,0.0,0.0,0.0,0.0,0,18.8,18.8,,vmlinux,hrtimer_update_next_event,[Unknown],0xffffffff9a4a8a00
+invoke_rcu_core,0.0,0.0,0.0,0.0,0,5.9,5.9,0.0,vmlinux,invoke_rcu_core,[Unknown],0xffffffff9a473fb0
+irqentry_enter,0.0,0.0,0.0,0.0,2500000,29.8,29.8,1.000000,vmlinux,irqentry_enter,[Unknown],0xffffffff9b59b330
+irqentry_nmi_exit,0.0,0.0,0.0,0.0,7500000,27.5,27.5,0.666667,vmlinux,irqentry_nmi_exit,[Unknown],0xffffffff9b59b270
+kernfs_iop_permission,0.0,0.0,0.0,0.0,0,7.1,7.1,0.0,vmlinux,kernfs_iop_permission,[Unknown],0xffffffff9a8cee20
+kick_ilb,0.0,0.0,0.0,0.0,2500000,20.4,20.4,0.0,vmlinux,kick_ilb,[Unknown],0xffffffff9a3e3b20
+kthread_blkcg,0.0,0.0,0.0,0.0,5000000,26.1,26.1,0.500000,vmlinux,kthread_blkcg,[Unknown],0xffffffff9a3bb890
+load_elf_binary,0.0,0.0,0.0,0.0,0,9.8,9.8,0.0,vmlinux,load_elf_binary,[Unknown],0xffffffff9a88e5a0
+mas_alloc_nodes,0.0,0.0,0.0,0.0,0,25.5,25.5,0.0,vmlinux,mas_alloc_nodes,[Unknown],0xffffffff9b569410
+mas_topiary_replace,0.0,0.0,0.0,0.0,0,19.0,19.0,0.0,vmlinux,mas_topiary_replace,[Unknown],0xffffffff9b56d0a0
+mas_wr_slot_store,0.0,0.0,0.0,0.0,0,20.4,20.4,0.0,vmlinux,mas_wr_slot_store,[Unknown],0xffffffff9b56b6a0
+mas_wr_spanning_store,0.0,0.0,0.0,0.0,0,61.6,61.6,0.0,vmlinux,mas_wr_spanning_store,[Unknown],0xffffffff9b5717d0
+mas_wr_store_entry,0.0,0.0,0.0,0.0,0,7.5,7.5,0.0,vmlinux,mas_wr_store_entry,[Unknown],0xffffffff9b5759d0
+mask_ioapic_irq,0.0,0.0,0.0,0.0,0,11.4,11.4,,vmlinux,mask_ioapic_irq,[Unknown],0xffffffff9a3326f0
+mem_cgroup_handle_over_high,0.0,0.0,0.0,0.0,0,18.4,18.4,0.0,vmlinux,mem_cgroup_handle_over_high,[Unknown],0xffffffff9a7bf7c0
+memcg_uncharge,0.0,0.0,0.0,0.0,0,56.9,56.9,0.0,vmlinux,memcg_uncharge,[Unknown],0xffffffff9a7ba8a0
+memcpy,0.0,0.0,0.0,0.0,7500000,16.9,16.9,0.0,bench_cg,memcpy,string_fortified.h,0x5b3bc
+memcpy,0.0,0.0,0.0,0.0,37500000,47.4,47.4,0.266667,bench_cg,memcpy,string_fortified.h,0x5fda4
+memcpy,0.0,0.0,0.0,0.0,0,19.2,19.2,0.0,vmlinux,memcpy,[Unknown],0xffffffff9b59c6c0
+mksaveddirty_shift,0.0,0.0,0.0,0.0,2500000,14.5,14.5,0.0,vmlinux,mksaveddirty_shift,[Unknown],0xffffffff9a6fa220
+native_read_msr,0.0,0.0,0.0,0.0,0,24.5,24.5,,vmlinux,native_read_msr,[Unknown],0xffffffff9a346ec0
+native_read_msr_safe,0.0,0.0,0.0,0.0,0,32.5,32.5,0.0,vmlinux,native_read_msr_safe,[Unknown],0xffffffff9a346e40
+next,0.0,0.0,0.0,0.0,5000000,47.7,47.7,1.000000,bench_cg,next,mtx_reader.cpp,0xdab5
+nmi_restore,0.0,0.0,0.0,0.0,0,24.3,24.3,,vmlinux,nmi_restore,[Unknown],0xffffffff9a001869
+ntp_get_next_leap,0.0,0.0,0.0,0.0,2500000,31.8,31.8,0.0,vmlinux,ntp_get_next_leap,[Unknown],0xffffffff9a4afa60
+obj_cgroup_charge_pages,0.0,0.0,0.0,0.0,0,15.5,15.5,0.0,vmlinux,obj_cgroup_charge_pages,[Unknown],0xffffffff9a7c0240
+p4d_offset,0.0,0.0,0.0,0.0,0,21.0,21.0,0.0,vmlinux,p4d_offset,[Unknown],0xffffffff9a6fa8a0
+page_counter_cancel,0.0,0.0,0.0,0.0,0,56.2,56.2,0.0,vmlinux,page_counter_cancel,[Unknown],0xffffffff9a7b3ec0
+page_counter_uncharge,0.0,0.0,0.0,0.0,0,54.3,54.3,0.0,vmlinux,page_counter_uncharge,[Unknown],0xffffffff9a7b4140
+percpu_counter_add_batch,0.0,0.0,0.0,0.0,7500000,31.8,31.8,0.333333,vmlinux,percpu_counter_add_batch,[Unknown],0xffffffff9ac814a0
+perf_adjust_freq_unthr_context,0.0,0.0,0.0,0.0,0,33.3,33.3,0.0,vmlinux,perf_adjust_freq_unthr_context,[Unknown],0xffffffff9a670f40
+pfn_pte,0.0,0.0,0.0,0.0,2500000,30.3,30.3,0.0,vmlinux,pfn_pte,[Unknown],0xffffffff9a6fd610
+pgd_none,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,pgd_none,[Unknown],0xffffffff9a6fa260
+place_entity,0.0,0.0,0.0,0.0,5000000,0.0,0.0,0.0,vmlinux,place_entity,[Unknown],0xffffffff9a3f0420
+pmd_val,0.0,0.0,0.0,0.0,7500000,21.2,21.2,0.333333,vmlinux,pmd_val,[Unknown],0xffffffff9a6fa0a0
+process_timeout,0.0,0.0,0.0,0.0,0,31.8,31.8,0.0,vmlinux,process_timeout,[Unknown],0xffffffff9a4aa820
+profile_tick,0.0,0.0,0.0,0.0,2500000,8.2,8.2,1.000000,vmlinux,profile_tick,[Unknown],0xffffffff9a4a0f90
+propagate_protected_usage,0.0,0.0,0.0,0.0,0,56.1,56.1,0.0,vmlinux,propagate_protected_usage,[Unknown],0xffffffff9a7b3e20
+psi_task_change,0.0,0.0,0.0,0.0,0,5.1,5.1,0.0,vmlinux,psi_task_change,[Unknown],0xffffffff9a4330a0
+pte_mkwrite,0.0,0.0,0.0,0.0,0,33.7,33.7,0.0,vmlinux,pte_mkwrite,[Unknown],0xffffffff9a357d00
+pte_offset_map_rw_nolock,0.0,0.0,0.0,0.0,17500000,27.1,27.1,0.142857,vmlinux,pte_offset_map_rw_nolock,[Unknown],0xffffffff9a71e4c0
+pte_val,0.0,0.0,0.0,0.0,0,26.9,26.9,0.0,vmlinux,pte_val,[Unknown],0xffffffff9a6fa000
+pud_val,0.0,0.0,0.0,0.0,12500000,24.1,24.1,0.0,vmlinux,pud_val,[Unknown],0xffffffff9a6fa0d0
+radix_tree_lookup,0.0,0.0,0.0,0.0,0,6.3,6.3,0.0,vmlinux,radix_tree_lookup,[Unknown],0xffffffff9b57d2b0
+raw_notifier_call_chain,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,raw_notifier_call_chain,[Unknown],0xffffffff9a3c3210
+raw_spin_rq_lock_nested,0.0,0.0,0.0,0.0,2500000,7.8,7.8,1.000000,vmlinux,raw_spin_rq_lock_nested,[Unknown],0xffffffff9a3d6b00
+rb_erase,0.0,0.0,0.0,0.0,0,24.1,24.1,0.0,vmlinux,rb_erase,[Unknown],0xffffffff9b57de60
+rb_insert_color,0.0,0.0,0.0,0.0,0,25.1,25.1,0.0,vmlinux,rb_insert_color,[Unknown],0xffffffff9b57e5e0
+rcu_cblist_dequeue,0.0,0.0,0.0,0.0,0,19.2,19.2,0.0,vmlinux,rcu_cblist_dequeue,[Unknown],0xffffffff9a481790
+rcu_pending,0.0,0.0,0.0,0.0,0,20.2,20.2,,vmlinux,rcu_pending,[Unknown],0xffffffff9a47d150
+rcu_sched_clock_irq,0.0,0.0,0.0,0.0,0,20.8,20.8,,vmlinux,rcu_sched_clock_irq,[Unknown],0xffffffff9a480070
+rcu_segcblist_ready_cbs,0.0,0.0,0.0,0.0,0,32.5,32.5,0.0,vmlinux,rcu_segcblist_ready_cbs,[Unknown],0xffffffff9a4819b0
+rcu_stall_kick_kthreads,0.0,0.0,0.0,0.0,0,7.6,7.6,0.0,vmlinux,rcu_stall_kick_kthreads,[Unknown],0xffffffff9a473e70
+record_times,0.0,0.0,0.0,0.0,0,10.6,10.6,0.0,vmlinux,record_times,[Unknown],0xffffffff9a41dd30
+refill_stock,0.0,0.0,0.0,0.0,5000000,0.0,0.0,0.0,vmlinux,refill_stock,[Unknown],0xffffffff9a7baeb0
+resolve_map,0.0,0.0,0.0,0.0,0,23.5,23.5,0.0,ld-linux-x86-64.so.2,resolve_map,dl-reloc.c,0xf957
+rmqueue.isra.0,0.0,0.0,0.0,0.0,25000000,27.3,27.3,0.100000,vmlinux,rmqueue.isra.0,[Unknown],0xffffffff9a73ec20
+"run_eigen<Eigen::SparseMatrix<double, 1, int>, 3, Eigen::DiagonalPreconditioner<double> >",0.0,0.0,0.0,0.0,2500000,10.3,10.3,2.000000,bench_cg,"run_eigen<Eigen::SparseMatrix<double, 1, int>, 3, Eigen::DiagonalPreconditioner<double> >",eigen_solvers.cpp,0x7112
+run_timer_softirq,0.0,0.0,0.0,0.0,0,10.2,10.2,0.0,vmlinux,run_timer_softirq,[Unknown],0xffffffff9a4a6b90
+scaled_norm,0.0,0.0,0.0,0.0,12500000,41.5,41.5,0.600000,bench_cg,scaled_norm,verify.cpp,0x5c6af
+sched_balance_softirq,0.0,0.0,0.0,0.0,0,31.0,31.0,0.0,vmlinux,sched_balance_softirq,[Unknown],0xffffffff9a3f9340
+sched_clock_cpu,0.0,0.0,0.0,0.0,5000000,23.7,23.7,0.0,vmlinux,sched_clock_cpu,[Unknown],0xffffffff9a428c70
+sched_clock_noinstr,0.0,0.0,0.0,0.0,5000000,22.4,22.4,0.500000,vmlinux,sched_clock_noinstr,[Unknown],0xffffffff9b598100
+sched_clock_tick,0.0,0.0,0.0,0.0,0,7.5,7.5,0.0,vmlinux,sched_clock_tick,[Unknown],0xffffffff9a42b0e0
+scx_tick,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,scx_tick,[Unknown],0xffffffff9a414790
+select_idle_sibling,0.0,0.0,0.0,0.0,0,7.8,7.8,0.0,vmlinux,select_idle_sibling,[Unknown],0xffffffff9a3ed9c0
+select_task_rq,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,select_task_rq,[Unknown],0xffffffff9a3dacd0
+set_ptes.isra.0,0.0,0.0,0.0,0.0,7500000,22.4,22.4,0.0,vmlinux,set_ptes.isra.0,[Unknown],0xffffffff9a6fc510
+set_task_cpu,0.0,0.0,0.0,0.0,0,31.0,31.0,0.0,vmlinux,set_task_cpu,[Unknown],0xffffffff9a3db8b0
+ssolve::AlignedArray<double>::operator[],0.0,0.0,0.0,0.0,0,19.5,19.5,0.0,bench_cg,ssolve::AlignedArray<double>::operator[](unsigned long) const,aligned_array.hpp,0x5cf91
+ssolve::AlignedArray<double>::operator[],0.0,0.0,0.0,0.0,2500000,30.4,30.4,0.0,bench_cg,ssolve::AlignedArray<double>::operator[](unsigned long) const,aligned_array.hpp,0x541be
+ssolve::AlignedArray<double>::operator[],0.0,0.0,0.0,0.0,0,40.5,40.5,0.0,bench_cg,ssolve::AlignedArray<double>::operator[](unsigned long),aligned_array.hpp,0x4c355
+ssolve::AlignedArray<int>::data,0.0,0.0,0.0,0.0,0,40.4,40.4,,bench_cg,ssolve::AlignedArray<int>::data(void),aligned_array.hpp,0x4c359
+ssolve::AlignedArray<int>::operator[],0.0,0.0,0.0,0.0,5000000,31.9,31.9,0.500000,bench_cg,ssolve::AlignedArray<int>::operator[](unsigned long) const,aligned_array.hpp,0x5c412
+ssolve::AlignedArray<int>::operator[],0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,bench_cg,ssolve::AlignedArray<int>::operator[](unsigned long) const,aligned_array.hpp,0x5b8a6
+ssolve::AlignedArray<long>::fill,0.0,0.0,0.0,0.0,7500000,27.1,27.1,0.0,bench_cg,ssolve::AlignedArray<long>::fill(long const&),aligned_array.hpp,0x4c1b7
+ssolve::AlignedArray<long>::size,0.0,0.0,0.0,0.0,0,10.2,10.2,0.0,bench_cg,ssolve::AlignedArray<long>::size(void) const,aligned_array.hpp,0x20640
+ssolve::random_solution,0.0,0.0,0.0,0.0,10000000,52.3,52.3,0.250000,bench_cg,ssolve::random_solution(int),generators.cpp,0xbc32
+"std::basic_string_view<char, std::char_traits<char>>::operator[]",0.0,0.0,0.0,0.0,10000000,0.0,0.0,0.0,bench_cg,"std::basic_string_view<char, std::char_traits<char>>::operator[](unsigned long) const",string_view,0x5e748
+"std::basic_string_view<char, std::char_traits<char>>::operator[]",0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,bench_cg,"std::basic_string_view<char, std::char_traits<char>>::operator[](unsigned long) const",string_view,0x5ea98
+"std::basic_string_view<char, std::char_traits<char>>::substr",0.0,0.0,0.0,0.0,15000000,47.7,47.7,0.0,bench_cg,"std::basic_string_view<char, std::char_traits<char>>::substr(unsigned long, unsigned long) const",string_view,0x5e85b
+std::isfinite,0.0,0.0,0.0,0.0,5000000,0.0,0.0,0.0,bench_cg,std::isfinite(double),cmath,0x5c796
+std::isfinite,0.0,0.0,0.0,0.0,2500000,60.4,60.4,0.0,bench_cg,std::isfinite(double),cmath,0x5c716
+std::isfinite,0.0,0.0,0.0,0.0,27500000,72.5,72.5,0.090909,bench_cg,std::isfinite(double),cmath,0x5c81a
+std::isfinite,0.0,0.0,0.0,0.0,5000000,0.0,0.0,0.0,bench_cg,std::isfinite(double),cmath,0x5ba3e
+"std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>::_M_gen_rand",0.0,0.0,0.0,0.0,12500000,37.5,37.5,0.400000,bench_cg,"std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>::_M_gen_rand(void)",random.tcc,0x54260
+"std::moneypunct<wchar_t, (bool)1>::_M_initialize_moneypunct",0.0,0.0,0.0,0.0,0,18.8,18.8,0.0,libstdc++.so.6.0.33,"std::moneypunct<wchar_t, (bool)1>::_M_initialize_moneypunct(__locale_struct*, char const*)",[Unknown],0xd90e0
+"std::vector<long, std::allocator<long>>::operator[]",0.0,0.0,0.0,0.0,10000000,22.9,22.9,0.0,bench_cg,"std::vector<long, std::allocator<long>>::operator[](unsigned long)",stl_vector.h,0x4c0a0
+"std::vector<long, std::allocator<long>>::operator[]",0.0,0.0,0.0,0.0,15000000,15.1,15.1,0.166667,bench_cg,"std::vector<long, std::allocator<long>>::operator[](unsigned long)",stl_vector.h,0x4c2fb
+switch_hrtimer_base,0.0,0.0,0.0,0.0,0,32.2,32.2,0.0,vmlinux,switch_hrtimer_base,[Unknown],0xffffffff9a4a82d0
+switch_ldt,0.0,0.0,0.0,0.0,0,33.7,33.7,0.0,vmlinux,switch_ldt,[Unknown],0xffffffff9a2e55e0
+sysvec_apic_timer_interrupt,0.0,0.0,0.0,0.0,0,5.9,5.9,,vmlinux,sysvec_apic_timer_interrupt,[Unknown],0xffffffff9b59a360
+task_mm_cid_work,0.0,0.0,0.0,0.0,0,18.8,18.8,,vmlinux,task_mm_cid_work,[Unknown],0xffffffff9a3d4260
+tick_do_update_jiffies64,0.0,0.0,0.0,0.0,2500000,18.1,18.1,5.000000,vmlinux,tick_do_update_jiffies64,[Unknown],0xffffffff9a4c1f50
+tick_nohz_handler,0.0,0.0,0.0,0.0,2500000,31.0,31.0,0.0,vmlinux,tick_nohz_handler,[Unknown],0xffffffff9a4c20d0
+timekeeping_adjust,0.0,0.0,0.0,0.0,0,26.1,26.1,,vmlinux,timekeeping_adjust,[Unknown],0xffffffff9a4ab280
+timekeeping_update_from_shadow,0.0,0.0,0.0,0.0,2500000,19.7,19.7,2.000000,vmlinux,timekeeping_update_from_shadow,[Unknown],0xffffffff9a4aba60
+timer_expire_remote,0.0,0.0,0.0,0.0,0,7.8,7.8,0.0,vmlinux,timer_expire_remote,[Unknown],0xffffffff9a4a7a20
+timerqueue_add,0.0,0.0,0.0,0.0,0,28.8,28.8,0.0,vmlinux,timerqueue_add,[Unknown],0xffffffff9b581fa0
+timerqueue_del,0.0,0.0,0.0,0.0,2500000,20.8,20.8,1.000000,vmlinux,timerqueue_del,[Unknown],0xffffffff9b5820b0
+tlb_remove_table,0.0,0.0,0.0,0.0,2500000,0.0,0.0,0.0,vmlinux,tlb_remove_table,[Unknown],0xffffffff9a714310
+tmigr_handle_remote,0.0,0.0,0.0,0.0,0,29.8,29.8,0.0,vmlinux,tmigr_handle_remote,[Unknown],0xffffffff9a4c74c0
+tmigr_handle_remote_cpu,0.0,0.0,0.0,0.0,0,30.2,30.2,0.0,vmlinux,tmigr_handle_remote_cpu,[Unknown],0xffffffff9a4c7070
+tmigr_handle_remote_up,0.0,0.0,0.0,0.0,0,32.2,32.2,0.0,vmlinux,tmigr_handle_remote_up,[Unknown],0xffffffff9a4c72d0
+tmigr_next_groupevt,0.0,0.0,0.0,0.0,2500000,14.2,14.2,1.000000,vmlinux,tmigr_next_groupevt,[Unknown],0xffffffff9a4c56d0
+try_charge_memcg,0.0,0.0,0.0,0.0,7500000,33.0,33.0,1.000000,vmlinux,try_charge_memcg,[Unknown],0xffffffff9a7bfb00
+ttwu_queue_wakelist,0.0,0.0,0.0,0.0,0,31.2,31.2,0.0,vmlinux,ttwu_queue_wakelist,[Unknown],0xffffffff9a3d5820
+update_dl_rq_load_avg,0.0,0.0,0.0,0.0,0,6.3,6.3,0.0,vmlinux,update_dl_rq_load_avg,[Unknown],0xffffffff9a40ff80
+update_entity_lag,0.0,0.0,0.0,0.0,0,7.1,7.1,0.0,vmlinux,update_entity_lag,[Unknown],0xffffffff9a3f0390
+update_process_times,0.0,0.0,0.0,0.0,2500000,18.6,18.6,2.000000,vmlinux,update_process_times,[Unknown],0xffffffff9a4a7c10
+update_rq_clock,0.0,0.0,0.0,0.0,5000000,24.6,24.6,0.500000,vmlinux,update_rq_clock,[Unknown],0xffffffff9a3d87a0
+update_rt_rq_load_avg,0.0,0.0,0.0,0.0,0,23.1,23.1,0.0,vmlinux,update_rt_rq_load_avg,[Unknown],0xffffffff9a40f420
+update_sd_lb_stats.constprop.0,0.0,0.0,0.0,0.0,0,31.0,31.0,0.0,vmlinux,update_sd_lb_stats.constprop.0,[Unknown],0xffffffff9a3f73c0
+update_vdso_time_data,0.0,0.0,0.0,0.0,2500000,17.5,17.5,1.000000,vmlinux,update_vdso_time_data,[Unknown],0xffffffff9a4c7c20
+vm_normal_page,0.0,0.0,0.0,0.0,5000000,51.0,51.0,0.0,vmlinux,vm_normal_page,[Unknown],0xffffffff9a700ce0
+vma_interval_tree_remove,0.0,0.0,0.0,0.0,0,17.6,17.6,0.0,vmlinux,vma_interval_tree_remove,[Unknown],0xffffffff9a6ee260
+x86_thermal_enabled,0.0,0.0,0.0,0.0,0,34.1,34.1,0.0,vmlinux,x86_thermal_enabled,[Unknown],0xffffffff9b1b2010

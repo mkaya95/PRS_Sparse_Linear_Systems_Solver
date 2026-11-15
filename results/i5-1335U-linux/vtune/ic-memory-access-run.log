@@ -1,0 +1,75 @@
+vtune: Warning: To enable hardware event-based sampling, VTune Profiler has disabled the NMI watchdog timer. The watchdog timer will be re-enabled after collection completes.
+matrix         /home/nottarik/p08/data/thermal2.mtx
+size           n = 1228045, nnz = 8580313
+format         csr
+ordering       natural
+preconditioner ic
+status         Converged
+spmv count     1525
+setup time     0.472693 s
+preparation time 0.870361 s
+solve time     50.435849 s
+recursive residual 9.983e-09
+true residual  9.983e-09
+verification time 0.017178 s
+end-to-end time 51.796082 s
+
+vtune: Warning: Cannot locate file `vmlinux'.
+
+vtune: Warning: Cannot locate debugging information for file `/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33'.
+vtune: Warning: Cannot locate file `iwlmvm.ko'.
+vtune: Warning: Cannot locate file `sep5.ko'.
+vtune: Warning: Cannot locate file `x86_pkg_temp_thermal.ko'.
+vtune: Warning: Cannot locate file `mac80211.ko'.
+vtune: Warning: Cannot locate file `kvm.ko'.
+
+vtune: Warning: Cannot locate debugging information for the Linux kernel. Source-level analysis will not be possible. Function-level analysis will be limited to kernel symbol tables. See the Enabling Linux Kernel Analysis topic in the product online help for instructions.
+Elapsed Time: 51.813s
+    CPU Time: 51.070s
+    Performance-core (P-core)
+        Memory Bound: 19.9% of Pipeline Slots
+            L1 Bound: 11.9% of Clockticks
+            L2 Bound: 2.3% of Clockticks
+            L3 Bound: 5.2% of Clockticks
+            DRAM Bound: 22.3% of Clockticks
+            Store Bound: 1.1% of Clockticks
+    Efficient-core (E-core)
+        Memory Bound: 0.0% of Clockticks
+            L1 Bound: 0.0% of Clockticks
+            L2 Bound: 0.0% of Clockticks
+            L3 Bound: 0.0% of Clockticks
+    Uncore
+        DRAM Bandwidth Bound: 0.0% of Elapsed Time
+    Loads: 116,651,199,431
+    Stores: 14,839,945,185
+    LLC Miss Count: 1,184,147,133
+    Average Latency (cycles): 20
+    Total Thread Count: 1
+    Paused Time: 0s
+
+Bandwidth Utilization
+Bandwidth Domain  Platform Maximum  Observed Maximum  Average  % of Elapsed Time with High BW Utilization(%)
+----------------  ----------------  ----------------  -------  ---------------------------------------------
+DRAM, GB/sec      39                          24.700   14.323                                           0.0%
+Collection and Platform Info
+    Application Command Line: taskset "-c" "0" "build/profile/solve" "--matrix" "/home/nottarik/p08/data/thermal2.mtx" "--problem" "random" "--maxit" "30000" "--precond" "ic" 
+    User Name: nottarik
+    Operating System: 6.17.0-19-generic DISTRIB_ID=Ubuntu DISTRIB_RELEASE=24.04 DISTRIB_CODENAME=noble DISTRIB_DESCRIPTION="Ubuntu 24.04.4 LTS"
+    Computer Name: nottarik-t14
+    Result Size: 454.6 MB 
+    Collection start time: 18:32:55 15/11/2026 UTC
+    Collection stop time: 18:33:47 15/11/2026 UTC
+    Collector Type: Event-based sampling driver
+    CPU
+        Name: Intel(R) microarchitecture code named Raptorlake-P
+        Frequency: 2.496 GHz
+        Logical CPU Count: 12
+        Max DRAM Single-Package Bandwidth: 39.000 GB/s
+        Cache Allocation Technology
+            Level 2 capability: not detected
+            Level 3 capability: not detected
+
+If you want to skip descriptions of detected performance issues in the report,
+enter: vtune -report summary -report-knob show-issues=false -r <my_result_dir>.
+Alternatively, you may view the report in the csv format: vtune -report
+<report_name> -format=csv.

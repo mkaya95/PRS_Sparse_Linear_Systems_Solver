@@ -1,0 +1,38 @@
+Elapsed Time: 38.049s
+    CPU Time: 36.576s
+        Effective Time: 36.576s
+        Spin Time: 0s
+        Overhead Time: 0s
+    Instructions Retired: 222,467,500,000
+    Microarchitecture Usage: 23.7% of Pipeline Slots
+        CPI Rate: 0.744
+    Total Thread Count: 1
+    Paused Time: 0s
+
+Top Hotspots
+Function                                                                                                                                                                                                                                                                                                                 Module     CPU Time  % of CPU Time(%)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  ---------  --------  ----------------
+Eigen::internal::sparse_time_dense_product_impl<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, double, (int)1, (bool)1>::processRow  bench_cg    17.694s             48.4%
+_mm256_mul_pd                                                                                                                                                                                                                                                                                                            bench_cg     2.143s              5.9%
+__memset_avx2_unaligned_erms                                                                                                                                                                                                                                                                                             libc.so.6    2.122s              5.8%
+_mm256_sub_pd                                                                                                                                                                                                                                                                                                            bench_cg     1.878s              5.1%
+Eigen::PlainObjectBase<Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>>::coeff                                                                                                                                                                                                                           bench_cg     1.745s              4.8%
+[Others]                                                                                                                                                                                                                                                                                                                 N/A         10.993s             30.1%
+Effective Physical Core Utilization: 9.6% (0.957 out of 10)
+    Effective Logical Core Utilization: 8.0% (0.961 out of 12)
+Collection and Platform Info
+    Application Command Line: taskset "-c" "0" "build/profile/bench_cg" "--matrix" "/home/nottarik/p08/data/thermal2.mtx" "--maxit" "30000" "--repeat" "1" "--warmup" "0" "--solver" "eigen-E1" 
+    User Name: nottarik
+    Operating System: 6.17.0-19-generic DISTRIB_ID=Ubuntu DISTRIB_RELEASE=24.04 DISTRIB_CODENAME=noble DISTRIB_DESCRIPTION="Ubuntu 24.04.4 LTS"
+    Computer Name: nottarik-t14
+    Result Size: 897.1 MB 
+    Collection start time: 18:41:36 15/11/2026 UTC
+    Collection stop time: 18:42:14 15/11/2026 UTC
+    Collector Type: Event-based sampling driver
+    CPU
+        Name: Intel(R) microarchitecture code named Raptorlake-P
+        Frequency: 2.496 GHz
+        Logical CPU Count: 12
+        Cache Allocation Technology
+            Level 2 capability: not detected
+            Level 3 capability: not detected

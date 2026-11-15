@@ -1,0 +1,44 @@
+Elapsed Time: 43.929s
+    CPU Time: 43.139s
+    Performance-core (P-core)
+        Memory Bound: 20.6% of Pipeline Slots
+            L1 Bound: 12.5% of Clockticks
+            L2 Bound: 2.3% of Clockticks
+            L3 Bound: 3.8% of Clockticks
+            DRAM Bound: 19.9% of Clockticks
+            Store Bound: 1.2% of Clockticks
+    Efficient-core (E-core)
+        Memory Bound: 0.0% of Clockticks
+            L1 Bound: 0.0% of Clockticks
+            L2 Bound: 0.0% of Clockticks
+            L3 Bound: 0.0% of Clockticks
+    Uncore
+        DRAM Bandwidth Bound: 0.0% of Elapsed Time
+    Loads: 90,445,013,269
+    Stores: 12,029,260,867
+    LLC Miss Count: 1,328,507,739
+    Average Latency (cycles): 23
+    Total Thread Count: 1
+    Paused Time: 0s
+
+Bandwidth Utilization
+Bandwidth Domain  Platform Maximum  Observed Maximum  Average  % of Elapsed Time with High BW Utilization(%)
+----------------  ----------------  ----------------  -------  ---------------------------------------------
+DRAM, GB/sec      39                          25.500   13.795                                           0.0%
+Collection and Platform Info
+    Application Command Line: taskset "-c" "0" "build/profile/bench_cg" "--matrix" "/home/nottarik/p08/data/thermal2.mtx" "--maxit" "30000" "--repeat" "1" "--warmup" "0" "--solver" "eigen-E4" 
+    User Name: nottarik
+    Operating System: 6.17.0-19-generic DISTRIB_ID=Ubuntu DISTRIB_RELEASE=24.04 DISTRIB_CODENAME=noble DISTRIB_DESCRIPTION="Ubuntu 24.04.4 LTS"
+    Computer Name: nottarik-t14
+    Result Size: 383.4 MB 
+    Collection start time: 18:47:00 15/11/2026 UTC
+    Collection stop time: 18:47:44 15/11/2026 UTC
+    Collector Type: Event-based sampling driver
+    CPU
+        Name: Intel(R) microarchitecture code named Raptorlake-P
+        Frequency: 2.496 GHz
+        Logical CPU Count: 12
+        Max DRAM Single-Package Bandwidth: 39.000 GB/s
+        Cache Allocation Technology
+            Level 2 capability: not detected
+            Level 3 capability: not detected
