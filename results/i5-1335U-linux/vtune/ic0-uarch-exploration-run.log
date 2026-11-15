@@ -1,0 +1,311 @@
+vtune: Warning: To enable hardware event-based sampling, VTune Profiler has disabled the NMI watchdog timer. The watchdog timer will be re-enabled after collection completes.
+matrix         /home/nottarik/p08/data/thermal2.mtx
+size           n = 1228045, nnz = 8580313
+format         csr
+ordering       natural
+preconditioner ic0
+status         Converged
+spmv count     927
+setup time     0.123688 s
+preparation time 0.863599 s
+solve time     26.367954 s
+recursive residual 9.952e-09
+true residual  9.952e-09
+verification time 0.017715 s
+end-to-end time 27.372959 s
+
+vtune: Warning: Cannot locate file `vmlinux'.
+
+vtune: Warning: Cannot locate file `x86_pkg_temp_thermal.ko'.
+vtune: Warning: Cannot locate file `kvm.ko'.
+vtune: Warning: Cannot locate file `sep5.ko'.
+
+vtune: Warning: Cannot locate debugging information for the Linux kernel. Source-level analysis will not be possible. Function-level analysis will be limited to kernel symbol tables. See the Enabling Linux Kernel Analysis topic in the product online help for instructions.
+Elapsed Time: 27.386s
+    Clockticks: 122,150,000,000
+        Performance-core (P-core): 122,145,000,000
+        Efficient-core (E-core): 5,000,000
+    Instructions Retired: 159,482,500,000
+        Performance-core (P-core): 159,480,000,000
+        Efficient-core (E-core): 2,500,000
+    CPI Rate: 0.766
+        Performance-core (P-core): 0.766
+        Efficient-core (E-core): 2.000
+    MUX Reliability: 0.999
+    Performance-core (P-core)
+        Retiring: 23.4% of Pipeline Slots
+            Light Operations: 20.7% of Pipeline Slots
+                FP Arithmetic: 23.9% of uOps
+                    FP x87: 0.0% of uOps
+                    FP Scalar: 22.2% of uOps
+                    FP Vector: 1.7% of uOps
+                        128-bit FP Vector: 0.0% of uOps
+                        256-bit FP Vector: 1.7% of uOps
+                Integer Operations: 0.0% of uOps
+                    128-bit Integer Vector Operations: 0.0% of uOps
+                    256-bit Vector Operations: 0.0% of uOps
+                Memory Operations: 8.7% of Pipeline Slots
+                Fused Instructions: 1.0% of Pipeline Slots
+                Non Fused Branches: 1.7% of Pipeline Slots
+                Other: 0.0% of Pipeline Slots
+                    Nop Instructions: 0.4% of Pipeline Slots
+                    Shuffles_256b: 0.0% of Pipeline Slots
+            Heavy Operations: 2.7% of Pipeline Slots
+                Few Uops Instructions: 2.6% of Pipeline Slots
+                Microcode Sequencer: 0.1% of Pipeline Slots
+                    Assists: 0.0% of Pipeline Slots
+                        Page Faults: 0.0% of Pipeline Slots
+                        FP Assists: 0.0% of Pipeline Slots
+                        AVX Assists: 0.0% of Pipeline Slots
+                    CISC: 0.1% of Pipeline Slots
+        Front-End Bound: 17.6% of Pipeline Slots
+         | Issue: A significant portion of Pipeline Slots is remaining empty due
+         | to issues in the Front-End.
+         | 
+         | Tips:  Make sure the code working size is not too large, the code
+         | layout does not require too many memory accesses per cycle to get
+         | enough instructions for filling four pipeline slots, or check for
+         | microcode assists.
+         |
+            Front-End Latency: 8.5% of Pipeline Slots
+                ICache Misses: 0.1% of Clockticks
+                    Code L2 Hit: 0.0% of Clockticks
+                    Code L2 Miss: 0.2% of Clockticks
+                ITLB Misses: 0.0% of Clockticks
+                    Code STLB Hit: 0.0% of Clockticks
+                    Code STLB Miss: 0.0% of Clockticks
+                        Code STLB Miss 4K: 0.0% of Clockticks
+                        Code STLB Miss 2M: 0.0% of Clockticks
+                Branch Resteers: 5.3% of Clockticks
+                    Mispredicts Resteers: 5.4% of Clockticks
+                    Clears Resteers: 0.0% of Clockticks
+                    Unknown Branches: 0.0% of Clockticks
+                MS Switches: 0.2% of Clockticks
+                Length Changing Prefixes: 0.0% of Clockticks
+                DSB Switches: 0.1% of Clockticks
+            Front-End Bandwidth: 9.1% of Pipeline Slots
+                Front-End Bandwidth MITE: 0.1% of Pipeline Slots
+                    Decoder-0 Alone: 0.0% of Pipeline Slots
+                Front-End Bandwidth DSB: 14.8% of Pipeline Slots
+                Front-End Bandwidth LSD: 0.2% of Pipeline Slots
+                MS: 0.1% of Pipeline Slots
+                (Info) DSB Coverage: 99.3%
+                (Info) LSD Coverage: 1.7%
+                (Info) DSB Misses: 0.3% of Pipeline Slots
+        Bad Speculation: 28.9% of Pipeline Slots
+         | A significant proportion of pipeline slots containing useful work are
+         | being cancelled. This can be caused by mispredicting branches or by
+         | machine clears. Note that this metric value may be highlighted due to
+         | Branch Resteers issue.
+         |
+            Branch Mispredict: 29.5% of Pipeline Slots
+             | Issue:: A significant proportion of branches are mispredicted,
+             | leading to excessive wasted work or Backend stalls due to the
+             | machine need to recover its state from a speculative path.
+             | 
+             | Tips:
+             | 
+             | 1. Identify heavily mispredicted branches and consider making
+             | your algorithm more predictable or reducing the number of
+             | branches. You can add more work to 'if' statements and move them
+             | higher in the code flow for earlier execution. If using 'switch'
+             | or 'case' statements, put the most commonly executed cases first.
+             | Avoid using virtual function pointers for heavily executed calls.
+             | 
+             | 2. Use Profile-Guided Optimization (PGO) in the compiler.
+             | 
+             | See the Intel 64 and IA-32 Architectures Optimization Reference
+             | Manual for general strategies to address branch misprediction
+             | issues.
+             |
+                Other Mispredicts: 0.0% of Pipeline Slots
+            Machine Clears: 0.0% of Pipeline Slots
+                Other Nukes: 0.0% of Pipeline Slots
+        Back-End Bound: 30.1% of Pipeline Slots
+         | A significant portion of pipeline slots are remaining empty. When
+         | operations take too long in the back-end, they introduce bubbles in
+         | the pipeline that ultimately cause fewer pipeline slots containing
+         | useful work to be retired per cycle than the machine is capable to
+         | support. This opportunity cost results in slower execution. Long-
+         | latency operations like divides and memory operations can cause this,
+         | as can too many operations being directed to a single execution port
+         | (for example, more multiply operations arriving in the back-end per
+         | cycle than the execution unit can support).
+         |
+            Memory Bound: 19.4% of Pipeline Slots
+                L1 Bound: 8.3% of Clockticks
+                    DTLB Overhead: 3.0% of Clockticks
+                        Load STLB Hit: 2.0% of Clockticks
+                        Load STLB Miss: 1.0% of Clockticks
+                            Load STLB Miss 4K: 1.0% of Clockticks
+                            Load STLB Miss 2M: 0.0% of Clockticks
+                            Load STLB Miss 1G: 0.0% of Clockticks
+                    Loads Blocked by Store Forwarding: 0.0% of Clockticks
+                    L1 Latency Dependency: 18.0% of Clockticks
+                    Lock Latency: 0.0% of Clockticks
+                    Split Loads: 0.0% of Clockticks
+                    FB Full: 9.7% of Clockticks
+                L2 Bound: 3.0% of Clockticks
+                    L2 Hit Latency: 60.7% of Clockticks
+                L3 Bound: 4.5% of Clockticks
+                    Contested Accesses: 0.0% of Clockticks
+                    Data Sharing: 0.0% of Clockticks
+                    L3 Latency: 10.4% of Clockticks
+                    SQ Full: 4.6% of Clockticks
+                DRAM Bound: 21.5% of Clockticks
+                    Memory Bandwidth: 65.1% of Clockticks
+                    Memory Latency: 15.4% of Clockticks
+                Store Bound: 0.1% of Clockticks
+                    Store Latency: 4.1% of Clockticks
+                    False Sharing: 0.0% of Clockticks
+                    Split Stores: 0.0%
+                    Streaming Stores: 0.0% of Clockticks
+                    DTLB Store Overhead: 2.5% of Clockticks
+                        Store STLB Hit: 2.3% of Clockticks
+                        Store STLB Miss: 0.2% of Clockticks
+                            Store STLB Miss 4K: 0.2% of Clockticks
+                            Store STLB Miss 2M: 0.0% of Clockticks
+                            Store STLB Miss 1G: 0.0% of Clockticks
+            Core Bound: 10.7% of Pipeline Slots
+             | This metric represents how much Core non-memory issues were of a
+             | bottleneck. Shortage in hardware compute resources, or
+             | dependencies software's instructions are both categorized under
+             | Core Bound. Hence it may indicate the machine ran out of an OOO
+             | resources, certain execution units are overloaded or dependencies
+             | in program's data- or instruction- flow are limiting the
+             | performance (e.g. FP-chained long-latency arithmetic operations).
+             |
+                Divider: 0.1% of Clockticks
+                    FP Divider: 0.1% of Clockticks
+                    INT Divider: 0.0% of Clockticks
+                Serializing Operations: 1.0% of Clockticks
+                    Slow Pause: 0.0% of Clockticks
+                    C01 Wait: 0.0% of Clockticks
+                    C02 Wait: 0.0% of Clockticks
+                    Memory Fence: 0.0% of Clockticks
+                Port Utilization: 22.8% of Clockticks
+                 | Issue: A significant fraction of cycles was stalled due to
+                 | Core non-divider-related issues.
+                 | 
+                 | Tips: Use vectorization to reduce pressure on the execution
+                 | ports as multiple elements are calculated with same uOp.
+                 |
+                    Cycles of 0 Ports Utilized: 0.1% of Clockticks
+                        Mixing Vectors: 0.0% of Clockticks
+                    Cycles of 1 Port Utilized: 18.2% of Clockticks
+                    Cycles of 2 Ports Utilized: 10.8% of Clockticks
+                     | This metric represents cycles fraction CPU executed total
+                     | of 2 uops per cycle on all execution ports (Logical
+                     | Processor cycles since ICL, Physical Core cycles
+                     | otherwise). Tip: Loop Vectorization - most compilers
+                     | feature auto-Vectorization options today- reduces
+                     | pressure on the execution ports as multiple elements are
+                     | calculated with same uop.
+                     |
+                    Cycles of 3+ Ports Utilized: 28.2% of Clockticks
+                        ALU Operation Utilization: 16.4% of Clockticks
+                            Port 0: 18.0% of Clockticks
+                            Port 1: 18.6% of Clockticks
+                            Port 6: 26.6% of Clockticks
+                        Load Operation Utilization: 23.0% of Clockticks
+                        Store Operation Utilization: 4.1% of Clockticks
+                    Vector Capacity Usage (FPU): 15.1%
+    Efficient-core (E-core)
+        Retiring: 0.0% of Pipeline Slots
+            Arith Ops: 0.0% of Pipeline Slots
+                Non Divider: 0.0% of Pipeline Slots
+                FP Divide: 0.0% of Pipeline Slots
+                Int Divider: 0.0% of Pipeline Slots
+            Mem Ops: 0.0% of Pipeline Slots
+                Loads: 0.0% of Pipeline Slots
+                Stores: 0.0% of Pipeline Slots
+        Front-End Bound: 0.0% of Pipeline Slots
+            IFetch Latency: 0.0% of Pipeline Slots
+                ICache Misses: 0.0% of Pipeline Slots
+                ITLB Misses: 0.0% of Pipeline Slots
+                BACLEARS: 0.0% of Pipeline Slots
+                Branch Resteers: 0.0% of Pipeline Slots
+            IFetch Bandwidth: 0.0% of Pipeline Slots
+                Cisc: 0.0% of Pipeline Slots
+                Decode: 0.0% of Pipeline Slots
+                Pre-Decode Wrong: 0.0% of Pipeline Slots
+                Front-End Other: 0.0% of Pipeline Slots
+        Bad Speculation: 100.0% of Pipeline Slots
+         | A significant proportion of pipeline slots containing useful work are
+         | being cancelled. This can be caused by mispredicting branches or by
+         | machine clears. Note that this metric value may be highlighted due to
+         | Branch Resteers issue.
+         |
+            Branch Mispredict: 0.0% of Pipeline Slots
+            Machine Clears: 100.0% of Pipeline Slots
+             | Issue: A significant portion of execution time is spent handling
+             | machine clears.
+             | 
+             | Tips: See the "Memory Disambiguation" section in the Intel 64 and
+             | IA-32 Architectures Optimization Reference Manual.
+             |
+                Ucode_Assist: 0.0% of Pipeline Slots
+                Machine_Restart: 0.0% of Pipeline Slots
+        Back-End Bound: 0.0% of Pipeline Slots
+            Memory Subsystem Bound: 0.0% of Clockticks
+                L2 Bound: 0.0% of Clockticks
+                L2 Miss: 0.0% of Clockticks
+                    L3 Bound: 0.0% of Clockticks
+                    Memory Bound: 0.0% of Clockticks
+            Core Bound: 0.0% of Pipeline Slots
+                Serializing Operations: 0.0% of Pipeline Slots
+                    Pause: 0.0% of Pipeline Slots
+                    TPause: 0.0% of Pipeline Slots
+                L1 Bound: 0.0% of Clockticks
+                RB Bound: 0.0% of Pipeline Slots
+                Store Bound: 0.0% of Pipeline Slots
+                Execution Bound: 0.0% of Pipeline Slots
+                Allocation Bound: 0.0% of Pipeline Slots
+                    Allocation Restriction: 0.0% of Pipeline Slots
+        Info Metrics
+            Stores Bound: 0.000
+            Load Bound: 1.600
+    Average CPU Frequency: 4.521 GHz
+    Total Thread Count: 1
+    Paused Time: 0s
+Effective Physical Core Utilization: 9.8% (0.982 out of 10)
+ | The metric value is low, which may signal a poor physical CPU cores
+ | utilization caused by:
+ |     - load imbalance
+ |     - threading runtime overhead
+ |     - contended synchronization
+ |     - thread/process underutilization
+ |     - incorrect affinity that utilizes logical cores instead of physical
+ |       cores
+ | Explore sub-metrics to estimate the efficiency of MPI and OpenMP parallelism
+ | or run the Locks and Waits analysis to identify parallel bottlenecks for
+ | other parallel runtimes.
+ |
+    Effective Logical Core Utilization: 8.2% (0.987 out of 12)
+     | The metric value is low, which may signal a poor logical CPU cores
+     | utilization. Consider improving physical core utilization as the first
+     | step and then look at opportunities to utilize logical cores, which in
+     | some cases can improve processor throughput and overall performance of
+     | multi-threaded applications.
+     |
+Collection and Platform Info
+    Application Command Line: taskset "-c" "0" "build/profile/solve" "--matrix" "/home/nottarik/p08/data/thermal2.mtx" "--problem" "random" "--maxit" "30000" "--precond" "ic0" 
+    User Name: nottarik
+    Operating System: 6.17.0-19-generic DISTRIB_ID=Ubuntu DISTRIB_RELEASE=24.04 DISTRIB_CODENAME=noble DISTRIB_DESCRIPTION="Ubuntu 24.04.4 LTS"
+    Computer Name: nottarik-t14
+    Result Size: 213.3 MB 
+    Collection start time: 18:38:13 15/11/2026 UTC
+    Collection stop time: 18:38:40 15/11/2026 UTC
+    Collector Type: Event-based sampling driver
+    CPU
+        Name: Intel(R) microarchitecture code named Raptorlake-P
+        Frequency: 2.496 GHz
+        Logical CPU Count: 12
+        Cache Allocation Technology
+            Level 2 capability: not detected
+            Level 3 capability: not detected
+
+If you want to skip descriptions of detected performance issues in the report,
+enter: vtune -report summary -report-knob show-issues=false -r <my_result_dir>.
+Alternatively, you may view the report in the csv format: vtune -report
+<report_name> -format=csv.

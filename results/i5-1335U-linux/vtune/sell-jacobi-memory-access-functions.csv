@@ -1,0 +1,353 @@
+Function,CPU Time,Performance-core (P-core):Memory Bound(%),Performance-core (P-core):Memory Bound:L1 Bound(%),Performance-core (P-core):Memory Bound:L2 Bound(%),Performance-core (P-core):Memory Bound:L3 Bound(%),Performance-core (P-core):Memory Bound:DRAM Bound(%),Performance-core (P-core):Memory Bound:Store Bound(%),Efficient-core (E-core):Memory Bound(%),Efficient-core (E-core):Memory Bound:L1 Bound(%),Efficient-core (E-core):Memory Bound:L2 Bound(%),Efficient-core (E-core):Memory Bound:L3 Bound(%),Loads,Stores,LLC Miss Count,Average Latency (cycles),Module,Function (Full),Source File,Start Address
+chunk_times_vector,13.410457,43.2,0.0,0.7,8.9,42.0,0.0,0.0,0.0,0.0,0.0,49562686836,6228486849,258808654,24.878693,solve,chunk_times_vector,sell_backend.cpp,0xf1b7
+ssolve::SeqVectorBackend::jacobi_update,4.639423,67.8,0.0,1.3,13.3,57.9,0.0,0.0,0.0,0.0,0.0,3662209863,1453443602,416824993,263.660256,solve,"ssolve::SeqVectorBackend::jacobi_update(double, double const*, double const*, double*, double*, double const*) const",seq_vectors.hpp,0xe290
+ssolve::SeqVectorBackend::jacobi_direction,2.377804,67.1,8.3,0.0,9.6,58.9,0.0,0.0,0.0,0.0,0.0,2048861464,686420592,310180221,199.317757,solve,"ssolve::SeqVectorBackend::jacobi_direction(double const*, double const*, double, double*) const",seq_vectors.hpp,0xe4d0
+ssolve::(anonymous namespace)::SellBackend<(int)8>::spmv_dot,1.886018,42.0,0.6,0.6,3.9,1.7,0.0,0.0,0.0,0.0,0.0,9061271830,2512975387,650273,41.394366,solve,"ssolve::(anonymous namespace)::SellBackend<(int)8>::spmv_dot(double const*, double*) const",sell_backend.cpp,0xf170
+__GI_____strtod_l_internal,0.153245,2.1,6.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,455013650,201506045,0,7.122449,libc.so.6,__GI_____strtod_l_internal,strtod_l.c,0x4e390
+ssolve::csr_from_coo,0.063101,61.2,24.4,0.0,16.3,8.1,8.1,0.0,0.0,0.0,0.0,54601638,27300819,2601092,7.000000,solve,ssolve::csr_from_coo(ssolve::Coo const&),aligned_array.hpp,0x5d90
+str_to_mpn,0.061098,2.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,111803354,81902457,0,7.000000,libc.so.6,str_to_mpn,strtod_l.c,0x4dbc4
+next,0.043069,2.1,28.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,100103003,0,0,7.000000,solve,next,mtx_reader.cpp,0x8f5d
+parse_integer,0.034054,2.0,24.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,39001170,0,0,7.000000,solve,parse_integer,mtx_reader.cpp,0x29519
+__memset_avx2_unaligned_erms,0.033053,32.6,0.0,0.0,0.0,0.0,12.4,0.0,0.0,0.0,0.0,0,0,0,0.0,libc.so.6,__memset_avx2_unaligned_erms,memset-vec-unaligned-erms.S,0x189480
+native_write_msr_safe,0.033053,48.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,native_write_msr_safe,[Unknown],0xffffffff9a346de0
+native_irq_return_iret,0.029046,45.5,40.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,9.000000,vmlinux,native_irq_return_iret,[Unknown],0xffffffff9a001248
+[sep5],0.027043,50.2,0.0,54.2,10.8,0.0,0.0,0.0,0.0,0.0,0.0,70202106,104003120,0,7.600000,sep5,[sep5],[Unknown],0x0
+__memmove_avx_unaligned_erms,0.027043,13.5,40.0,0.0,0.0,0.0,20.0,0.0,0.0,0.0,0.0,39001170,29900897,0,20.125000,libc.so.6,__memmove_avx_unaligned_erms,memmove-vec-unaligned-erms.S,0x188a80
+round_and_return,0.022035,2.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,59801794,10400312,0,7.333333,libc.so.6,round_and_return,strtod_l.c,0x289e6
+next,0.020032,2.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,39001170,0,0,7.000000,solve,next,mtx_reader.cpp,0x8f5d
+parse_integer,0.020032,1.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,19500585,0,0,7.000000,solve,parse_integer,mtx_reader.cpp,0x29200
+_copy_to_iter,0.019030,88.9,0.0,0.0,57.8,100.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,_copy_to_iter,[Unknown],0xffffffff9ab9d120
+qi_check_fault,0.019030,57.6,68.4,68.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,1300039,0,0.0,vmlinux,qi_check_fault,[Unknown],0xffffffff9aeeb850
+sync_regs,0.019030,36.1,35.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,2600078,0,0.0,vmlinux,sync_regs,[Unknown],0xffffffff9b596b80
+ssolve::sell_from_csr,0.016026,30.6,0.0,0.0,30.6,61.2,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"ssolve::sell_from_csr(ssolve::CsrMatrixT<long> const&, int, int)",sell.cpp,0x668e
+ssolve::validate_cg_matrix,0.016026,4.5,0.0,20.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,ssolve::validate_cg_matrix(ssolve::CsrMatrixT<long> const&),verify.cpp,0x8690
+update_curr,0.016026,51.8,0.0,100.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0,2600078,0,0.0,vmlinux,update_curr,[Unknown],0xffffffff9a3e85a0
+__mpn_lshift,0.014022,2.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,15600468,22100663,0,7.000000,libc.so.6,__mpn_lshift,lshift.S,0x595c0
+parse_real,0.014022,2.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,49401482,35101053,0,8.750000,solve,parse_real,mtx_reader.cpp,0x28a38
+ssolve::jacobi_inverse_diagonal,0.011018,16.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,ssolve::jacobi_inverse_diagonal(ssolve::CsrMatrixT<long> const&),cg.cpp,0x82e8
+ssolve::spmv_reference,0.010016,17.3,0.0,0.0,65.0,97.5,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"ssolve::spmv_reference(ssolve::CsrMatrixT<long> const&, double const*, double*)",verify.cpp,0x2152c
+__mpn_mul,0.009014,1.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,39001170,27300819,0,8.200000,libc.so.6,__mpn_mul,mul.c,0x59730
+merge_duplicates,0.009014,8.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,merge_duplicates,csr.cpp,0x5dde
+native_sched_clock,0.009014,40.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,6500195,0,0,8.000000,vmlinux,native_sched_clock,[Unknown],0xffffffff9b597ff0
+ssolve::rhs_for_random_solution,0.009014,18.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,ssolve::rhs_for_random_solution(ssolve::CsrMatrixT<long> const&),generators.cpp,0x6c7c
+ssolve::spmv_reference,0.009014,18.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,118303549,5200156,0,46.444444,solve,"ssolve::spmv_reference(ssolve::CsrMatrixT<long> const&, double const*, double*)",verify.cpp,0x22138
+str_to_mpn,0.009014,3.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,57201716,0,0,8.400000,libc.so.6,str_to_mpn,strtod_l.c,0x4db90
+__strlen_avx2,0.008013,2.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,18200546,0,0,7.000000,libc.so.6,__strlen_avx2,strlen-avx2.S,0x18b7c0
+fmax,0.008013,7.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,14300429,0,0,0.0,libm.so.6,fmax,s_fmax.S,0x3a160
+next,0.008013,2.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,24700741,0,0,7.000000,solve,next,mtx_reader.cpp,0x8f5d
+scaled_norm,0.008013,15.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,scaled_norm,verify.cpp,0x224a0
+ssolve::spmv_reference,0.008013,19.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"ssolve::spmv_reference(ssolve::CsrMatrixT<long> const&, double const*, double*)",verify.cpp,0x220ba
+"std::uniform_real_distribution<double>::operator()<std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>>",0.008013,1.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"std::uniform_real_distribution<double>::operator()<std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>>(std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>&)",random.h,0x21e95
+__memchr_avx2,0.007011,2.3,0.0,0.0,0.0,37.1,0.0,0.0,0.0,0.0,0.0,10400312,0,0,7.000000,libc.so.6,__memchr_avx2,memchr-avx2.S,0x188080
+count_memcg_events,0.007011,24.1,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,5200156,10400312,0,0.0,vmlinux,count_memcg_events,[Unknown],0xffffffff9a7bde20
+"std::vector<double, std::allocator<double>>::push_back",0.007011,2.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,7800234,10400312,0,15.000000,solve,"std::vector<double, std::allocator<double>>::push_back(double const&)",stl_vector.h,0x2a649
+css_rstat_updated,0.006010,39.9,0.0,0.0,100.0,100.0,100.0,0.0,0.0,0.0,0.0,22100663,1300039,0,7.000000,vmlinux,css_rstat_updated,[Unknown],0xffffffff9a4eda90
+lru_gen_add_folio,0.006010,26.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,0,0,7.000000,vmlinux,lru_gen_add_folio,[Unknown],0xffffffff9a6a7160
+rmqueue_bulk,0.006010,41.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,2600078,0,0.0,vmlinux,rmqueue_bulk,[Unknown],0xffffffff9a73d6b0
+__cgroup_account_cputime_field,0.005008,53.9,0.0,100.0,0.0,57.8,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,__cgroup_account_cputime_field,[Unknown],0xffffffff9a4ee6f0
+__handle_mm_fault,0.005008,25.5,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,6500195,0,7.000000,vmlinux,__handle_mm_fault,[Unknown],0xffffffff9a70afd0
+__pte_offset_map_lock,0.005008,32.3,0.0,0.0,0.0,0.0,27.4,0.0,0.0,0.0,0.0,6500195,2600078,0,7.000000,vmlinux,__pte_offset_map_lock,[Unknown],0xffffffff9a71e570
+"__unguarded_linear_insert<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__ops::_Val_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",0.005008,0.8,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,7800234,0,0.0,solve,"__unguarded_linear_insert<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__ops::_Val_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",stl_algo.h,0x15faf
+do_anonymous_page,0.005008,28.0,74.3,0.0,0.0,0.0,37.1,0.0,0.0,0.0,0.0,3900117,3900117,0,0.0,vmlinux,do_anonymous_page,[Unknown],0xffffffff9a709760
+lock_vma_under_rcu,0.005008,32.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,5200156,0,0.0,vmlinux,lock_vma_under_rcu,[Unknown],0xffffffff9a6f9070
+qi_submit_sync,0.005008,59.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,qi_submit_sync,[Unknown],0xffffffff9aeed8a0
+sched_tick,0.005008,48.7,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,1300039,0,0.0,vmlinux,sched_tick,[Unknown],0xffffffff9a3e25c0
+"std::basic_string_view<char, std::char_traits<char>>::find",0.005008,2.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,11700351,10400312,0,0.0,solve,"std::basic_string_view<char, std::char_traits<char>>::find(char, unsigned long) const",string_view.tcc,0x28a78
+"std::vector<int, std::allocator<int>>::push_back",0.005008,1.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,10400312,10400312,0,7.000000,solve,"std::vector<int, std::allocator<int>>::push_back(int const&)",stl_vector.h,0x2a61d
+update_cfs_group,0.005008,50.2,0.0,0.0,57.8,100.0,0.0,0.0,0.0,0.0,0.0,1300039,1300039,0,0.0,vmlinux,update_cfs_group,[Unknown],0xffffffff9a3f0910
+validate,0.005008,4.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,202806084,0,0,7.062500,solve,validate,csr.cpp,0x5e20
+__lruvec_stat_mod_folio,0.004006,53.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,10400312,0,0,0.0,vmlinux,__lruvec_stat_mod_folio,[Unknown],0xffffffff9a7bb740
+__rcu_read_lock,0.004006,33.8,0.0,0.0,0.0,0.0,74.3,0.0,0.0,0.0,0.0,10900327,3900117,0,0.0,vmlinux,__rcu_read_lock,[Unknown],0xffffffff9a4720b0
+account_user_time,0.004006,42.3,0.0,100.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,account_user_time,[Unknown],0xffffffff9a410ca0
+clear_page_erms,0.004006,21.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,2600078,0,0.0,vmlinux,clear_page_erms,[Unknown],0xffffffff9b58e650
+common_interrupt_return,0.004006,43.7,0.0,0.0,43.3,0.0,0.0,0.0,0.0,0.0,0.0,9100273,0,0,7.000000,vmlinux,common_interrupt_return,[Unknown],0xffffffff9a001150
+do_user_addr_fault,0.004006,32.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,1300039,0,0.0,vmlinux,do_user_addr_fault,[Unknown],0xffffffff9a354040
+folio_add_new_anon_rmap,0.004006,29.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,folio_add_new_anon_rmap,[Unknown],0xffffffff9a7215f0
+folios_put_refs,0.004006,20.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,3900117,0,0.0,vmlinux,folios_put_refs,[Unknown],0xffffffff9a6a9400
+memcg1_commit_charge,0.004006,29.0,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0,1300039,0,7.000000,vmlinux,memcg1_commit_charge,[Unknown],0xffffffff9a7b6eb0
+"std::uniform_real_distribution<double>::operator()<std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>>",0.004006,2.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"std::uniform_real_distribution<double>::operator()<std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>>(std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>&)",random.h,0x21edf
+"std::vector<int, std::allocator<int>>::push_back",0.004006,1.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,6500195,0,0,7.000000,solve,"std::vector<int, std::allocator<int>>::push_back(int const&)",stl_vector.h,0x2a4fa
+task_tick_fair,0.004006,50.2,0.0,0.0,65.0,100.0,0.0,0.0,0.0,0.0,0.0,0,2600078,0,0.0,vmlinux,task_tick_fair,[Unknown],0xffffffff9a3f0a10
+zap_present_ptes.constprop.0,0.004006,36.5,74.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,32500975,15600468,650273,7.000000,vmlinux,zap_present_ptes.constprop.0,[Unknown],0xffffffff9a701c40
+__GI_memcpy,0.003005,2.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3900117,3900117,0,0.0,libc.so.6,__GI_memcpy,string_fortified.h,0x50480
+__GI_strtod,0.003005,1.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,9100273,0,0,7.000000,libc.so.6,__GI_strtod,strtod.c,0x4db70
+__free_one_page,0.003005,31.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,6500195,0,0.0,vmlinux,__free_one_page,[Unknown],0xffffffff9a737fd0
+"__insertion_sort<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",0.003005,0.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3900117,0,0,0.0,solve,"__insertion_sort<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",stl_algo.h,0x15f10
+__mem_cgroup_charge,0.003005,33.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,__mem_cgroup_charge,[Unknown],0xffffffff9a7c1a40
+__memmove_chk_avx_unaligned_erms,0.003005,2.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,libc.so.6,__memmove_chk_avx_unaligned_erms,[Unknown],0x188a50
+__mpn_mul_1,0.003005,1.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,6500195,5200156,0,7.000000,libc.so.6,__mpn_mul_1,mul_1.S,0x59bb0
+__rcu_read_unlock,0.003005,40.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,18200546,0,0,7.666667,vmlinux,__rcu_read_unlock,[Unknown],0xffffffff9a47e6a0
+__update_load_avg_cfs_rq,0.003005,49.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3900117,1300039,0,0.0,vmlinux,__update_load_avg_cfs_rq,[Unknown],0xffffffff9a40ee10
+_find_next_bit,0.003005,58.0,0.0,86.7,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,_find_next_bit,[Unknown],0xffffffff9aba0b10
+alloc_pages_mpol,0.003005,45.6,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,1300039,0,0,7.000000,vmlinux,alloc_pages_mpol,[Unknown],0xffffffff9a780300
+blk_cgroup_congested,0.003005,33.3,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,1300039,2600078,0,0.0,vmlinux,blk_cgroup_congested,[Unknown],0xffffffff9ab21e70
+charge_memcg,0.003005,2.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,5200156,0,0.0,vmlinux,charge_memcg,[Unknown],0xffffffff9a7c04d0
+folio_batch_move_lru,0.003005,36.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3900117,0,0,0.0,vmlinux,folio_batch_move_lru,[Unknown],0xffffffff9a6a9660
+func@0x286f0,0.003005,1.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,10400312,0,0,7.000000,libc.so.6,func@0x286f0,[Unknown],0x286f0
+handle_mm_fault,0.003005,32.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,2600078,0,0.0,vmlinux,handle_mm_fault,[Unknown],0xffffffff9a70b720
+mod_memcg_lruvec_state,0.003005,27.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,22100663,28600858,0,0.0,vmlinux,mod_memcg_lruvec_state,[Unknown],0xffffffff9a7bb360
+next,0.003005,2.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,52001560,0,8.000000,solve,next,mtx_reader.cpp,0x28a44
+next,0.003005,2.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,next,mtx_reader.cpp,0x8f5d
+read_entry,0.003005,1.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,14300429,0,0,0.0,solve,read_entry,mtx_reader.cpp,0x8f4d
+reweight_entity,0.003005,0.0,0.0,,,0.0,0.0,0.0,0.0,0.0,0.0,2600078,1300039,0,0.0,vmlinux,reweight_entity,[Unknown],0xffffffff9a3f0690
+sched_use_asym_prio,0.003005,52.5,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,2600078,0,0.0,vmlinux,sched_use_asym_prio,[Unknown],0xffffffff9a3e7470
+ssolve::parse_matrix_market,0.003005,2.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,28600858,0,0,11.000000,solve,"ssolve::parse_matrix_market(std::basic_string_view<char, std::char_traits<char>>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char>> const&)",mtx_reader.cpp,0x8f4d
+"std::basic_string_view<char, std::char_traits<char>>::operator[]",0.003005,1.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,10400312,0,0.0,solve,"std::basic_string_view<char, std::char_traits<char>>::operator[](unsigned long) const",string_view,0x29603
+"std::vector<double, std::allocator<double>>::push_back",0.003005,1.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,13000390,1300039,0,0.0,solve,"std::vector<double, std::allocator<double>>::push_back(double const&)",stl_vector.h,0x2a569
+__ct_user_exit,0.002003,48.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,7.000000,vmlinux,__ct_user_exit,[Unknown],0xffffffff9b59ba40
+__folio_throttle_swaprate,0.002003,23.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,__folio_throttle_swaprate,[Unknown],0xffffffff9a76a450
+__mod_lruvec_state,0.002003,35.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,1300039,0,0.0,vmlinux,__mod_lruvec_state,[Unknown],0xffffffff9a7bddc0
+"__move_merge<int*, __gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",0.002003,0.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,10400312,0,0.0,solve,"__move_merge<int*, __gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",stl_algo.h,0x16186
+__mpn_construct_double,0.002003,1.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,10400312,0,0,0.0,libc.so.6,__mpn_construct_double,mpn2dbl.c,0x5ae50
+__page_cache_release.part.0,0.002003,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,14300429,11700351,0,0.0,vmlinux,__page_cache_release.part.0,[Unknown],0xffffffff9a6a91c0
+__raw_spin_lock_irqsave,0.002003,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,__raw_spin_lock_irqsave,[Unknown],0xffffffff9a436d80
+__sysvec_apic_timer_interrupt,0.002003,53.6,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,__sysvec_apic_timer_interrupt,[Unknown],0xffffffff9a32d0a0
+_raw_spin_lock,0.002003,36.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,_raw_spin_lock,[Unknown],0xffffffff9b5aba80
+arch_exit_to_user_mode_prepare.isra.0,0.002003,43.7,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,2600078,0,0.0,vmlinux,arch_exit_to_user_mode_prepare.isra.0,[Unknown],0xffffffff9a493960
+clockevents_program_event,0.002003,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,clockevents_program_event,[Unknown],0xffffffff9a4beb40
+free_pages_and_swap_cache,0.002003,38.4,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,free_pages_and_swap_cache,[Unknown],0xffffffff9a762480
+func@0x4790,0.002003,1.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3900117,0,0,0.0,solve,func@0x4790,[Unknown],0x4790
+func@0x47b0,0.002003,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,solve,func@0x47b0,[Unknown],0x47b0
+func@0x4820,0.002003,6.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,7.000000,solve,func@0x4820,[Unknown],0x4820
+func@0x4880,0.002003,3.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,15600468,0,0,0.0,solve,func@0x4880,[Unknown],0x4880
+get_mem_cgroup_from_mm,0.002003,40.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,1300039,0,0.0,vmlinux,get_mem_cgroup_from_mm,[Unknown],0xffffffff9a7bb5f0
+get_rounding_mode,0.002003,1.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,libc.so.6,get_rounding_mode,get-rounding-mode.h,0x289e6
+handle_pte_fault,0.002003,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,vmlinux,handle_pte_fault,[Unknown],0xffffffff9a70adc0
+irqentry_nmi_exit,0.002003,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,1300039,0,0.0,vmlinux,irqentry_nmi_exit,[Unknown],0xffffffff9b59b270
+memcpy,0.002003,2.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,memcpy,string_fortified.h,0x2a724
+next_data,0.002003,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,7800234,0,0,7.000000,solve,next_data,mtx_reader.cpp,0x28a44
+nohz_balancer_kick,0.002003,50.8,,,,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,nohz_balancer_kick,[Unknown],0xffffffff9a3f9500
+notifier_call_chain,0.002003,53.9,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,notifier_call_chain,[Unknown],0xffffffff9a3c3050
+operator(),0.002003,22.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,operator(),sell.cpp,0x18022
+operator(),0.002003,1.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,14300429,0,0,7.000000,solve,operator(),sell.cpp,0x15e2e
+operator(),0.002003,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,9100273,0,0,0.0,solve,operator(),sell.cpp,0x1619e
+perf_event_task_tick,0.002003,68.6,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,perf_event_task_tick,[Unknown],0xffffffff9a674510
+round_away,0.002003,1.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,libc.so.6,round_away,rounding-mode.h,0x4df60
+scaled_norm,0.002003,12.4,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,scaled_norm,verify.cpp,0x22420
+scaled_norm,0.002003,17.4,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,scaled_norm,verify.cpp,0x2238f
+scaled_norm,0.002003,10.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,scaled_norm,verify.cpp,0x21646
+ssolve::symmetry_defect,0.002003,23.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,23400702,7800234,0,79.500000,solve,ssolve::symmetry_defect(ssolve::CsrMatrixT<long> const&),verify.cpp,0x85cd
+"std::basic_string_view<char, std::char_traits<char>>::substr",0.002003,3.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"std::basic_string_view<char, std::char_traits<char>>::substr(unsigned long, unsigned long) const",string_view,0x28ad2
+"std::basic_string_view<char, std::char_traits<char>>::substr",0.002003,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"std::basic_string_view<char, std::char_traits<char>>::substr(unsigned long, unsigned long) const",string_view,0x291db
+"std::basic_string_view<char, std::char_traits<char>>::substr",0.002003,1.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"std::basic_string_view<char, std::char_traits<char>>::substr(unsigned long, unsigned long) const",string_view,0x294f3
+"std::move<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>, int*>",0.002003,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"std::move<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>, int*>(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>, int*)",stl_algobase.h,0x15e6a
+"std::vector<int, std::allocator<int>>::push_back",0.002003,2.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,10400312,1300039,0,7.000000,solve,"std::vector<int, std::allocator<int>>::push_back(int const&)",stl_vector.h,0x2a540
+"std::vector<long, std::allocator<long>>::operator[]",0.002003,72.7,0.0,100.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"std::vector<long, std::allocator<long>>::operator[](unsigned long)",stl_vector.h,0x11abb
+try_charge_memcg,0.002003,35.3,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,5200156,1300039,0,0.0,vmlinux,try_charge_memcg,[Unknown],0xffffffff9a7bfb00
+__GI_memcpy,0.001002,2.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3900117,1300039,0,7.000000,libc.so.6,__GI_memcpy,string_fortified.h,0x50723
+__alloc_frozen_pages_noprof,0.001002,30.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,3900117,0,9.000000,vmlinux,__alloc_frozen_pages_noprof,[Unknown],0xffffffff9a7434b0
+__calc_delta.constprop.0,0.001002,42.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,72.000000,vmlinux,__calc_delta.constprop.0,[Unknown],0xffffffff9a3e3f80
+__cond_resched,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,__cond_resched,[Unknown],0xffffffff9b5a24b0
+__ct_user_enter,0.001002,28.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,1300039,0,0.0,vmlinux,__ct_user_enter,[Unknown],0xffffffff9b59b930
+"__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>::operator++",0.001002,0.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,solve,"__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>::operator++(void)",stl_iterator.h,0x15e5a
+__hrtimer_run_queues,0.001002,49.3,0.0,0.0,86.7,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,__hrtimer_run_queues,[Unknown],0xffffffff9a4a8b90
+__mod_node_page_state,0.001002,29.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,23400702,9600288,0,0.0,vmlinux,__mod_node_page_state,[Unknown],0xffffffff9a6d0c80
+__mod_zone_page_state,0.001002,38.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,6500195,1300039,0,67.000000,vmlinux,__mod_zone_page_state,[Unknown],0xffffffff9a6d0bc0
+__pkru_allows_pkey,0.001002,29.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,__pkru_allows_pkey,[Unknown],0xffffffff9a352900
+__rmqueue_pcplist,0.001002,30.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,1300039,0,7.000000,vmlinux,__rmqueue_pcplist,[Unknown],0xffffffff9a73e8f0
+__run_timers,0.001002,68.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,__run_timers,[Unknown],0xffffffff9a4a68b0
+__tlb_remove_folio_pages,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,__tlb_remove_folio_pages,[Unknown],0xffffffff9a714260
+__tlb_remove_folio_pages_size.isra.0,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,7.000000,vmlinux,__tlb_remove_folio_pages_size.isra.0,[Unknown],0xffffffff9a714040
+__update_load_avg_se,0.001002,50.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3900117,3900117,0,8.000000,vmlinux,__update_load_avg_se,[Unknown],0xffffffff9a40e7c0
+_find_first_bit,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,_find_first_bit,[Unknown],0xffffffff9aba08f0
+_find_next_and_bit,0.001002,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,_find_next_and_bit,[Unknown],0xffffffff9aba0c10
+_raw_spin_lock_irq,0.001002,54.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,_raw_spin_lock_irq,[Unknown],0xffffffff9b5abb60
+_raw_spin_trylock,0.001002,62.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,3900117,0,0.0,vmlinux,_raw_spin_trylock,[Unknown],0xffffffff9b5ab300
+_raw_spin_unlock,0.001002,72.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,_raw_spin_unlock,[Unknown],0xffffffff9b5abc30
+acct_account_cputime,0.001002,38.8,0.0,0.0,,,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,acct_account_cputime,[Unknown],0xffffffff9a532760
+calc_global_load,0.001002,54.1,100.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,calc_global_load,[Unknown],0xffffffff9a42f9b0
+call_function_single_prep_ipi,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,call_function_single_prep_ipi,[Unknown],0xffffffff9a3dbcf0
+fpregs_assert_state_consistent,0.001002,53.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,fpregs_assert_state_consistent,[Unknown],0xffffffff9a2f34a0
+free_frozen_page_commit,0.001002,28.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,10400312,6500195,0,7.000000,vmlinux,free_frozen_page_commit,[Unknown],0xffffffff9a739e40
+free_pud_range,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,free_pud_range,[Unknown],0xffffffff9a6fcb30
+func@0x2540,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,taskset,func@0x2540,[Unknown],0x2540
+func@0x4a00,0.001002,0.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,solve,func@0x4a00,[Unknown],0x4a00
+hrtimer_forward,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,hrtimer_forward,[Unknown],0xffffffff9a4a80d0
+idle_cpu,0.001002,45.8,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,idle_cpu,[Unknown],0xffffffff9a419f10
+leftmatch_fb,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,leftmatch_fb,[Unknown],0xffffffff9aa66060
+lru_add,0.001002,26.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,1300039,0,0.0,vmlinux,lru_add,[Unknown],0xffffffff9a6a7e90
+mas_walk,0.001002,32.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3900117,2600078,0,0.0,vmlinux,mas_walk,[Unknown],0xffffffff9b56c200
+mask_ioapic_irq,0.001002,67.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,mask_ioapic_irq,[Unknown],0xffffffff9a3326f0
+nmi_handle.part.0,0.001002,54.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,6500195,2600078,0,8.000000,vmlinux,nmi_handle.part.0,[Unknown],0xffffffff9a2e3cc0
+ntp_tick_length,0.001002,69.4,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,ntp_tick_length,[Unknown],0xffffffff9a4afa10
+operator(),0.001002,0.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,29900897,0,0,0.0,solve,operator(),sell.cpp,0x15e2e
+operator(),0.001002,0.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,10400312,0,0,0.0,solve,operator(),sell.cpp,0x15f7b
+p4d_offset,0.001002,36.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,p4d_offset,[Unknown],0xffffffff9a6fa8a0
+page_counter_try_charge,0.001002,27.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,page_counter_try_charge,[Unknown],0xffffffff9a7b4020
+percpu_counter_add_batch,0.001002,31.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,1300039,0,7.000000,vmlinux,percpu_counter_add_batch,[Unknown],0xffffffff9ac814a0
+post_alloc_hook,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,post_alloc_hook,[Unknown],0xffffffff9a73ccd0
+psi_task_switch,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,psi_task_switch,[Unknown],0xffffffff9a433440
+pte_offset_map_rw_nolock,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,pte_offset_map_rw_nolock,[Unknown],0xffffffff9a71e4c0
+rcu_sched_clock_irq,0.001002,40.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,1300039,0,0.0,vmlinux,rcu_sched_clock_irq,[Unknown],0xffffffff9a480070
+rcu_stall_kick_kthreads,0.001002,0.0,0.0,,,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,rcu_stall_kick_kthreads,[Unknown],0xffffffff9a473e70
+read_tsc,0.001002,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,read_tsc,[Unknown],0xffffffff9a2ee9b0
+scaled_norm,0.001002,12.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,scaled_norm,verify.cpp,0x216de
+sched_clock_cpu,0.001002,0.0,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,vmlinux,sched_clock_cpu,[Unknown],0xffffffff9a428c70
+sched_core_idle_cpu,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,sched_core_idle_cpu,[Unknown],0xffffffff9a41a0b0
+security_mmap_file,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,security_mmap_file,[Unknown],0xffffffff9aa04d20
+ssolve::AlignedArray<double>::operator[],0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,ssolve::AlignedArray<double>::operator[](unsigned long),aligned_array.hpp,0x11b15
+ssolve::AlignedArray<int>::data,0.001002,9.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,ssolve::AlignedArray<int>::data(void),aligned_array.hpp,0x11b19
+ssolve::AlignedArray<int>::operator[],0.001002,30.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,ssolve::AlignedArray<int>::operator[](unsigned long),aligned_array.hpp,0x185bc
+ssolve::AlignedArray<int>::operator[],0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,solve,ssolve::AlignedArray<int>::operator[](unsigned long) const,aligned_array.hpp,0x2214a
+ssolve::SeqVectorBackend::dot,0.001002,48.8,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"ssolve::SeqVectorBackend::dot(double const*, double const*) const",seq_vectors.hpp,0xdf20
+"std::basic_string_view<char, std::char_traits<char>>::substr",0.001002,2.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"std::basic_string_view<char, std::char_traits<char>>::substr(unsigned long, unsigned long) const",string_view,0x2a6ed
+"std::iota<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>, int>",0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"std::iota<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>, int>(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>, int)",stl_numeric.h,0x17c36
+std::isfinite,0.001002,21.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,std::isfinite(double),cmath,0x21479
+"std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>::_M_gen_rand",0.001002,5.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>::_M_gen_rand(void)",random.tcc,0x19f40
+"std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>::operator()",0.001002,18.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"std::mersenne_twister_engine<unsigned long, (unsigned long)64, (unsigned long)312, (unsigned long)156, (unsigned long)31, (unsigned long)13043109905998158313, (unsigned long)29, (unsigned long)6148914691236517205, (unsigned long)17, (unsigned long)8202884508482404352, (unsigned long)37, (unsigned long)18444473444759240704, (unsigned long)43, (unsigned long)6364136223846793005>::operator()(void)",random.tcc,0x19cf7
+task_tick_mm_cid,0.001002,51.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,task_tick_mm_cid,[Unknown],0xffffffff9a3e2540
+tick_do_update_jiffies64,0.001002,67.5,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,tick_do_update_jiffies64,[Unknown],0xffffffff9a4c1f50
+update_load_avg,0.001002,51.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,1300039,0,0.0,vmlinux,update_load_avg,[Unknown],0xffffffff9a3ea320
+update_rq_clock,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,update_rq_clock,[Unknown],0xffffffff9a3d87a0
+update_vsyscall,0.001002,50.8,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,650273,0.0,vmlinux,update_vsyscall,[Unknown],0xffffffff9a4c7dd0
+x2apic_send_IPI,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,x2apic_send_IPI,[Unknown],0xffffffff9a338660
+[kvm],0.0,57.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,kvm,[kvm],[Unknown],0x0
+__GI___libc_free,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,libc.so.6,__GI___libc_free,malloc.c,0xadd50
+__GI_memcpy,0.0,1.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,7800234,27300819,0,0.0,libc.so.6,__GI_memcpy,string_fortified.h,0x4ea9c
+___pte_offset_map,0.0,41.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,1300039,0,0.0,vmlinux,___pte_offset_map,[Unknown],0xffffffff9a71e250
+"__chunk_insertion_sort<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, long int, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",0.0,0.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,solve,"__chunk_insertion_sort<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, long int, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",stl_algo.h,0x16037
+__folio_batch_add_and_move,0.0,32.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,1300039,0,0.0,vmlinux,__folio_batch_add_and_move,[Unknown],0xffffffff9a6a97e0
+"__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>::operator++",0.0,0.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,6500195,0,0.0,solve,"__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>::operator++(void)",stl_iterator.h,0x15e98
+"__gnu_cxx::operator-<int*, std::vector<int, std::allocator<int>>>",0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,solve,"__gnu_cxx::operator-<int*, std::vector<int, std::allocator<int>>>(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>> const&, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>> const&)",stl_iterator.h,0x160b8
+__hrtimer_next_event_base,0.0,41.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,__hrtimer_next_event_base,[Unknown],0xffffffff9a4a8840
+__irq_exit_rcu,0.0,50.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,vmlinux,__irq_exit_rcu,[Unknown],0xffffffff9a38b420
+__mem_cgroup_threshold,0.0,59.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,__mem_cgroup_threshold,[Unknown],0xffffffff9a7b48b0
+__mem_cgroup_uncharge_folios,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,2600078,0,0.0,vmlinux,__mem_cgroup_uncharge_folios,[Unknown],0xffffffff9a7c1d90
+__memcg_slab_free_hook,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,500015,500015,0,0.0,vmlinux,__memcg_slab_free_hook,[Unknown],0xffffffff9a7c0fe0
+"__merge_adaptive<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, long int, int*, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,solve,"__merge_adaptive<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, long int, int*, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",stl_algo.h,0x16450
+"__merge_sort_loop<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, int*, long int, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,solve,"__merge_sort_loop<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, int*, long int, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",stl_algo.h,0x160a8
+"__merge_sort_loop<int*, __gnu_cxx::__normal_iterator<int*, std::vector<int> >, long int, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,solve,"__merge_sort_loop<int*, __gnu_cxx::__normal_iterator<int*, std::vector<int> >, long int, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",stl_algo.h,0x1614b
+"__merge_sort_with_buffer<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, int*, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,solve,"__merge_sort_with_buffer<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, int*, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",stl_algo.h,0x16010
+"__move_merge<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, int*, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",0.0,8.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,1300039,0,0.0,solve,"__move_merge<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, int*, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",stl_algo.h,0x15e00
+"__move_merge<int*, __gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",0.0,0.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"__move_merge<int*, __gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",stl_algo.h,0x16276
+"__move_merge_adaptive<int*, __gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",0.0,0.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,solve,"__move_merge_adaptive<int*, __gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",stl_algo.h,0x164a4
+__mpn_add_1,0.0,1.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,16900507,0,0.0,libc.so.6,__mpn_add_1,gmp.h,0x4e1cf
+__smp_call_single_queue,0.0,62.6,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,__smp_call_single_queue,[Unknown],0xffffffff9a4d21d0
+"__stable_sort_adaptive<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, int*, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,2600078,0,0.0,solve,"__stable_sort_adaptive<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, int*, __gnu_cxx::__ops::_Iter_comp_iter<ssolve::sell_from_csr(const CsrMatrix&, int, Index)::<lambda(ssolve::Index, ssolve::Index)> > >",stl_algo.h,0x17def
+__tcp_transmit_skb,0.0,68.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,__tcp_transmit_skb,[Unknown],0xffffffff9b3bc250
+__timekeeping_advance,0.0,43.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,8.000000,vmlinux,__timekeeping_advance,[Unknown],0xffffffff9a4ac090
+__vmf_anon_prepare,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,1300039,0,7.000000,vmlinux,__vmf_anon_prepare,[Unknown],0xffffffff9a703a80
+_raw_spin_unlock_irqrestore,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,_raw_spin_unlock_irqrestore,[Unknown],0xffffffff9b5ab370
+alloc_anon_folio,0.0,30.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,alloc_anon_folio,[Unknown],0xffffffff9a7092b0
+arch_asym_cpu_priority,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,arch_asym_cpu_priority,[Unknown],0xffffffff9a349650
+arch_check_zapped_pte,0.0,40.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,arch_check_zapped_pte,[Unknown],0xffffffff9a357dc0
+arch_scale_freq_tick,0.0,50.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,arch_scale_freq_tick,[Unknown],0xffffffff9a304080
+asm_exc_page_fault,0.0,23.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,asm_exc_page_fault,[Unknown],0xffffffff9a000b90
+avg_vruntime,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3900117,0,0,0.0,vmlinux,avg_vruntime,[Unknown],0xffffffff9a3f0300
+calc_wheel_index,0.0,2.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,calc_wheel_index,[Unknown],0xffffffff9a4a38f0
+cg_loop,0.0,63.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,cg_loop,cg.cpp,0x7d9c
+chacha_block_generic,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,500015,0,0.0,vmlinux,chacha_block_generic,[Unknown],0xffffffff9abada60
+check_cpu_stall,0.0,40.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,check_cpu_stall,[Unknown],0xffffffff9a47cf20
+context_tracking_recursion_enter,0.0,39.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,context_tracking_recursion_enter,[Unknown],0xffffffff9b59b6b0
+cpuacct_account_field,0.0,50.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,cpuacct_account_field,[Unknown],0xffffffff9a42b3d0
+cpuacct_charge,0.0,60.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,cpuacct_charge,[Unknown],0xffffffff9a42b320
+ct_nmi_exit,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,ct_nmi_exit,[Unknown],0xffffffff9b59bb40
+default_do_nmi,0.0,62.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3900117,2600078,0,9.000000,vmlinux,default_do_nmi,[Unknown],0xffffffff9b597730
+do_lookup_x,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,500015,0,0,0.0,ld-linux-x86-64.so.2,do_lookup_x,dl-lookup.c,0xa530
+elf_machine_rela_relative,0.0,17.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,ld-linux-x86-64.so.2,elf_machine_rela_relative,dl-machine.h,0xf8eb
+error_entry,0.0,37.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,error_entry,[Unknown],0xffffffff9a001550
+exc_nmi,0.0,38.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,7800234,3900117,0,0.0,vmlinux,exc_nmi,[Unknown],0xffffffff9b5978b0
+exc_page_fault,0.0,1.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,exc_page_fault,[Unknown],0xffffffff9b59ac80
+folio_add_lru,0.0,36.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,2600078,0,0.0,vmlinux,folio_add_lru,[Unknown],0xffffffff9a6a9900
+folio_add_lru_vma,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,folio_add_lru_vma,[Unknown],0xffffffff9a6aa130
+folio_mapping,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,folio_mapping,[Unknown],0xffffffff9a6cf540
+folio_remove_rmap_ptes,0.0,30.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5700171,3900117,0,0.0,vmlinux,folio_remove_rmap_ptes,[Unknown],0xffffffff9a721ce0
+fq_ring_free_locked,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,fq_ring_free_locked,[Unknown],0xffffffff9aefc7f0
+free_pcppages_bulk,0.0,33.7,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,6500195,3900117,0,0.0,vmlinux,free_pcppages_bulk,[Unknown],0xffffffff9a7397e0
+free_swap_cache,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,0,0,0.0,vmlinux,free_swap_cache,[Unknown],0xffffffff9a762360
+free_unref_folios,0.0,32.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,24700741,13000390,0,9.000000,vmlinux,free_unref_folios,[Unknown],0xffffffff9a740850
+func@0x28500,0.0,1.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3900117,0,0,8.000000,libc.so.6,func@0x28500,[Unknown],0x28500
+get_page_from_freelist,0.0,41.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,2600078,0,7.000000,vmlinux,get_page_from_freelist,[Unknown],0xffffffff9a741d70
+get_vma_policy,0.0,35.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,get_vma_policy,[Unknown],0xffffffff9a7832d0
+handle_softirqs,0.0,50.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,handle_softirqs,[Unknown],0xffffffff9a38b0d0
+hrtimer_interrupt,0.0,79.2,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,hrtimer_interrupt,[Unknown],0xffffffff9a4a9b90
+irq_enter_rcu,0.0,48.6,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,irq_enter_rcu,[Unknown],0xffffffff9a38b840
+irq_work_tick,0.0,62.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,irq_work_tick,[Unknown],0xffffffff9a5c39b0
+irqentry_enter_from_user_mode,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,1300039,0,0.0,vmlinux,irqentry_enter_from_user_mode,[Unknown],0xffffffff9b59b2e0
+irqentry_exit,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,7.000000,vmlinux,irqentry_exit,[Unknown],0xffffffff9b59b570
+irqentry_exit_to_user_mode,0.0,32.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,irqentry_exit_to_user_mode,[Unknown],0xffffffff9b59b390
+kthread_blkcg,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,kthread_blkcg,[Unknown],0xffffffff9a3bb890
+ktime_get_update_offsets_now,0.0,57.6,0.0,,,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,ktime_get_update_offsets_now,[Unknown],0xffffffff9a4af260
+lru_gen_del_folio.constprop.0,0.0,22.4,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,14300429,6500195,0,104.000000,vmlinux,lru_gen_del_folio.constprop.0,[Unknown],0xffffffff9a6a6db0
+memcg1_check_events,0.0,19.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,memcg1_check_events,[Unknown],0xffffffff9a7b5ec0
+mksaveddirty_shift,0.0,31.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,mksaveddirty_shift,[Unknown],0xffffffff9a6fa220
+native_apic_msr_eoi,0.0,46.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,native_apic_msr_eoi,[Unknown],0xffffffff9a338110
+native_read_msr,0.0,19.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,native_read_msr,[Unknown],0xffffffff9a346ec0
+native_write_msr,0.0,46.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,native_write_msr,[Unknown],0xffffffff9a347070
+nmi_restore,0.0,42.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,nmi_restore,[Unknown],0xffffffff9a001869
+obj_cgroup_charge_pages,0.0,75.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,obj_cgroup_charge_pages,[Unknown],0xffffffff9a7c0240
+operator(),0.0,0.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,solve,operator(),sell.cpp,0x164bf
+operator(),0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3900117,0,0,7.000000,solve,operator(),sell.cpp,0x15f9c
+operator(),0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3900117,0,0,7.000000,solve,operator(),sell.cpp,0x161b7
+operator(),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,9100273,0,0,7.000000,solve,operator(),sell.cpp,0x164bf
+operator(),0.0,1.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,13000390,0,0,7.000000,solve,operator(),sell.cpp,0x15fcd
+"operator()<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__normal_iterator<int*, std::vector<int> > >",0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,24700741,0,0,7.000000,solve,"operator()<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__normal_iterator<int*, std::vector<int> > >",predefined_ops.h,0x15e29
+"operator()<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__normal_iterator<int*, std::vector<int> > >",0.0,0.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,0,0,0.0,solve,"operator()<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, __gnu_cxx::__normal_iterator<int*, std::vector<int> > >",predefined_ops.h,0x15f7b
+"operator()<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, int*>",0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,0,0,7.000000,solve,"operator()<__gnu_cxx::__normal_iterator<int*, std::vector<int> >, int*>",predefined_ops.h,0x164b9
+"operator()<int*, int*>",0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,7.000000,solve,"operator()<int*, int*>",predefined_ops.h,0x16288
+"operator()<int*, int*>",0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,13000390,0,0,7.000000,solve,"operator()<int*, int*>",predefined_ops.h,0x1619e
+"operator()<int, __gnu_cxx::__normal_iterator<int*, std::vector<int> > >",0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,0,0,0.0,solve,"operator()<int, __gnu_cxx::__normal_iterator<int*, std::vector<int> > >",predefined_ops.h,0x15faf
+page_counter_cancel,0.0,21.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,page_counter_cancel,[Unknown],0xffffffff9a7b3ec0
+page_counter_uncharge,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,page_counter_uncharge,[Unknown],0xffffffff9a7b4140
+pfn_pte,0.0,38.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,pfn_pte,[Unknown],0xffffffff9a6fd610
+pgd_none,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,14.000000,vmlinux,pgd_none,[Unknown],0xffffffff9a6fa260
+place_entity,0.0,45.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,2600078,0,0.0,vmlinux,place_entity,[Unknown],0xffffffff9a3f0420
+pmd_install,0.0,32.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,pmd_install,[Unknown],0xffffffff9a7006a0
+pmd_val,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,pmd_val,[Unknown],0xffffffff9a6fa0a0
+policy_nodemask,0.0,30.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,3900117,0,0.0,vmlinux,policy_nodemask,[Unknown],0xffffffff9a780170
+profile_tick,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,profile_tick,[Unknown],0xffffffff9a4a0f90
+propagate_entity_load_avg,0.0,47.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,propagate_entity_load_avg,[Unknown],0xffffffff9a3e7560
+propagate_protected_usage,0.0,24.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,propagate_protected_usage,[Unknown],0xffffffff9a7b3e20
+pte_alloc_one,0.0,2.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,pte_alloc_one,[Unknown],0xffffffff9a356730
+pte_mkwrite,0.0,17.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,pte_mkwrite,[Unknown],0xffffffff9a357d00
+pte_val,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,3900117,0,0.0,vmlinux,pte_val,[Unknown],0xffffffff9a6fa000
+pud_val,0.0,29.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,pud_val,[Unknown],0xffffffff9a6fa0d0
+rb_erase,0.0,37.3,,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,rb_erase,[Unknown],0xffffffff9b57de60
+rb_next,0.0,40.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,rb_next,[Unknown],0xffffffff9b57e930
+rcu_pending,0.0,43.5,0.0,0.0,,,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,rcu_pending,[Unknown],0xffffffff9a47d150
+rmqueue.isra.0,0.0,15.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,10400312,1300039,0,0.0,vmlinux,rmqueue.isra.0,[Unknown],0xffffffff9a73ec20
+run_timer_softirq,0.0,62.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,run_timer_softirq,[Unknown],0xffffffff9a4a6b90
+sched_clock,0.0,53.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,23400702,0,9.000000,vmlinux,sched_clock,[Unknown],0xffffffff9a2efd90
+sched_clock_noinstr,0.0,40.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,sched_clock_noinstr,[Unknown],0xffffffff9b598100
+sched_clock_tick,0.0,64.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,sched_clock_tick,[Unknown],0xffffffff9a42b0e0
+set_ptes.isra.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1800054,0,0,0.0,vmlinux,set_ptes.isra.0,[Unknown],0xffffffff9a6fc510
+ssolve::(anonymous namespace)::JacobiPreconditioner::direction,0.0,73.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"ssolve::(anonymous namespace)::JacobiPreconditioner::direction(ssolve::Backend const&, double const*, double, double*)",basic.cpp,0x1b1e0
+ssolve::AlignedArray<double>::operator[],0.0,15.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,ssolve::AlignedArray<double>::operator[](unsigned long) const,aligned_array.hpp,0x19e9e
+ssolve::AlignedArray<double>::operator[],0.0,13.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,ssolve::AlignedArray<double>::operator[](unsigned long) const,aligned_array.hpp,0x21582
+ssolve::AlignedArray<int>::operator[],0.0,19.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,ssolve::AlignedArray<int>::operator[](unsigned long) const,aligned_array.hpp,0x220f2
+ssolve::AlignedArray<int>::operator[],0.0,13.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,ssolve::AlignedArray<int>::operator[](unsigned long) const,aligned_array.hpp,0x1f63e
+ssolve::AlignedArray<long>::fill,0.0,32.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,ssolve::AlignedArray<long>::fill(long const&),aligned_array.hpp,0x11977
+ssolve::AlignedArray<long>::operator[],0.0,1.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,22100663,0,0,7.000000,solve,ssolve::AlignedArray<long>::operator[](unsigned long) const,aligned_array.hpp,0x15e2e
+ssolve::AlignedArray<long>::operator[],0.0,0.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,9100273,0,0,7.000000,solve,ssolve::AlignedArray<long>::operator[](unsigned long) const,aligned_array.hpp,0x15f7b
+ssolve::AlignedArray<long>::operator[],0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,7.000000,solve,ssolve::AlignedArray<long>::operator[](unsigned long) const,aligned_array.hpp,0x1619e
+ssolve::AlignedArray<long>::operator[],0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,solve,ssolve::AlignedArray<long>::operator[](unsigned long) const,aligned_array.hpp,0x164bf
+ssolve::random_solution,0.0,16.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,ssolve::random_solution(int),generators.cpp,0x6c3e
+ssolve::true_relative_residual,0.0,69.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"ssolve::true_relative_residual(ssolve::CsrMatrixT<long> const&, double const*, double const*)",basic_ios.h,0x85a5
+std::isfinite,0.0,13.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,std::isfinite(double),cmath,0x1f618
+std::isfinite,0.0,2.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,10400312,0,0,8.000000,solve,std::isfinite(double),cmath,0x2a7ce
+std::isfinite,0.0,4.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,std::isfinite(double),cmath,0x22c86
+std::isfinite,0.0,59.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,std::isfinite(double),cmath,0x1e7e8
+"std::move_backward<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>>",0.0,0.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,solve,"std::move_backward<__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>>(__gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>, __gnu_cxx::__normal_iterator<int*, std::vector<int, std::allocator<int>>>)",stl_algobase.h,0x15f48
+"std::vector<int, std::allocator<int>>::push_back",0.0,1.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,10400312,0,0.0,solve,"std::vector<int, std::allocator<int>>::push_back(int const&)",stl_vector.h,0x2a5e2
+tick_nohz_handler,0.0,38.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,7.000000,vmlinux,tick_nohz_handler,[Unknown],0xffffffff9a4c20d0
+tick_program_event,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,vmlinux,tick_program_event,[Unknown],0xffffffff9a4c18f0
+timekeeping_adjust,0.0,63.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,158.000000,vmlinux,timekeeping_adjust,[Unknown],0xffffffff9a4ab280
+timekeeping_update_from_shadow,0.0,47.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,timekeeping_update_from_shadow,[Unknown],0xffffffff9a4aba60
+timerqueue_add,0.0,43.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,timerqueue_add,[Unknown],0xffffffff9b581fa0
+timerqueue_del,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,timerqueue_del,[Unknown],0xffffffff9b5820b0
+tmigr_handle_remote,0.0,57.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,tmigr_handle_remote,[Unknown],0xffffffff9a4c74c0
+tmigr_requires_handle_remote,0.0,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,tmigr_requires_handle_remote,[Unknown],0xffffffff9a4c7610
+uncharge_folio,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,9100273,2600078,0,0.0,vmlinux,uncharge_folio,[Unknown],0xffffffff9a7bdaa0
+update_curr_dl_se,0.0,39.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,update_curr_dl_se,[Unknown],0xffffffff9a412150
+update_fast_timekeeper,0.0,0.0,0.0,,,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,update_fast_timekeeper,[Unknown],0xffffffff9a4ab1d0
+update_min_vruntime,0.0,61.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,update_min_vruntime,[Unknown],0xffffffff9a3e2dd0
+update_process_times,0.0,62.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,2600078,0,0.0,vmlinux,update_process_times,[Unknown],0xffffffff9a4a7c10
+update_se,0.0,68.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,0,0,407.000000,vmlinux,update_se,[Unknown],0xffffffff9a3e8420
+update_vdso_time_data,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,update_vdso_time_data,[Unknown],0xffffffff9a4c7c20
+update_wall_time,0.0,49.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,update_wall_time,[Unknown],0xffffffff9a4aee80
+vm_normal_page,0.0,31.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,3900117,0,0.0,vmlinux,vm_normal_page,[Unknown],0xffffffff9a700ce0
+vma_alloc_folio_noprof,0.0,35.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,3900117,0,9.000000,vmlinux,vma_alloc_folio_noprof,[Unknown],0xffffffff9a783440
+vms_complete_munmap_vmas,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,500015,0,0.0,vmlinux,vms_complete_munmap_vmas,[Unknown],0xffffffff9a731360
+"with_rhs_scaling<ssolve::cg(const Backend&, Preconditioner&, double const*, double*, const SolveOptions&)::<lambda(double const*, double*)> >",0.0,4.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,71502145,50701521,0,23.666667,solve,"with_rhs_scaling<ssolve::cg(const Backend&, Preconditioner&, double const*, double*, const SolveOptions&)::<lambda(double const*, double*)> >",cg_common.hpp,0x7e12
+zap_pmd_range.isra.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,500015,0,0,0.0,vmlinux,zap_pmd_range.isra.0,[Unknown],0xffffffff9a702a00
+zap_pte_range,0.0,51.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,1300039,0,0.0,vmlinux,zap_pte_range,[Unknown],0xffffffff9a702450

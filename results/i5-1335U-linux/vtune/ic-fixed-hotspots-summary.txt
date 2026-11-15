@@ -1,0 +1,38 @@
+Elapsed Time: 44.411s
+    CPU Time: 43.425s
+        Effective Time: 43.425s
+        Spin Time: 0s
+        Overhead Time: 0s
+    Instructions Retired: 263,700,000,000
+    Microarchitecture Usage: 23.3% of Pipeline Slots
+        CPI Rate: 0.750
+    Total Thread Count: 1
+    Paused Time: 0s
+
+Top Hotspots
+Function                                                  Module  CPU Time  % of CPU Time(%)
+--------------------------------------------------------  ------  --------  ----------------
+ssolve::incomplete_cholesky_apply                         solve    26.244s             60.4%
+row_times_vector                                          solve    10.422s             24.0%
+ssolve::SeqVectorBackend::cg_update                       solve     2.150s              5.0%
+ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot  solve     1.107s              2.5%
+ssolve::SeqVectorBackend::xpby                            solve     1.017s              2.3%
+[Others]                                                  N/A       2.486s              5.7%
+Effective Physical Core Utilization: 9.7% (0.972 out of 10)
+    Effective Logical Core Utilization: 8.1% (0.978 out of 12)
+Collection and Platform Info
+    Application Command Line: taskset "-c" "0" "build/profile/solve" "--matrix" "/home/nottarik/p08/data/thermal2.mtx" "--problem" "random" "--maxit" "30000" "--precond" "ic-fixed" 
+    User Name: nottarik
+    Operating System: 6.17.0-19-generic DISTRIB_ID=Ubuntu DISTRIB_RELEASE=24.04 DISTRIB_CODENAME=noble DISTRIB_DESCRIPTION="Ubuntu 24.04.4 LTS"
+    Computer Name: nottarik-t14
+    Result Size: 1.1 GB 
+    Collection start time: 18:34:08 15/11/2026 UTC
+    Collection stop time: 18:34:52 15/11/2026 UTC
+    Collector Type: Event-based sampling driver
+    CPU
+        Name: Intel(R) microarchitecture code named Raptorlake-P
+        Frequency: 2.496 GHz
+        Logical CPU Count: 12
+        Cache Allocation Technology
+            Level 2 capability: not detected
+            Level 3 capability: not detected

@@ -1,0 +1,44 @@
+Elapsed Time: 27.558s
+    CPU Time: 27.150s
+    Performance-core (P-core)
+        Memory Bound: 19.1% of Pipeline Slots
+            L1 Bound: 9.2% of Clockticks
+            L2 Bound: 3.0% of Clockticks
+            L3 Bound: 4.1% of Clockticks
+            DRAM Bound: 21.5% of Clockticks
+            Store Bound: 0.2% of Clockticks
+    Efficient-core (E-core)
+        Memory Bound: 0.0% of Clockticks
+            L1 Bound: 0.0% of Clockticks
+            L2 Bound: 0.0% of Clockticks
+            L3 Bound: 0.0% of Clockticks
+    Uncore
+        DRAM Bandwidth Bound: 0.0% of Elapsed Time
+    Loads: 63,651,209,479
+    Stores: 8,667,360,013
+    LLC Miss Count: 548,830,412
+    Average Latency (cycles): 18
+    Total Thread Count: 1
+    Paused Time: 0s
+
+Bandwidth Utilization
+Bandwidth Domain  Platform Maximum  Observed Maximum  Average  % of Elapsed Time with High BW Utilization(%)
+----------------  ----------------  ----------------  -------  ---------------------------------------------
+DRAM, GB/sec      39                          24.900   15.663                                           0.0%
+Collection and Platform Info
+    Application Command Line: taskset "-c" "0" "build/profile/solve" "--matrix" "/home/nottarik/p08/data/thermal2.mtx" "--problem" "random" "--maxit" "30000" "--precond" "ic0" 
+    User Name: nottarik
+    Operating System: 6.17.0-19-generic DISTRIB_ID=Ubuntu DISTRIB_RELEASE=24.04 DISTRIB_CODENAME=noble DISTRIB_DESCRIPTION="Ubuntu 24.04.4 LTS"
+    Computer Name: nottarik-t14
+    Result Size: 245.8 MB 
+    Collection start time: 18:38:58 15/11/2026 UTC
+    Collection stop time: 18:39:26 15/11/2026 UTC
+    Collector Type: Event-based sampling driver
+    CPU
+        Name: Intel(R) microarchitecture code named Raptorlake-P
+        Frequency: 2.496 GHz
+        Logical CPU Count: 12
+        Max DRAM Single-Package Bandwidth: 39.000 GB/s
+        Cache Allocation Technology
+            Level 2 capability: not detected
+            Level 3 capability: not detected

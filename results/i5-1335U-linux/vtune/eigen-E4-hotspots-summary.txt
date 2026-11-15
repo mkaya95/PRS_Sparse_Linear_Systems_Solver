@@ -1,0 +1,38 @@
+Elapsed Time: 44.003s
+    CPU Time: 42.827s
+        Effective Time: 42.827s
+        Spin Time: 0s
+        Overhead Time: 0s
+    Instructions Retired: 266,977,500,000
+    Microarchitecture Usage: 23.4% of Pipeline Slots
+        CPI Rate: 0.730
+    Total Thread Count: 1
+    Paused Time: 0s
+
+Top Hotspots
+Function                                                                                                                                                                                                                                                                                                                 Module    CPU Time  % of CPU Time(%)
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  --------  --------  ----------------
+Eigen::internal::sparse_time_dense_product_impl<Eigen::Ref<Eigen::SparseMatrix<double, (int)1, int> const, (int)0, Eigen::OuterStride<(int)-1>>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, double, (int)1, (bool)1>::processRow  bench_cg    8.758s             20.4%
+Eigen::internal::sparse_solve_triangular_selector<Eigen::Transpose<Eigen::SparseMatrix<double, (int)0, int> const> const, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)2, (int)2, (int)1>::run                                                                                                  bench_cg    7.676s             17.9%
+Eigen::internal::sparse_solve_triangular_selector<Eigen::SparseMatrix<double, (int)0, int> const, Eigen::Matrix<double, (int)-1, (int)1, (int)0, (int)-1, (int)1>, (int)1, (int)1, (int)0>::run                                                                                                                          bench_cg    7.226s             16.9%
+Eigen::internal::madd_impl<double, void>::run                                                                                                                                                                                                                                                                            bench_cg    3.300s              7.7%
+Eigen::internal::madd_impl<double, void>::run                                                                                                                                                                                                                                                                            bench_cg    1.473s              3.4%
+[Others]                                                                                                                                                                                                                                                                                                                 N/A        14.393s             33.6%
+Effective Physical Core Utilization: 9.7% (0.969 out of 10)
+    Effective Logical Core Utilization: 8.1% (0.973 out of 12)
+Collection and Platform Info
+    Application Command Line: taskset "-c" "0" "build/profile/bench_cg" "--matrix" "/home/nottarik/p08/data/thermal2.mtx" "--maxit" "30000" "--repeat" "1" "--warmup" "0" "--solver" "eigen-E4" 
+    User Name: nottarik
+    Operating System: 6.17.0-19-generic DISTRIB_ID=Ubuntu DISTRIB_RELEASE=24.04 DISTRIB_CODENAME=noble DISTRIB_DESCRIPTION="Ubuntu 24.04.4 LTS"
+    Computer Name: nottarik-t14
+    Result Size: 1.1 GB 
+    Collection start time: 18:44:38 15/11/2026 UTC
+    Collection stop time: 18:45:22 15/11/2026 UTC
+    Collector Type: Event-based sampling driver
+    CPU
+        Name: Intel(R) microarchitecture code named Raptorlake-P
+        Frequency: 2.496 GHz
+        Logical CPU Count: 12
+        Cache Allocation Technology
+            Level 2 capability: not detected
+            Level 3 capability: not detected

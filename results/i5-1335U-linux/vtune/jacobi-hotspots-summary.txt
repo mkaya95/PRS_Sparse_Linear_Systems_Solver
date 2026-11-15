@@ -1,0 +1,38 @@
+Elapsed Time: 29.742s
+    CPU Time: 29.049s
+        Effective Time: 29.049s
+        Spin Time: 0s
+        Overhead Time: 0s
+    Instructions Retired: 185,635,000,000
+    Microarchitecture Usage: 26.1% of Pipeline Slots
+        CPI Rate: 0.712
+    Total Thread Count: 1
+    Paused Time: 0s
+
+Top Hotspots
+Function                                                  Module     CPU Time  % of CPU Time(%)
+--------------------------------------------------------  ---------  --------  ----------------
+row_times_vector                                          solve       18.962s             65.3%
+ssolve::SeqVectorBackend::jacobi_update                   solve        4.590s             15.8%
+ssolve::SeqVectorBackend::jacobi_direction                solve        2.324s              8.0%
+ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot  solve        1.934s              6.7%
+__GI_____strtod_l_internal                                libc.so.6    0.155s              0.5%
+[Others]                                                  N/A          1.084s              3.7%
+Effective Physical Core Utilization: 9.7% (0.968 out of 10)
+    Effective Logical Core Utilization: 8.1% (0.977 out of 12)
+Collection and Platform Info
+    Application Command Line: taskset "-c" "0" "build/profile/solve" "--matrix" "/home/nottarik/p08/data/thermal2.mtx" "--problem" "random" "--maxit" "30000" "--precond" "jacobi" 
+    User Name: nottarik
+    Operating System: 6.17.0-19-generic DISTRIB_ID=Ubuntu DISTRIB_RELEASE=24.04 DISTRIB_CODENAME=noble DISTRIB_DESCRIPTION="Ubuntu 24.04.4 LTS"
+    Computer Name: nottarik-t14
+    Result Size: 734.5 MB 
+    Collection start time: 18:23:38 15/11/2026 UTC
+    Collection stop time: 18:24:07 15/11/2026 UTC
+    Collector Type: Event-based sampling driver
+    CPU
+        Name: Intel(R) microarchitecture code named Raptorlake-P
+        Frequency: 2.496 GHz
+        Logical CPU Count: 12
+        Cache Allocation Technology
+            Level 2 capability: not detected
+            Level 3 capability: not detected

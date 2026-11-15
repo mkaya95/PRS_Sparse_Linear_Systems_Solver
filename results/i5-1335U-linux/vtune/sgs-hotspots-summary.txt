@@ -1,0 +1,38 @@
+Elapsed Time: 34.417s
+    CPU Time: 33.456s
+        Effective Time: 33.456s
+        Spin Time: 0s
+        Overhead Time: 0s
+    Instructions Retired: 248,390,000,000
+    Microarchitecture Usage: 30.6% of Pipeline Slots
+        CPI Rate: 0.605
+    Total Thread Count: 1
+    Paused Time: 0s
+
+Top Hotspots
+Function                                                  Module  CPU Time  % of CPU Time(%)
+--------------------------------------------------------  ------  --------  ----------------
+ssolve::SymGaussSeidel::apply                             solve    19.630s             58.7%
+row_times_vector                                          solve     8.104s             24.2%
+ssolve::SeqVectorBackend::cg_update                       solve     1.647s              4.9%
+ssolve::SeqVectorBackend::xpby                            solve     0.884s              2.6%
+ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot  solve     0.777s              2.3%
+[Others]                                                  N/A       2.413s              7.2%
+Effective Physical Core Utilization: 9.7% (0.966 out of 10)
+    Effective Logical Core Utilization: 8.1% (0.972 out of 12)
+Collection and Platform Info
+    Application Command Line: taskset "-c" "0" "build/profile/solve" "--matrix" "/home/nottarik/p08/data/thermal2.mtx" "--problem" "random" "--maxit" "30000" "--precond" "sgs" 
+    User Name: nottarik
+    Operating System: 6.17.0-19-generic DISTRIB_ID=Ubuntu DISTRIB_RELEASE=24.04 DISTRIB_CODENAME=noble DISTRIB_DESCRIPTION="Ubuntu 24.04.4 LTS"
+    Computer Name: nottarik-t14
+    Result Size: 836.7 MB 
+    Collection start time: 18:27:52 15/11/2026 UTC
+    Collection stop time: 18:28:26 15/11/2026 UTC
+    Collector Type: Event-based sampling driver
+    CPU
+        Name: Intel(R) microarchitecture code named Raptorlake-P
+        Frequency: 2.496 GHz
+        Logical CPU Count: 12
+        Cache Allocation Technology
+            Level 2 capability: not detected
+            Level 3 capability: not detected

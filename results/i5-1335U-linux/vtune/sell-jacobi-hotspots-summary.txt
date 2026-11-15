@@ -1,0 +1,38 @@
+Elapsed Time: 23.349s
+    CPU Time: 22.797s
+        Effective Time: 22.797s
+        Spin Time: 0s
+        Overhead Time: 0s
+    Instructions Retired: 118,762,500,000
+    Microarchitecture Usage: 21.2% of Pipeline Slots
+        CPI Rate: 0.872
+    Total Thread Count: 1
+    Paused Time: 0s
+
+Top Hotspots
+Function                                                      Module     CPU Time  % of CPU Time(%)
+------------------------------------------------------------  ---------  --------  ----------------
+chunk_times_vector                                            solve       12.990s             57.0%
+ssolve::SeqVectorBackend::jacobi_update                       solve        4.485s             19.7%
+ssolve::SeqVectorBackend::jacobi_direction                    solve        2.249s              9.9%
+ssolve::(anonymous namespace)::SellBackend<(int)8>::spmv_dot  solve        1.763s              7.7%
+__GI_____strtod_l_internal                                    libc.so.6    0.197s              0.9%
+[Others]                                                      N/A          1.114s              4.9%
+Effective Physical Core Utilization: 9.7% (0.971 out of 10)
+    Effective Logical Core Utilization: 8.1% (0.976 out of 12)
+Collection and Platform Info
+    Application Command Line: taskset "-c" "0" "build/profile/solve" "--matrix" "/home/nottarik/p08/data/thermal2.mtx" "--problem" "random" "--maxit" "30000" "--precond" "jacobi" "--format" "sell" 
+    User Name: nottarik
+    Operating System: 6.17.0-19-generic DISTRIB_ID=Ubuntu DISTRIB_RELEASE=24.04 DISTRIB_CODENAME=noble DISTRIB_DESCRIPTION="Ubuntu 24.04.4 LTS"
+    Computer Name: nottarik-t14
+    Result Size: 567.8 MB 
+    Collection start time: 18:25:55 15/11/2026 UTC
+    Collection stop time: 18:26:18 15/11/2026 UTC
+    Collector Type: Event-based sampling driver
+    CPU
+        Name: Intel(R) microarchitecture code named Raptorlake-P
+        Frequency: 2.496 GHz
+        Logical CPU Count: 12
+        Cache Allocation Technology
+            Level 2 capability: not detected
+            Level 3 capability: not detected
