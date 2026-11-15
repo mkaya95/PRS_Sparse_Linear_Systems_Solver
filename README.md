@@ -48,6 +48,17 @@ cmake --preset profile -DCMAKE_CXX_COMPILER=g++
 cmake --build build/profile --target solve bench_cg
 ```
 
+With VTune installed, one script profiles every solver on a matrix and saves the reports as text. The kernel must first let VTune read the processor's counters and load its sampling driver, both of which last until the next reboot:
+
+```bash
+source /opt/intel/oneapi/setvars.sh
+sudo sysctl kernel.perf_event_paranoid=0 kernel.kptr_restrict=0 kernel.yama.ptrace_scope=0
+sudo /opt/intel/oneapi/vtune/latest/sepdk/src/insmod-sep -g "$(id -gn)"   # Intel's sampling driver
+scripts/profile_vtune.sh ~/p08/data/thermal2.mtx results/my-machine/vtune
+```
+
+The VTune result folders go to `~/p08/vtune`; open one with `vtune-gui ~/p08/vtune/ic0-hotspots`. What it showed on `thermal2` is in [the VTune results](docs/results/vtune-i5-1335U-linux.md).
+
 ## Run the solver
 
 ```bash
