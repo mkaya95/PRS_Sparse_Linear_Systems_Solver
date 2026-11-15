@@ -257,5 +257,45 @@ const Charts = (() => {
     return svg(S + P + 4, S + P + 4, s, label);
   }
 
-  return { ratioDots, timeBars, ladder, machines, residual, paintDensity, blockRange, zoom, ramp: RAMP, colors: C };
+  // A solution difference, block by block. Each cell holds the largest |a_i - b_i| in its block of the
+  // answer vector: null for a block with no entries, -1 when a difference is not a number. The shade is
+  // the size relative to the answer, on a fixed log scale from 1e-16 to 1e-4, so pictures of different
+  // matrices compare directly. Exactly equal stays clear, so the paper shows through.
+  const DIFF_LOW = -16, DIFF_HIGH = -4;
+  const RED_RGB = [179, 38, 30], EMPTY_RGBA = [31, 27, 22, 26];
+
+  function differenceColor(cell, xScale) {
+    if (cell == null) return EMPTY_RGBA;
+    if (cell === -1) return [...RED_RGB, 255];
+    if (cell === 0) return null;
+    const relative = cell / (xScale > 0 ? xScale : 1);
+    return [...ramp((Math.log10(relative) - DIFF_LOW) / (DIFF_HIGH - DIFF_LOW)), 255];
+  }
+
+  function paintDifference(canvas, comparison, grid, xScale) {
+    canvas.width = grid;
+    canvas.height = grid;
+    const ctx = canvas.getContext("2d");
+    const image = ctx.createImageData(grid, grid);
+    comparison.cells.forEach((cell, k) => {
+      const color = differenceColor(cell, xScale);
+      if (color) image.data.set(color, k * 4);
+    });
+    ctx.putImageData(image, 0, 0);
+  }
+
+  // The answer entries a cell covers: entry i is in cell floor(i * g² / n), or in cell i when n < g².
+  function differenceRange(cell, grid, n) {
+    const cells = grid * grid;
+    return n >= cells ? blockRange(cell, cells, n) : [cell, cell];
+  }
+
+  function differenceLegend() {
+    return `<div class="ramp-legend diff-legend"><span><i class="swatch equal"></i>exactly equal</span>` +
+      `<span>1e-16</span><i class="ramp"></i><span>1e-4 of the answer's size</span>` +
+      `<span><i class="swatch nan"></i>not a number</span></div>`;
+  }
+
+  return { ratioDots, timeBars, ladder, machines, residual, paintDensity, blockRange, zoom, ramp: RAMP, colors: C,
+           differenceColor, paintDifference, differenceRange, differenceLegend };
 })();

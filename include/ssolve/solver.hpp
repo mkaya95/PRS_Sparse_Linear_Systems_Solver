@@ -28,7 +28,7 @@ inline const char* to_string(SolveStatus status) {
   return "Unknown";
 }
 
-enum class Precond { None, Jacobi, IncompleteCholesky };
+enum class Precond { None, Jacobi, SymGaussSeidel, IncompleteCholesky };
 
 inline const char* to_string(Precond precond) {
   switch (precond) {
@@ -36,6 +36,8 @@ inline const char* to_string(Precond precond) {
       return "none";
     case Precond::Jacobi:
       return "jacobi";
+    case Precond::SymGaussSeidel:
+      return "sgs";
     case Precond::IncompleteCholesky:
       return "incomplete-cholesky";
   }

@@ -56,7 +56,17 @@ class Steps(unittest.TestCase):
         self.assertTrue(every[3]["commands"][1]["gate"])
         accuracy = every[4]["commands"][0]["argv"]
         self.assertIn("ecology2,apache2,tmt_sym,G3_circuit,thermal2,hood", accuracy)
-        self.assertEqual(every[4]["replaces"], [ROOT / "results" / "test-box" / "g1-real-solve.csv"])
+        self.assertEqual(every[4]["replaces"], [ROOT / "results" / "test-box" / "g1-real-solve.csv",
+                                                ROOT / "results" / "test-box" / "solutions"])
+
+    def test_the_accuracy_step_saves_solution_pictures_and_says_it_replaces_them(self):
+        with tempfile.TemporaryDirectory() as d:
+            accuracy = {s["id"]: s for s in steps.steps(settings_in(pathlib.Path(d)))}["accuracy"]
+        argv = accuracy["commands"][0]["argv"]
+        self.assertEqual(argv[argv.index("--solutions") + 1], str(ROOT / "results" / "test-box" / "solutions"))
+        self.assertIn(ROOT / "results" / "test-box" / "solutions", accuracy["replaces"])
+        speed = {s["id"]: s for s in steps.steps(settings_in(pathlib.Path(d)))}["speed"]
+        self.assertNotIn("--solutions", speed["commands"][0]["argv"])
 
     def test_the_compiler_is_named_only_when_the_release_folder_is_new(self):
         # Naming it again makes CMake wipe the cache and drop the preset's settings.
@@ -91,10 +101,11 @@ class Steps(unittest.TestCase):
 
     def test_one_matrix_runs_the_full_steps_commands_on_that_matrix_into_its_own_results_file(self):
         def without_matrices(argv):
-            if "--matrices" not in argv:
-                return argv
-            at = argv.index("--matrices")
-            return argv[:at] + argv[at + 2:]
+            for option in ("--matrices", "--solutions"):
+                if option in argv:
+                    at = argv.index(option)
+                    argv = argv[:at] + argv[at + 2:]
+            return argv
 
         with tempfile.TemporaryDirectory() as d:
             folder = pathlib.Path(d)
@@ -113,7 +124,12 @@ class Steps(unittest.TestCase):
                     self.assertTrue(out.name.startswith("one-") and out.name.endswith(f"-{test}.csv"), out.name)
                     self.assertTrue(steps.MACHINE_PATTERN.match(out.stem), out.name)
                     self.assertNotIn(out.name, (steps.SPEED_CSV, steps.ACCURACY_CSV))
-                    self.assertEqual(one["replaces"], [out])
+                    if test == "speed":
+                        self.assertEqual(one["replaces"], [out])
+                    else:
+                        pictures = ROOT / "results" / "test-box" / "one-solutions"
+                        self.assertEqual(bench[bench.index("--solutions") + 1], str(pictures))
+                        self.assertEqual(one["replaces"], [out, pictures / f"{name}.json"])
 
     def test_accuracy_is_offered_only_on_the_six_matrices_the_accuracy_step_uses(self):
         with tempfile.TemporaryDirectory() as d:
@@ -203,6 +219,49 @@ class Results(unittest.TestCase):
         g3 = next(r for r in machine["speed"]["pairs"][0]["rows"] if r["matrix"] == "G3_circuit")
         self.assertEqual(round(g3["ratio"], 3), 0.649)
 
+    def write_picture(self, path, matrix):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"matrix": matrix, "n": 4, "grid": 2, "problem": "random", "x_scale": 1.0,
+                                    "comparisons": []}), encoding="utf-8")
+
+    def test_solution_pictures_of_the_accuracy_step_belong_to_the_machine(self):
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d) / "box"
+            self.write_picture(folder / "solutions" / "b.json", "b")
+            self.write_picture(folder / "solutions" / "a.json", "a")
+            (folder / "solutions" / "c.json").write_text("{not json", encoding="utf-8")
+            self.write_picture(folder / "one-solutions" / "z.json", "z")
+            pictures = results.solutions(folder)
+        self.assertEqual([p.get("matrix", p["file"]) for p in pictures], ["a", "b", "c.json"])
+        self.assertIn("error", pictures[2])
+        self.assertEqual(pictures[0]["file"], "a.json")
+
+    def test_a_picture_file_without_its_fields_says_why_instead_of_breaking_the_page(self):
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d) / "box" / "solutions"
+            folder.mkdir(parents=True)
+            (folder / "a.json").write_text("{}", encoding="utf-8")
+            (folder / "b.json").write_text(json.dumps({"matrix": "b", "n": 4, "grid": 2, "comparisons": "none"}),
+                                           encoding="utf-8")
+            (folder / "c.json").write_text(json.dumps({"matrix": "c", "n": 4, "grid": 2, "x_scale": 1,
+                                                       "comparisons": [{"a": "x", "b": "y"}]}), encoding="utf-8")
+            pictures = results.solutions(pathlib.Path(d) / "box")
+        self.assertEqual([p["file"] for p in pictures], ["a.json", "b.json", "c.json"])
+        for picture in pictures:
+            self.assertIn("error", picture)
+            self.assertNotIn("comparisons", picture)
+
+    def test_one_matrix_pictures_are_listed_from_every_folder(self):
+        with tempfile.TemporaryDirectory() as d:
+            base = pathlib.Path(d)
+            self.write_picture(base / "box" / "one-solutions" / "hood.json", "hood")
+            self.write_picture(base / "other" / "one-solutions" / "apache2.json", "apache2")
+            machines = results.all_machines(base)
+            pictures = results.one_matrix_solutions(base)
+        self.assertEqual(machines, [])  # one-matrix pictures alone do not make a machine with G1 results
+        self.assertEqual(sorted((p["results"], p["matrix"]) for p in pictures),
+                         [("box", "hood"), ("other", "apache2")])
+
     def test_missing_files_are_not_run_and_rejected_files_say_why(self):
         with tempfile.TemporaryDirectory() as d:
             folder = pathlib.Path(d) / "box"
@@ -261,12 +320,26 @@ class Demo(unittest.TestCase):
         self.assertLess(r["history"][-1][1], 1e-8)
         self.assertGreater(r["speedup"], 0)
         self.assertEqual((r["n"], r["ours"]["solver"], r["eigen"]["solver"]), (900, "ours-jacobi", "eigen-E1"))
+        self.assertEqual(race[race.index("--solutions") + 1], str(work / "solutions.json"))
+        pictures = r["solutions"]
+        self.assertEqual([(c["a"], c["b"]) for c in pictures["comparisons"]],
+                         [("ours-jacobi", "eigen-E1"), ("ours-jacobi", "true"), ("eigen-E1", "true")])
+        self.assertLess(pictures["comparisons"][0]["rel_norm"], 1e-6)
         self.assertFalse(work.exists())
         # The page follows these to light up the flow diagram for whichever solver is running.
         progress = [line for line in job.lines if line.startswith("progress:")]
         self.assertEqual((progress[0], progress[1], progress[-1]),
                          ("progress: read", "progress: solve ours-jacobi warmup",
                           "progress: solve ours-jacobi round 2 of 2"))
+
+    def test_the_demo_runs_incomplete_cholesky_against_eigen_e4(self):
+        plan_steps, finish, cleanup = demo.plan(pathlib.Path(BUILD_DIR), "poisson2d:30", "ic")
+        job = run(jobs.Job("demo", plan_steps, finish=finish, cleanup=cleanup))
+        self.assertEqual(job.state, "done", "\n".join(job.lines))
+        r = job.result
+        self.assertTrue(r["same_answer"])
+        self.assertEqual((r["ours"]["solver"], r["eigen"]["solver"]), ("ours-ic", "eigen-E4"))
+        self.assertLess(r["history"][-1][1], 1e-8)
 
     def test_a_long_curve_is_thinned_but_keeps_both_ends(self):
         points = demo.thin(list(range(10000)), 100)
@@ -442,6 +515,24 @@ class Server(unittest.TestCase):
             self.assertEqual(status, 409)
             self.assertEqual(json.loads(data)["existing"], ["results/test-box/one-poisson3d_llc_4-speed.csv"])
             self.assertEqual(target.read_text(encoding="ascii"), "kept\n")
+
+    def test_a_solutions_folder_is_replaced_only_when_confirmed(self):
+        class Job:
+            def say(self, text):
+                pass
+
+        with tempfile.TemporaryDirectory() as d:
+            folder = pathlib.Path(d) / "solutions"
+            folder.mkdir()
+            self.assertIsNone(server.confirm_replacing([folder], {}))  # an empty folder holds no result
+            (folder / "hood.json").write_text("{}", encoding="ascii")
+            with self.assertRaises(server.ClientError) as refused:
+                server.confirm_replacing([folder], {})
+            self.assertEqual(refused.exception.status, 409)
+            before = server.confirm_replacing([folder], {"replace": True})
+            self.assertTrue(folder.exists())
+            before(Job())
+            self.assertFalse(folder.exists())
 
     def test_drawing_needs_the_preview_tool(self):
         with tempfile.TemporaryDirectory() as d:

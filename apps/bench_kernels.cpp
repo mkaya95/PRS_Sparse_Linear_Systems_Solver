@@ -2,6 +2,8 @@
 //
 // Usage: bench_kernels --matrix SPEC --impl eigen,L0,... [--warmup 1] [--repeat 10] [--min-ms 50] [--csv FILE]
 //
+// An implementation named sell-c<C>-s<sigma>, such as sell-c8-s256, times the SELL-C-sigma SpMV.
+//
 // Implementations take turns, kernel by kernel, and rotate who goes first each round, so
 // a machine that slows down mid-run affects them equally. SpMV swaps its input and output vectors between calls (Asudeh
 // et al. 2025), because a fixed x stays in cache in a way it never does inside CG. Outside the

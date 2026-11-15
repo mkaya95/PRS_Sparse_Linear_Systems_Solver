@@ -195,6 +195,23 @@ td.num { font-variant-numeric: tabular-nums; }
 .matrix-card canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
 .matrix-card small { color: var(--mute); font-size: 12px; }
 
+/* ---------- solution pictures ---------- */
+.solution-cards { display: grid; gap: 22px; margin-top: 10px; }
+.solution-card { border-top: 1px solid var(--rule); padding-top: 10px; }
+.solution-card h3 { font: 700 18px/1.2 var(--head); text-transform: uppercase; letter-spacing: .02em; margin: 0 0 8px; }
+.solution-card h3 small { font: 400 13px var(--mono); text-transform: none; letter-spacing: 0; color: var(--mute); margin-left: 8px; }
+.solution-pictures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.solution-pictures figure { margin: 0; }
+.solution-pictures figcaption { font-size: 13px; margin-bottom: 6px; }
+.solution-pictures .density-frame { max-width: 260px; }
+.solution-pictures small { display: block; margin-top: 6px; color: var(--mute); font-size: 12px; }
+.diff-legend { flex-wrap: wrap; max-width: 640px; }
+.diff-legend .ramp { min-width: 120px; }
+.swatch { display: inline-block; width: 12px; height: 12px; margin-right: 5px; vertical-align: -2px; border: 1px solid var(--rule); }
+.swatch.equal { background: var(--paper-lit); }
+.swatch.nan { background: var(--red); }
+#demo-solutions { margin-top: 26px; }
+
 /* ---------- demo ---------- */
 .flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .box { border: 2px solid var(--ink); padding: 7px 12px; text-align: center; background: rgba(255, 255, 255, .25); transition: background .3s, color .3s; }
@@ -257,7 +274,7 @@ dialog ul { padding-left: 18px; }
 }
 
 @media (max-width: 900px) {
-  .run-grid, .chart-grid, .demo-grid, .matrix-pictures { grid-template-columns: 1fr; }
+  .run-grid, .chart-grid, .demo-grid, .matrix-pictures, .solution-pictures { grid-template-columns: 1fr; }
   .machine-tag { margin-left: 0; }
 }
 @media (max-width: 520px) {

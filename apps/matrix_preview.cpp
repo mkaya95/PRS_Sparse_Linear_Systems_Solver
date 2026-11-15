@@ -18,35 +18,10 @@
 #include <vector>
 
 #include "cli.hpp"
+#include "ssolve/compare.hpp"
 #include "ssolve/matrix_spec.hpp"
 
 using namespace ssolve;
-
-namespace {
-
-std::string json_number(double value) {
-  if (!std::isfinite(value)) return "null";
-  char text[32];
-  std::snprintf(text, sizeof text, "%.17g", value);
-  return text;
-}
-
-std::string json_string(const std::string& text) {
-  std::string out = "\"";
-  for (const char c : text) {
-    if (c == '"' || c == '\\') {
-      out += '\\';
-      out += c;
-    } else if (static_cast<unsigned char>(c) < 0x20) {
-      out += ' ';
-    } else {
-      out += c;
-    }
-  }
-  return out + "\"";
-}
-
-}  // namespace
 
 int main(int argc, char** argv) {
   try {
@@ -82,21 +57,17 @@ int main(int argc, char** argv) {
       }
     }
 
-    const std::string part = out_path + ".part";
-    {
-      std::ofstream out(part);
-      if (!out) throw std::runtime_error("cannot write " + part);
-      out << "{\"matrix\":" << json_string(matrix_display_name(spec)) << ",\"n\":" << n << ",\"nnz\":" << a.nnz()
-          << ",\"row_nnz\":{\"min\":" << row_min << ",\"mean\":" << json_number(static_cast<double>(a.nnz()) / n)
-          << ",\"max\":" << row_max << "},\"bandwidth\":" << bandwidth << ",\"grid\":" << grid << ",\"cells\":[";
-      for (std::size_t c = 0; c < cells.size(); ++c) out << (c ? "," : "") << cells[c];
-      out << "],\"zoom\":{\"size\":" << zoom << ",\"entries\":[" << zoom_entries << "]}}\n";
-      if (!out) throw std::runtime_error("failed while writing " + part);
+    std::string json = "{\"matrix\":" + json_string(matrix_display_name(spec)) + ",\"n\":" + std::to_string(n) +
+                       ",\"nnz\":" + std::to_string(a.nnz()) + ",\"row_nnz\":{\"min\":" + std::to_string(row_min) +
+                       ",\"mean\":" + json_number(static_cast<double>(a.nnz()) / n) + ",\"max\":" +
+                       std::to_string(row_max) + "},\"bandwidth\":" + std::to_string(bandwidth) +
+                       ",\"grid\":" + std::to_string(grid) + ",\"cells\":[";
+    for (std::size_t c = 0; c < cells.size(); ++c) {
+      if (c) json += ',';
+      json += std::to_string(cells[c]);
     }
-    if (std::rename(part.c_str(), out_path.c_str()) != 0) {
-      std::remove(part.c_str());
-      throw std::runtime_error("cannot move the drawing into place at " + out_path);
-    }
+    json += "],\"zoom\":{\"size\":" + std::to_string(zoom) + ",\"entries\":[" + zoom_entries + "]}}\n";
+    write_file_atomically(out_path, json);
     std::printf("drew %s: n = %lld, nnz = %lld, %lld x %lld blocks\n", matrix_display_name(spec).c_str(),
                 static_cast<long long>(n), static_cast<long long>(a.nnz()), static_cast<long long>(grid),
                 static_cast<long long>(grid));

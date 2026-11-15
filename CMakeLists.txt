@@ -42,13 +42,19 @@ add_custom_target(ssolve_build_info
   VERBATIM)
 
 add_library(ssolve STATIC
+  src/bench/compare.cpp
   src/bench/csv.cpp
   src/bench/manifest.cpp
   src/backends/seq/seq_backend.cpp
+  src/backends/seq/sell_backend.cpp
   src/formats/csr.cpp
+  src/formats/sell.cpp
   src/io/generators.cpp
   src/io/mtx_reader.cpp
   src/io/matrix_spec.cpp
+  src/precond/basic.cpp
+  src/precond/incomplete_cholesky.cpp
+  src/precond/sgs.cpp
   src/solvers/cg.cpp
   src/solvers/cg_history.cpp
   src/verify.cpp
@@ -64,7 +70,8 @@ if(SSOLVE_VEC_REPORT)
   elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(vec_report_flags -Rpass=loop-vectorize -Rpass-missed=loop-vectorize -Rpass-analysis=loop-vectorize)
   endif()
-  set_source_files_properties(src/backends/seq/seq_backend.cpp PROPERTIES COMPILE_OPTIONS "${vec_report_flags}")
+  set_source_files_properties(src/backends/seq/seq_backend.cpp src/backends/seq/sell_backend.cpp
+                              PROPERTIES COMPILE_OPTIONS "${vec_report_flags}")
 endif()
 
 # STREAM measures the machine's memory bandwidth, so it alone uses threads for now.
@@ -81,6 +88,7 @@ add_library(ssolve_bench STATIC
   bench/eigen_solvers.cpp
   bench/ladder.cpp
   bench/registry.cpp
+  bench/variants.cpp
 )
 target_include_directories(ssolve_bench PUBLIC bench)
 target_include_directories(ssolve_bench SYSTEM PRIVATE "${SSOLVE_EIGEN_DIR}")
@@ -111,6 +119,9 @@ ssolve_test(test_mtx_reader)
 ssolve_test(test_generators)
 ssolve_test(test_csv)
 ssolve_test(test_backend)
+ssolve_test(test_compare)
+ssolve_test(test_sell)
+ssolve_test(test_precond)
 
 add_executable(test_solvers tests/test_solvers.cpp)
 target_include_directories(test_solvers PRIVATE tests)

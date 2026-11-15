@@ -11,6 +11,7 @@ import argparse
 import json
 import mimetypes
 import pathlib
+import shutil
 import sys
 import time
 import urllib.parse
@@ -65,7 +66,8 @@ def preview(data):
 
 def confirm_replacing(paths, data):
     """Refuses to overwrite earlier results unless the page confirmed it; returns the removal to run."""
-    existing = [p for p in paths if p.exists()]
+    # A folder, such as the solution pictures, counts once it holds a file.
+    existing = [p for p in paths if p.is_file() or (p.is_dir() and any(p.iterdir()))]
     if existing and not data.get("replace"):
         raise ClientError("these results already exist", HTTPStatus.CONFLICT,
                           {"existing": [steps.display([str(p)]) for p in existing]})
@@ -73,7 +75,10 @@ def confirm_replacing(paths, data):
     def before(job):
         for path in existing:
             job.say(f"Removing the earlier result {steps.display([str(path)])}, as confirmed")
-            path.unlink()
+            if path.is_dir():
+                shutil.rmtree(path)
+            else:
+                path.unlink()
 
     return before if existing else None
 
@@ -117,7 +122,7 @@ def start_demo(data):
     if spec not in options:
         raise ClientError("pick a matrix from the list")
     if precond not in demo.PAIRS:
-        raise ClientError("preconditioner must be jacobi or none")
+        raise ClientError("preconditioner must be jacobi, ic or none")
     for binary in ("bench_cg", "solve"):
         if not (paths["release"] / binary).exists():
             raise ClientError(f"{binary} is not built in {steps.display([str(paths['release'])])}. "
@@ -214,7 +219,8 @@ class Handler(BaseHTTPRequestHandler):
                 offset = int(query.get("offset", ["0"])[0])
                 return self.send_json({"job": job.snapshot(offset) if job else None})
             if url.path == "/api/results":
-                return self.send_json({"machines": results.all_machines(), "single": results.one_matrix_runs()})
+                return self.send_json({"machines": results.all_machines(), "single": results.one_matrix_runs(),
+                                       "one_solutions": results.one_matrix_solutions()})
             if url.path == "/api/demo/choices":
                 return self.send_json(demo_choices(query))
             if url.path == "/api/demo/last":

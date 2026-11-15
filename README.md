@@ -45,11 +45,13 @@ To build only the solver, without Eigen and the benchmarks, run `cmake --build b
 
 ```bash
 build/release/solve --matrix poisson3d:100 --precond jacobi
+build/release/solve --matrix poisson3d:100 --precond ic
 build/release/solve --matrix path/to/ldoor.mtx --tol 1e-8 --maxit 5000 --out x.txt
 build/release/solve --matrix path/to/A.mtx --rhs b.txt --out x.txt
+build/release/solve --matrix poisson3d:100 --format sell --chunk 8 --sigma 256
 ```
 
-The matrix must be symmetric positive definite. Without `--rhs`, the solver uses b = A·1. A `--rhs` file holds exactly n numbers separated by whitespace. `--problem random` instead uses the right-hand side the benchmarks use. `--history h.txt` writes ‖r‖ / ‖b‖ before the first iteration and after each one, one value per line.
+The matrix must be symmetric positive definite. `--precond` is `none` (the default), `jacobi`, `sgs` (symmetric Gauss-Seidel) or `ic` (incomplete Cholesky). Without `--rhs`, the solver uses b = A·1. A `--rhs` file holds exactly n numbers separated by whitespace. `--problem random` instead uses the right-hand side the benchmarks use. `--history h.txt` writes ‖r‖ / ‖b‖ before the first iteration and after each one, one value per line. `--format sell` stores the matrix as SELL-C-σ instead of CSR: chunks of C rows (4, 8, 16 or 32), sorted by length inside windows of σ rows; the output shows how much padding that adds.
 
 The exit status is 0 if the solve converged and its true residual was verified, 2 if it did not converge, and 1 for invalid input.
 
@@ -61,7 +63,7 @@ Start the page where the solver builds, on Linux, WSL2 or macOS, and open the ad
 python3 ui/server.py
 ```
 
-The Run tab runs the steps below with your settings and shows each exact command. Its One matrix box runs the speed or accuracy step on a single matrix and saves the CSV as `results/NAME/one-MATRIX-TEST.csv`, apart from the full results. The Results tab charts every machine in `results/`, the Matrices tab draws the non-zero pattern of each test matrix, and the Demo tab solves one problem with our solver and with Eigen. Use `--port` to pick another port. The page answers only on this computer.
+The Run tab runs the steps below with your settings and shows each exact command. Its One matrix box runs the speed or accuracy step on a single matrix and saves the CSV as `results/NAME/one-MATRIX-TEST.csv`, apart from the full results, and an accuracy run also saves its solution pictures in `results/NAME/one-solutions/`. The Results tab charts every machine in `results/`, the Matrices tab draws the non-zero pattern of each test matrix, and the Demo tab solves one problem with our solver and with Eigen. Use `--port` to pick another port. The page answers only on this computer.
 
 ## Run the benchmarks
 
@@ -92,9 +94,11 @@ Plug in the charger and close other applications first. `run_bench.py` refuses t
     ```bash
     python3 scripts/run_bench.py --build build/release --data-dir ~/p08/data --maxit 30000 --repeat 3 --warmup 0 \
         --matrices ecology2,apache2,tmt_sym,G3_circuit,thermal2,hood \
-        --solvers eigen-E1,ours-jacobi --out $R/g1-real-solve.csv
+        --solvers eigen-E1,ours-jacobi --solutions $R/solutions --out $R/g1-real-solve.csv
     python3 scripts/summarize.py $R/g1-real-solve.csv --gate eigen-E1=ours-jacobi
     ```
+
+    `--solutions` saves, for each matrix, how far our answer is from Eigen's and from the true answer, as `$R/solutions/MATRIX.json`. The Results tab draws them.
 
 5. Check the answers against SciPy, which needs `pip install scipy`:
 

@@ -21,6 +21,8 @@ ACCURACY_MATRICES = "ecology2,apache2,tmt_sym,G3_circuit,thermal2,hood"
 SPEED_CSV = "g1-real.csv"
 ACCURACY_CSV = "g1-real-solve.csv"
 SINGLE_TESTS = {"speed": "Speed", "accuracy": "Accuracy"}
+SOLUTIONS_DIR = "solutions"          # results/<name>/solutions/MATRIX.json from the Accuracy step
+ONE_SOLUTIONS_DIR = "one-solutions"  # results/<name>/one-solutions/MATRIX.json from one-matrix runs
 
 MACHINE_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 COMPILER_PATTERN = re.compile(r"^[A-Za-z0-9._+/-]{1,200}$")
@@ -131,8 +133,9 @@ def steps(settings):
     if not (release / "CMakeCache.txt").exists():
         configure_release.append(f"-DCMAKE_CXX_COMPILER={settings['compiler']}")
     speed_csv, accuracy_csv = results / SPEED_CSV, results / ACCURACY_CSV
+    pictures = results / SOLUTIONS_DIR
     measure = {"speed": speed_commands(release, data, speed_csv),
-               "accuracy": accuracy_commands(release, data, accuracy_csv, ACCURACY_MATRICES)}
+               "accuracy": accuracy_commands(release, data, accuracy_csv, ACCURACY_MATRICES, pictures)}
     return [
         {"id": "build", "title": "Build", "about": "release build of the solver and benchmarks", "minutes": 2,
          "commands": [command(configure_release),
@@ -149,7 +152,7 @@ def steps(settings):
         {"id": "speed", "title": "Speed", "about": "100 iterations per solver, at most 1.05 times Eigen", "minutes": 20,
          "commands": measure["speed"], "replaces": [speed_csv]},
         {"id": "accuracy", "title": "Accuracy", "about": "complete solves to 1e-8 on the six smaller matrices",
-         "minutes": 15, "commands": measure["accuracy"], "replaces": [accuracy_csv]},
+         "minutes": 15, "commands": measure["accuracy"], "replaces": [accuracy_csv, pictures]},
         {"id": "scipy", "title": "SciPy check", "about": "our answer on apache2, judged by SciPy", "minutes": 1,
          "commands": [command([PYTHON, SCRIPTS / "check_against_scipy.py", "--build", release,
                                "--matrix", data / "apache2.mtx"])],
@@ -167,11 +170,13 @@ def speed_commands(release, data, out, matrices=None):
                      "--gate", "eigen-E0=ours", "--gate", "eigen-E1=ours-jacobi"], gate=True)]
 
 
-def accuracy_commands(release, data, out, matrices):
-    """The Accuracy step's complete solves and gate, on the named matrices."""
+def accuracy_commands(release, data, out, matrices, solutions):
+    """The Accuracy step's complete solves and gate, on the named matrices. Each matrix's solution
+    pictures, our answer against Eigen's and against the true one, go to solutions/NAME.json."""
     return [command([PYTHON, SCRIPTS / "run_bench.py", "--build", release, "--data-dir", data,
                      "--maxit", "30000", "--repeat", "3", "--warmup", "0",
-                     "--matrices", matrices, "--solvers", "eigen-E1,ours-jacobi", "--out", out]),
+                     "--matrices", matrices, "--solvers", "eigen-E1,ours-jacobi",
+                     "--solutions", solutions, "--out", out]),
             command([PYTHON, SCRIPTS / "summarize.py", out, "--gate", "eigen-E1=ours-jacobi"], gate=True)]
 
 
@@ -189,7 +194,7 @@ def single_choices(settings):
 
 def single_out(results, name, test):
     """results/<name>/one-MATRIX-TEST.csv: beside the full results, never one of their files."""
-    return results / f"one-{re.sub(r'[^A-Za-z0-9._-]', '_', name)}-{test}.csv"
+    return results / f"one-{run_bench.safe_name(name)}-{test}.csv"
 
 
 def single_step(settings, name, test):
@@ -204,9 +209,14 @@ def single_step(settings, name, test):
         raise SettingsError("accuracy runs only on the six matrices the Accuracy step uses")
     p = paths(settings)
     out = single_out(p["results"], name, test)
-    build = speed_commands if test == "speed" else accuracy_commands
+    if test == "speed":
+        commands, replaces = speed_commands(p["release"], p["data"], out, name), [out]
+    else:
+        pictures = p["results"] / ONE_SOLUTIONS_DIR
+        commands = accuracy_commands(p["release"], p["data"], out, name, pictures)
+        replaces = [out, pictures / f"{run_bench.safe_name(name)}.json"]
     return {"id": "single", "title": f"{SINGLE_TESTS[test]} on {name}",
-            "commands": build(p["release"], p["data"], out, name), "replaces": [out],
+            "commands": commands, "replaces": replaces,
             "available": choice["available"]}
 
 

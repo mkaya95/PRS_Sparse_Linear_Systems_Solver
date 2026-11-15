@@ -7,6 +7,7 @@
 // Kernels are noinline so that each stays a separate unit, as with Eigen's solver boundary.
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <limits>
 #include <memory>
 #include <stdexcept>
@@ -333,8 +334,20 @@ KernelSet ladder_kernels(const std::string& name, const CsrMatrix& a) {
   if (name == "L3-acc2") return make_kernels<KAcc2>(a);
   if (name == "L3-unroll4") return make_kernels<KUnroll4>(a);
   if (name == "L3-simdrow") return make_kernels<KSimdRow>(a);
+  // sell-c<C>-s<sigma>: the SELL backend's SpMV, with L3-acc2's vector kernels.
+  int chunk = 0;
+  long long sigma = 0;
+  char rest = 0;
+  if (std::sscanf(name.c_str(), "sell-c%d-s%lld%c", &chunk, &sigma, &rest) == 2 && sigma > 0 &&
+      sigma <= std::numeric_limits<Index>::max()) {
+    KernelSet set = make_kernels<KAcc2>(a);
+    const std::shared_ptr<const Backend> backend = make_sell_backend(a, chunk, static_cast<Index>(sigma));
+    set.spmv = [backend](const double* x, double* y) { backend->spmv(x, y); };
+    return set;
+  }
   std::string names = "eigen";
   for (const std::string& valid : ladder_kernel_names()) names += ", " + valid;
+  names += ", sell-c<C>-s<sigma>";
   throw std::runtime_error("unknown implementation '" + name + "'. Valid names: " + names);
 }
 

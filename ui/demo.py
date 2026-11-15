@@ -25,7 +25,7 @@ GENERATED = [
     ("poisson2d:llc=4", "2-D Poisson, 4x the cache", "about a minute"),
     ("poisson3d:llc=0.5", "3-D Poisson, half the cache", "under a second"),
 ]
-PAIRS = {"jacobi": ("ours-jacobi", "eigen-E1"), "none": ("ours", "eigen-E0")}
+PAIRS = {"jacobi": ("ours-jacobi", "eigen-E1"), "none": ("ours", "eigen-E0"), "ic": ("ours-ic", "eigen-E4")}
 TOL = "1e-8"
 MAX_POINTS = 1500
 
@@ -56,18 +56,19 @@ def plan(release, spec, precond):
     """Returns (steps, finish, cleanup). The caller has already checked spec and precond."""
     ours, eigen = PAIRS[precond]
     work = pathlib.Path(tempfile.mkdtemp(prefix="p08-demo-"))
-    csv_path, history_path = work / "demo.csv", work / "history.txt"
+    csv_path, history_path, solutions_path = work / "demo.csv", work / "history.txt", work / "solutions.json"
     steps = [
         {"id": "race", "title": "Head to head", "commands": [command([
             release / "bench_cg", "--matrix", spec, "--solver", f"{ours},{eigen}", "--tol", TOL,
-            "--warmup", "1", "--repeat", "2", "--problem", "random", "--csv", csv_path, "--progress", "1"])]},
+            "--warmup", "1", "--repeat", "2", "--problem", "random", "--csv", csv_path, "--progress", "1",
+            "--solutions", solutions_path])]},
         {"id": "curve", "title": "Error curve", "commands": [command([
             release / "solve", "--matrix", spec, "--precond", precond, "--problem", "random", "--tol", TOL,
             "--history", history_path])]},
     ]
 
     def finish(job):
-        job.result = summarize_run(csv_path, history_path, spec, precond)
+        job.result = summarize_run(csv_path, history_path, spec, precond, solutions_path)
         # Battery once doubled our run times, so the page says so rather than refusing the demo.
         job.result["power"] = run_bench.detect_power()
 
@@ -77,7 +78,7 @@ def plan(release, spec, precond):
     return steps, finish, cleanup
 
 
-def summarize_run(csv_path, history_path, spec, precond):
+def summarize_run(csv_path, history_path, spec, precond, solutions_path=None):
     ours, eigen = PAIRS[precond]
     groups = summarize.load_groups([str(csv_path)], "solve_s")
     rows, _ = summarize.evaluate_gate(groups, eigen, ours)
@@ -89,6 +90,10 @@ def summarize_run(csv_path, history_path, spec, precond):
         first = next(csv.DictReader(f))
     with open(history_path, encoding="ascii") as f:
         history = [float(line) for line in f if line.strip()]
+    pictures = None
+    if solutions_path is not None and pathlib.Path(solutions_path).exists():
+        with open(solutions_path, encoding="utf-8") as f:
+            pictures = json.load(f)
 
     def side(name):
         entry = solvers[name]
@@ -105,4 +110,5 @@ def summarize_run(csv_path, history_path, spec, precond):
         "history": [[i, v] for i, v in thin(history) if math.isfinite(v) and v > 0],
         "history_iterations": len(history) - 1,
         "commit": first.get("git_commit", ""), "cpu": first.get("cpu_model", ""),
+        "solutions": pictures,
     }

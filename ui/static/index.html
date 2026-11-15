@@ -93,6 +93,13 @@
         </figure>
       </div>
 
+      <figure id="solutions-figure" hidden>
+        <figcaption>Same numbers as Eigen? Our answer minus Eigen's, and each answer minus the true one</figcaption>
+        <div id="solution-legend"></div>
+        <div class="solution-cards" id="solution-cards"></div>
+        <p class="note">Each square is one block of the answer vector, shaded by the largest difference in it. Two correct solvers add the same numbers in a different order, so their answers differ in the last digits: when both met the 1e-8 target, small differences here are expected, not mistakes.</p>
+      </figure>
+
       <figure id="machines-figure" hidden>
         <figcaption>Machines side by side</figcaption>
         <div id="machines-chart"></div>
@@ -138,7 +145,7 @@
     <section id="tab-demo" class="tab-panel" role="tabpanel" hidden>
       <div class="actions">
         <label class="pick">Matrix <select id="demo-matrix"></select></label>
-        <span class="seg" id="precond-seg"><button data-precond="jacobi" class="on">Jacobi</button><button data-precond="none">None</button></span>
+        <span class="seg" id="precond-seg"><button data-precond="jacobi" class="on">Jacobi</button><button data-precond="ic">Incomplete Cholesky</button><button data-precond="none">None</button></span>
         <button class="btn go" id="solve-live">Solve live</button>
         <span class="status" id="demo-status"></span>
       </div>
@@ -147,7 +154,7 @@
       <div class="flow" id="flow">
         <div class="box" data-phase="read">Read matrix<small>.mtx or generated</small></div><span class="arr">&rarr;</span>
         <div class="box" data-phase="read">Store as CSR<small>rows, columns, values</small></div><span class="arr">&rarr;</span>
-        <div class="box" data-phase="solve" id="jacobi-box">Jacobi<small>scale by 1/diagonal</small></div><span class="arr">&rarr;</span>
+        <div class="box" data-phase="solve" id="jacobi-box"><span id="precond-name">Jacobi</span><small id="precond-about">scale by 1/diagonal</small></div><span class="arr">&rarr;</span>
         <div class="box" data-phase="solve">CG loop<small>multiply, dot, update</small></div><span class="arr">&rarr;</span>
         <div class="box" data-phase="check">Check answer<small>true error &le; 1e-8</small></div>
       </div>
@@ -170,6 +177,13 @@
           <div id="curve"></div>
           <p class="note">Drawn from a separate, untimed run on the same problem, so recording it never touches the timed numbers.</p>
         </div>
+      </div>
+
+      <div id="demo-solutions" hidden>
+        <div class="label">5 &middot; Same numbers as Eigen?</div>
+        <div id="demo-solution-legend"></div>
+        <div class="solution-cards" id="demo-solution-card"></div>
+        <p class="note">Our answer minus Eigen's, and each minus the true answer, block by block. Different rounding gives tiny differences even when both answers are right.</p>
       </div>
     </section>
   </main>

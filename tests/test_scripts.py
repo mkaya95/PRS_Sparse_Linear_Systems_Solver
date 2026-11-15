@@ -140,6 +140,16 @@ class RunBench(unittest.TestCase):
         )
         self.assertNotEqual(done.returncode, 0)
 
+    def test_solution_pictures_go_one_file_per_matrix(self):
+        self.write_suite(generated=[{"stencil": "poisson2d", "n": [8, 9]}])
+        pictures = os.path.join(self.dir.name, "pictures")
+        done = run_bench("--solvers", "ours,eigen-E0", "--repeat", "1", "--out", self.out, "--solutions", pictures,
+                         suite=self.suite)
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertEqual(sorted(os.listdir(pictures)), ["poisson2d_8.json", "poisson2d_9.json"])
+        with open(os.path.join(pictures, "poisson2d_9.json"), encoding="utf-8") as f:
+            self.assertEqual(json.load(f)["n"], 81)
+
     def test_fixed_iteration_mode_is_explicit_and_not_a_solve_gate(self):
         self.write_suite(generated=[{"stencil": "poisson2d", "n": [8]}])
         done = run_bench("--solvers", "eigen-E0,ours", "--mode", "fixed", "--maxit", "1",
@@ -151,6 +161,65 @@ class RunBench(unittest.TestCase):
             capture_output=True, text=True)
         self.assertEqual(report.returncode, 2, report.stdout + report.stderr)
         self.assertNotIn("PASS", report.stdout)
+
+
+class Solutions(unittest.TestCase):
+    def setUp(self):
+        self.dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self.dir.cleanup)
+        self.file = os.path.join(self.dir.name, "solutions.json")
+
+    def run_cg(self, solvers, *extra):
+        return subprocess.run(
+            [os.path.join(BUILD_DIR, "bench_cg"), "--matrix", "poisson2d:20", "--solver", solvers, "--repeat", "1",
+             "--warmup", "0", *extra],
+            capture_output=True, text=True, cwd=self.dir.name)
+
+    def pictures(self):
+        with open(self.file, encoding="utf-8") as f:
+            return json.load(f)
+
+    def test_each_pair_and_each_solver_against_the_true_answer_is_written(self):
+        done = self.run_cg("ours-jacobi,eigen-E1", "--solutions", self.file)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        data = self.pictures()
+        self.assertEqual((data["matrix"], data["n"], data["grid"], data["problem"]), ("poisson2d:20", 400, 20, "random"))
+        self.assertEqual([(c["a"], c["b"]) for c in data["comparisons"]],
+                         [("ours-jacobi", "eigen-E1"), ("ours-jacobi", "true"), ("eigen-E1", "true")])
+        for comparison in data["comparisons"]:
+            self.assertLess(comparison["rel_norm"], 1e-6)
+            self.assertEqual(len(comparison["cells"]), 400)
+        self.assertGreater(data["x_scale"], 0.5)
+        self.assertLessEqual(data["x_scale"], 1.0)
+
+    def test_the_unit_problem_has_no_true_answer(self):
+        done = self.run_cg("ours-jacobi,eigen-E1", "--problem", "unit", "--solutions", self.file)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        data = self.pictures()
+        self.assertEqual([(c["a"], c["b"]) for c in data["comparisons"]], [("ours-jacobi", "eigen-E1")])
+        self.assertGreater(data["x_scale"], 0)
+
+    def test_a_dropped_solver_is_left_out(self):
+        done = self.run_cg("no-such-solver,ours", "--solutions", self.file)
+        self.assertEqual(done.returncode, 1, done.stderr)
+        self.assertEqual([(c["a"], c["b"]) for c in self.pictures()["comparisons"]], [("ours", "true")])
+
+    def test_a_solver_that_did_not_converge_is_left_out(self):
+        # The Accuracy step runs without a warm-up, so a failed solve must be dropped from its measured round too.
+        done = self.run_cg("ours,ours-ic", "--maxit", "30", "--solutions", self.file)
+        self.assertEqual(done.returncode, 1, done.stdout)  # ours needs 60 iterations here, ours-ic 21
+        self.assertEqual([(c["a"], c["b"]) for c in self.pictures()["comparisons"]], [("ours-ic", "true")])
+
+    def test_a_run_where_no_solver_converged_still_writes_its_file(self):
+        done = self.run_cg("ours,eigen-E0", "--maxit", "1", "--solutions", self.file)
+        self.assertEqual(done.returncode, 1, done.stdout)
+        data = self.pictures()
+        self.assertEqual((data["n"], data["comparisons"]), (400, []))
+
+    def test_without_the_option_no_file_is_written(self):
+        done = self.run_cg("ours")
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(os.listdir(self.dir.name), [])
 
 
 class TestProblem(unittest.TestCase):
@@ -386,6 +455,23 @@ class BenchKernels(unittest.TestCase):
                 self.assertEqual(len(rows), 10)
                 self.assertEqual({r["kernel"] for r in rows}, {"spmv", "dot", "axpy", "norm2", "xpby"})
                 self.assertTrue(all(float(r["seconds"]) > 0 for r in rows))
+
+    def test_a_sell_implementation_is_timed_like_the_others(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = os.path.join(d, "k.csv")
+            done = self.run_kernels("L3-acc2,sell-c8-s256", out)
+            self.assertEqual(done.returncode, 0, done.stderr)
+            with open(out, newline="", encoding="utf-8") as f:
+                rows = list(csv.DictReader(f))
+        self.assertEqual({r["impl"] for r in rows}, {"L3-acc2", "sell-c8-s256"})
+        self.assertEqual({r["kernel"] for r in rows if r["impl"] == "sell-c8-s256"},
+                         {"spmv", "dot", "axpy", "norm2", "xpby"})
+
+    def test_a_bad_sell_name_lists_the_pattern(self):
+        with tempfile.TemporaryDirectory() as d:
+            done = self.run_kernels("sell-c6-s1", os.path.join(d, "k.csv"))
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("chunk must be 4, 8, 16 or 32", done.stderr)
 
     def test_implementations_take_turns(self):
         with tempfile.TemporaryDirectory() as d:
@@ -690,6 +776,21 @@ class SolveCommand(unittest.TestCase):
         self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
         self.assertIn("jacobi", done.stdout)
 
+    def test_sell_storage_is_selectable(self):
+        done = self.run_solve("--matrix", "poisson3d:10", "--format", "sell", "--chunk", "4", "--sigma", "8")
+        self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+        self.assertIn("format         sell (C = 4, sigma = 8, stored/nnz = ", done.stdout)
+        csr = self.run_solve("--matrix", "poisson3d:10")
+        self.assertIn("format         csr", csr.stdout)
+
+    def test_sell_settings_need_the_sell_format(self):
+        done = self.run_solve("--matrix", "poisson3d:10", "--chunk", "4")
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("--chunk and --sigma need --format sell", done.stderr)
+        done = self.run_solve("--matrix", "poisson3d:10", "--format", "ell")
+        self.assertEqual(done.returncode, 1)
+        self.assertIn("csr or sell", done.stderr)
+
     def test_running_out_of_iterations_exits_2(self):
         done = self.run_solve("--matrix", "poisson2d:30", "--maxit", "1")
         self.assertEqual(done.returncode, 2, done.stdout + done.stderr)
@@ -704,6 +805,14 @@ class SolveCommand(unittest.TestCase):
         done = self.run_solve("--matrix", "poisson2d:5", "--precond", "ilu")
         self.assertEqual(done.returncode, 1)
         self.assertIn("ilu", done.stderr)
+        self.assertIn("none, jacobi, sgs or ic", done.stderr)
+
+    def test_gauss_seidel_and_incomplete_cholesky_are_selectable(self):
+        for precond in ("sgs", "ic"):
+            with self.subTest(precond=precond):
+                done = self.run_solve("--matrix", "poisson3d:10", "--precond", precond)
+                self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
+                self.assertIn(f"preconditioner {precond}", done.stdout)
 
     def test_invalid_options_are_rejected(self):
         for option, value in (("--tol", "inf"), ("--tol", "nan"), ("--tol", "-1"),

@@ -18,11 +18,17 @@ import json
 import os
 import pathlib
 import platform
+import re
 import shutil
 import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+
+def safe_name(name):
+    """A matrix name as a file name: poisson3d:llc=4 becomes poisson3d_llc_4."""
+    return re.sub(r"[^A-Za-z0-9._-]", "_", name)
 
 
 def matrix_specs(suite, data_dir):
@@ -121,6 +127,8 @@ def main():
     parser.add_argument("--matrices", default=None, help="comma-separated names; default is the whole suite")
     parser.add_argument("--timeout", type=float, default=None, help="seconds per matrix")
     parser.add_argument("--label", default=None)
+    parser.add_argument("--solutions", default=None,
+                        help="folder for each matrix's solution pictures, written by bench_cg as NAME.json")
     args = parser.parse_args()
 
     power = detect_power() if args.power == "auto" else args.power
@@ -155,6 +163,9 @@ def main():
             command += ["--tol", args.tol]
         if args.label is not None:
             command += ["--label", args.label]
+        if args.solutions is not None:
+            os.makedirs(args.solutions, exist_ok=True)
+            command += ["--solutions", os.path.join(args.solutions, f"{safe_name(name)}.json")]
         try:
             done = subprocess.run(command, capture_output=True, text=True, timeout=args.timeout)
         except subprocess.TimeoutExpired as error:

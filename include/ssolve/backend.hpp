@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ssolve/matrix.hpp"
+#include "ssolve/sell.hpp"
 
 namespace ssolve {
 
@@ -47,5 +48,12 @@ class Backend {
 // they fit, which allow_narrow_row_ptr = false turns off for the optimization ladder.
 // Throws if the matrix is not square.
 std::unique_ptr<Backend> make_seq_backend(CsrMatrix a, bool allow_narrow_row_ptr = true);
+
+// The sequential SELL-C-σ backend, built from a copy of a; it keeps no CSR. Throws if the matrix is
+// not square, if C is not 4, 8, 16 or 32, or if σ is not 1 or a multiple of C.
+std::unique_ptr<Backend> make_sell_backend(const CsrMatrix& a, int chunk = kSellChunk, Index sigma = kSellSigma);
+
+// The same from a SELL matrix already built, for a caller that also wants its layout. Throws if not square.
+std::unique_ptr<Backend> make_sell_backend(SellMatrix s);
 
 }  // namespace ssolve
