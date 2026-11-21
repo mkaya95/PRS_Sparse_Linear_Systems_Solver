@@ -32,7 +32,7 @@ PaddedTriangle pad_rows(Index n, const std::vector<std::int64_t>& ptr, const std
   }
   const std::size_t stored = static_cast<std::size_t>(t.block_start[blocks]);
   t.col = AlignedArray<Index>(stored);
-  t.val = AlignedArray<double>(stored);
+  t.val = AlignedArray<FactorValue>(stored);
   for (std::int64_t b = 0; b < blocks; ++b) {
     const Index begin = static_cast<Index>(b * kTriangularBlock);
     const Index end = std::min<Index>(n, begin + kTriangularBlock);
@@ -42,7 +42,7 @@ PaddedTriangle pad_rows(Index n, const std::vector<std::int64_t>& ptr, const std
       const std::int64_t count = ptr[i + 1] - ptr[i];
       for (int k = 0; k < width; ++k) {
         t.col[at + k] = k < count ? col[ptr[i] + k] : n;
-        t.val[at + k] = k < count ? val[ptr[i] + k] : 0.0;
+        t.val[at + k] = k < count ? static_cast<FactorValue>(val[ptr[i] + k]) : FactorValue{0};
       }
     }
   }
@@ -52,7 +52,7 @@ PaddedTriangle pad_rows(Index n, const std::vector<std::int64_t>& ptr, const std
 // Σ v[k] w[c[k]] over one padded row. W >= 0 is the width known at compile time, which unrolls the loop
 // and leaves no branch; W = -1 reads it from `width`.
 template <int W>
-inline double row_sum(const Index* SSOLVE_RESTRICT c, const double* SSOLVE_RESTRICT v, const double* w, int width) {
+inline double row_sum(const Index* SSOLVE_RESTRICT c, const FactorValue* SSOLVE_RESTRICT v, const double* w, int width) {
   const int count = W >= 0 ? W : width;
   double s0 = 0.0, s1 = 0.0;
   int k = 0;
@@ -88,8 +88,8 @@ template <bool Update>
 double forward(const TriangularFactor& f, double a, const double* SSOLVE_RESTRICT p, const double* SSOLVE_RESTRICT q,
                double* SSOLVE_RESTRICT x, double* SSOLVE_RESTRICT r, double* w) {
   const PaddedTriangle& t = f.lower;
-  const double* SSOLVE_RESTRICT const near = f.near.data();
-  const double* SSOLVE_RESTRICT const inv_diag = f.inv_diag.data();
+  const FactorValue* SSOLVE_RESTRICT const near = f.near.data();
+  const FactorValue* SSOLVE_RESTRICT const inv_diag = f.inv_diag.data();
   const Index n = f.n;
   double prev = 0.0;  // w[i - 1], kept in a register
   double rr = 0.0;
@@ -97,7 +97,7 @@ double forward(const TriangularFactor& f, double a, const double* SSOLVE_RESTRIC
     const Index end = std::min<Index>(n, begin + kTriangularBlock);
     const int width = t.width[b];
     const Index* c = t.col.data() + t.block_start[b];
-    const double* v = t.val.data() + t.block_start[b];
+    const FactorValue* v = t.val.data() + t.block_start[b];
     with_width(width, [&](auto tag) {
       constexpr int W = decltype(tag)::value;
       for (Index i = begin; i < end; ++i, c += width, v += width) {
@@ -120,8 +120,8 @@ double forward(const TriangularFactor& f, double a, const double* SSOLVE_RESTRIC
 // Backward sweep, Kᵀ w = w in place, returning r·w.
 double backward(const TriangularFactor& f, const double* SSOLVE_RESTRICT r, double* w) {
   const PaddedTriangle& t = f.upper;
-  const double* SSOLVE_RESTRICT const near = f.near.data();
-  const double* SSOLVE_RESTRICT const inv_diag = f.inv_diag.data();
+  const FactorValue* SSOLVE_RESTRICT const near = f.near.data();
+  const FactorValue* SSOLVE_RESTRICT const inv_diag = f.inv_diag.data();
   const Index n = f.n;
   const Index blocks = static_cast<Index>(t.width.size());
   double next = 0.0;  // w[i + 1], kept in a register
@@ -131,7 +131,7 @@ double backward(const TriangularFactor& f, const double* SSOLVE_RESTRICT r, doub
     const Index end = std::min<Index>(n, begin + kTriangularBlock);
     const int width = t.width[b];
     const Index* const c0 = t.col.data() + t.block_start[b];
-    const double* const v0 = t.val.data() + t.block_start[b];
+    const FactorValue* const v0 = t.val.data() + t.block_start[b];
     with_width(width, [&](auto tag) {
       constexpr int W = decltype(tag)::value;
       for (Index i = end - 1; i >= begin; --i) {
@@ -192,10 +192,10 @@ TriangularFactor make_triangular_factor(const CsrMatrix& strict_lower, const Ali
 
   TriangularFactor f;
   f.n = n;
-  f.near = AlignedArray<double>(un + 1);
+  f.near = AlignedArray<FactorValue>(un + 1);
   f.near.fill(0.0);
-  f.inv_diag = AlignedArray<double>(un);
-  for (Index i = 0; i < n; ++i) f.inv_diag[i] = 1.0 / diagonal[i];
+  f.inv_diag = AlignedArray<FactorValue>(un);
+  for (Index i = 0; i < n; ++i) f.inv_diag[i] = static_cast<FactorValue>(1.0 / diagonal[i]);
 
   // The lower rows without the neighbour, and their transpose, as plain row lists.
   std::vector<std::int64_t> lower_ptr(un + 1, 0), upper_ptr(un + 1, 0);
@@ -204,7 +204,7 @@ TriangularFactor make_triangular_factor(const CsrMatrix& strict_lower, const Ali
       const Index j = strict_lower.col[k];
       if (j < 0 || j >= i) throw std::runtime_error("triangular factor: an entry is not below the diagonal");
       if (j == i - 1) {
-        f.near[i] += strict_lower.val[k];
+        f.near[i] = static_cast<FactorValue>(f.near[i] + strict_lower.val[k]);
       } else {
         ++lower_ptr[i + 1];
         ++upper_ptr[j + 1];

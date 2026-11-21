@@ -50,7 +50,14 @@ flowchart TD
    symmetric Gauss-Seidel (`sgs`, from HPCG's reference kernel) or incomplete
    Cholesky (`ic`, from Eigen's IncompleteCholesky with natural ordering). CG runs
    one loop for all of them: none and Jacobi merge their work into the vector
-   updates, the other two store z = M⁻¹r. Plain CG needs no preconditioner.
+   updates, the others store z = M⁻¹r. Gauss-Seidel and every incomplete Cholesky
+   variant are M = K Kᵀ for a lower triangular K, so they share one pair of sweeps
+   (`ssolve/triangular.hpp`) that has no branch on a row's length and runs the CG
+   update inside the forward sweep. The CSR product likewise reads each row as a
+   fixed number of masked AVX2 lanes (`ssolve/masked_row.hpp`). The one-method
+   executables in `apps/methods` run Jacobi as plain CG on the scaled system
+   D^(-1/2) A D^(-1/2), whose unit diagonal is not stored (`ssolve/jacobi_scaled.hpp`).
+   Plain CG needs no preconditioner.
    Jacobi requires every diagonal and inverse-diagonal value to be finite and
    positive.
 6. **Run CG.** The normal CLI path starts with `x = 0`. Invalid curvature or

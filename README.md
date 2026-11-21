@@ -48,16 +48,33 @@ cmake --preset profile -DCMAKE_CXX_COMPILER=g++
 cmake --build build/profile --target solve bench_cg
 ```
 
-With VTune installed, one script profiles every solver on a matrix and saves the reports as text. The kernel must first let VTune read the processor's counters and load its sampling driver, both of which last until the next reboot:
+Each of the nine methods has its own executable with its own `main` (`apps/methods`), so VTune profiles one method at a time and sees none of the others' code. They are built into `build/profile/methods`:
+
+| Executable | Method |
+| --- | --- |
+| `cg_jacobi` | CG + Jacobi, CSR |
+| `cg_sell_jacobi` | CG + Jacobi, SELL-8-256 |
+| `cg_sgs` | CG + symmetric Gauss-Seidel |
+| `cg_ic` | CG + incomplete Cholesky as Eigen computes it |
+| `cg_ic_fixed` | the same with Eigen's two bugs corrected |
+| `cg_ic0` | CG + IC(0) |
+| `cg_ic0_rcm` | CG + IC(0) on the RCM-reordered matrix |
+| `eigen_e1` | Eigen's CG + Jacobi |
+| `eigen_e4` | Eigen's CG + incomplete Cholesky |
+
+VTune starts paused and each executable resumes it only for its iterations, through VTune's ITT library, so reading the matrix and building the preconditioner stay out of the numbers. The kernel must first let VTune read the processor's counters, and Intel's sampling driver must be loaded; `boot-script --install` loads it at every boot:
 
 ```bash
 source /opt/intel/oneapi/setvars.sh
 sudo sysctl kernel.perf_event_paranoid=0 kernel.kptr_restrict=0 kernel.yama.ptrace_scope=0
 sudo /opt/intel/oneapi/vtune/latest/sepdk/src/insmod-sep -g "$(id -gn)"   # Intel's sampling driver
-scripts/profile_vtune.sh ~/p08/data/thermal2.mtx results/my-machine/vtune
+cmake --build build/profile --target methods
+scripts/profile_method.sh cg_ic0 ~/p08/data/thermal2.mtx results/my-machine/vtune   # one method
+scripts/profile_vtune.sh ~/p08/data/thermal2.mtx results/my-machine/vtune           # all nine, one by one
+python3 scripts/vtune_table.py results/before results/after                           # before -> after
 ```
 
-The VTune result folders go to `~/p08/vtune`; open one with `vtune-gui ~/p08/vtune/ic0-hotspots`. What it showed on `thermal2` is in [the VTune results](docs/results/vtune-i5-1335U-linux.md).
+The VTune result folders go to `~/p08/vtune-methods`; open one with `vtune-gui ~/p08/vtune-methods/cg_ic0-hotspots`. What the per-method profiles showed, and what was optimized because of them, is in [profiling po metodama](docs/profiling-po-metodama.md) (in Bosnian). The earlier profile of the shared `solve` binary is in [the VTune results](docs/results/vtune-i5-1335U-linux.md).
 
 ## Run the solver
 

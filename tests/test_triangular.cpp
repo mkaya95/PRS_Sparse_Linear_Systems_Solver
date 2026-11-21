@@ -46,7 +46,8 @@ std::vector<CsrMatrix> matrices() {
   return all;
 }
 
-// Checks triangular_apply against `reference` (z = M⁻¹ r), and r·z.
+// Checks triangular_apply against `reference` (z = M⁻¹ r), and r·z. The factor is stored in single
+// precision (FactorValue), so the two agree to single precision, not to the last bit.
 template <class Reference>
 void check_apply(const TriangularFactor& f, Reference reference) {
   const std::size_t n = static_cast<std::size_t>(f.n);
@@ -57,10 +58,10 @@ void check_apply(const TriangularFactor& f, Reference reference) {
   const double scale = max_abs(expected);
   double expected_rz = 0.0;
   for (std::size_t i = 0; i < n; ++i) {
-    CHECK_NEAR(w[i], expected[i], 1e-12 * scale);
+    CHECK_NEAR(w[i], expected[i], 1e-5 * scale);
     expected_rz += r[i] * expected[i];
   }
-  CHECK_NEAR(rz, expected_rz, 1e-12 * std::fabs(expected_rz));
+  CHECK_NEAR(rz, expected_rz, 1e-5 * std::fabs(expected_rz));
   CHECK_EQ(w[n], 0.0);
 }
 

@@ -9,13 +9,17 @@
 //    every row of a block is padded to the block's widest row, so a block runs a loop of fixed length,
 //    unrolled by the compiler. Padding reads a zero coefficient at a slot that always holds 0.
 //    In the plain CSR loops the processor guessed each short row's end wrong, a third of all slots.
-// 2. The neighbour stays in a register. Entry (i, i - 1), present in almost every row of a mesh, is stored
-//    apart, and the value just computed is used from a register instead of a store and a reload.
+// 2. The neighbour stays in a register. Entry (i, i - 1) (in a third of thermal2's rows, half after RCM) is
+//    stored apart, and the value just computed is used from a register instead of a store and a reload.
 // 3. Both sweeps read in their own direction. The upper triangle Kᵀ is stored by rows too, so the backward
 //    sweep gathers like the forward one, instead of scattering updates into z.
 // 4. Fewer passes over memory. The CG update x += a p, r -= a q, r·r runs inside the forward sweep, and
 //    r·z inside the backward one, so those vectors are not read again in separate loops. The scaling S is
 //    folded into K, so there are no scaling passes.
+// 5. Half the bytes per coefficient. K is stored in single precision and the sums are done in double. A
+//    preconditioner only has to approximate A⁻¹, and CG still multiplies by A in double precision and
+//    checks the true residual; on thermal2, apache2, tmt_sym, ecology2 and G3_circuit the iteration
+//    counts of IC(0) and SGS did not change by one.
 #pragma once
 
 #include <cstdint>
@@ -30,6 +34,9 @@
 
 namespace ssolve {
 
+// The factor's numbers are stored as FactorValue (point 5) and the arithmetic is done in double.
+using FactorValue = float;
+
 constexpr Index kTriangularBlock = 8;  // rows sharing one padded width
 constexpr int kTriangularMaxWidth = 8;  // widths above this run the general loop
 
@@ -39,15 +46,15 @@ struct PaddedTriangle {
   AlignedArray<std::int64_t> block_start;  // blocks + 1
   AlignedArray<std::uint8_t> width;        // blocks; at most 255
   AlignedArray<Index> col;                 // padding points at n, the slot that is always 0
-  AlignedArray<double> val;                // padding is 0
+  AlignedArray<FactorValue> val;           // padding is 0
 };
 
 struct TriangularFactor {
   Index n = 0;
   PaddedTriangle lower;           // K below the diagonal, without (i, i - 1)
   PaddedTriangle upper;           // Kᵀ above the diagonal, without (i, i + 1)
-  AlignedArray<double> near;      // near[i] = K(i, i - 1), 0 if absent; near[0] = 0
-  AlignedArray<double> inv_diag;  // 1 / K(i, i)
+  AlignedArray<FactorValue> near;      // near[i] = K(i, i - 1), 0 if absent; near[0] = 0
+  AlignedArray<FactorValue> inv_diag;  // 1 / K(i, i)
 };
 
 // K from its strict lower triangle by rows (any column order) and its diagonal, taken as given: the callers
