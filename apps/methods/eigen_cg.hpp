@@ -44,7 +44,10 @@ ssolve::SolveResult eigen_cg(const ssolve::CsrMatrix& a, const double* b, double
     solution = cg.solve(rhs);
     result.solve_seconds = wall_seconds() - solve_start;
   }
-  result.status = cg.info() == Eigen::Success ? SolveStatus::Converged : SolveStatus::MaxIterations;
+  // NoConvergence is running out of iterations; NumericalIssue is a breakdown.
+  result.status = cg.info() == Eigen::Success          ? SolveStatus::Converged
+                  : cg.info() == Eigen::NumericalIssue ? SolveStatus::Breakdown
+                                                       : SolveStatus::MaxIterations;
   result.recursive_residual = cg.error();
   // A converged run did one more SpMV than iterations() reports (see bench/eigen_solvers.cpp).
   result.spmv_count = cg.iterations() + (result.status == SolveStatus::Converged ? 1 : 0);

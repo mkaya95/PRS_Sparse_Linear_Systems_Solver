@@ -103,6 +103,7 @@ std::unique_ptr<Backend> make(SellMatrix s) {
 std::unique_ptr<Backend> make_sell_backend(SellMatrix s) { return make<false>(std::move(s)); }
 
 std::unique_ptr<Backend> make_sell_backend_unit_diagonal(const CsrMatrix& off_diagonal, int chunk, Index sigma) {
+  require_no_diagonal(off_diagonal);
   if (off_diagonal.n_rows != off_diagonal.n_cols) throw std::runtime_error("the solver backend needs a square matrix");
   return make<true>(sell_from_csr(off_diagonal, chunk, sigma));
 }

@@ -1,6 +1,7 @@
 #include "ssolve/triangular.hpp"
 
 #include <algorithm>
+#include <cfloat>
 #include <cmath>
 #include <stdexcept>
 #include <type_traits>
@@ -14,25 +15,25 @@ namespace ssolve {
 namespace {
 
 // Pads the rows given by (ptr, col, val) into blocks; ptr has n + 1 entries.
-PaddedTriangle pad_rows(Index n, const std::vector<std::int64_t>& ptr, const std::vector<Index>& col,
-                        const std::vector<double>& val) {
+template <class T>
+PaddedTriangleT<T> pad_rows(Index n, const std::vector<std::int64_t>& ptr, const std::vector<Index>& col,
+                            const std::vector<double>& val) {
   const std::int64_t blocks = (static_cast<std::int64_t>(n) + kTriangularBlock - 1) / kTriangularBlock;
-  PaddedTriangle t;
+  PaddedTriangleT<T> t;
   t.block_start = AlignedArray<std::int64_t>(static_cast<std::size_t>(blocks + 1));
-  t.width = AlignedArray<std::uint8_t>(static_cast<std::size_t>(blocks));
+  t.width = AlignedArray<Index>(static_cast<std::size_t>(blocks));
   t.block_start[0] = 0;
   for (std::int64_t b = 0; b < blocks; ++b) {
     const Index begin = static_cast<Index>(b * kTriangularBlock);
     const Index end = std::min<Index>(n, begin + kTriangularBlock);
     std::int64_t width = 0;
     for (Index i = begin; i < end; ++i) width = std::max(width, ptr[i + 1] - ptr[i]);
-    if (width > 255) throw std::runtime_error("triangular factor: a row has more than 255 entries");
-    t.width[b] = static_cast<std::uint8_t>(width);
+    t.width[b] = static_cast<Index>(width);
     t.block_start[b + 1] = t.block_start[b] + width * (end - begin);
   }
   const std::size_t stored = static_cast<std::size_t>(t.block_start[blocks]);
   t.col = AlignedArray<Index>(stored);
-  t.val = AlignedArray<FactorValue>(stored);
+  t.val = AlignedArray<T>(stored);
   for (std::int64_t b = 0; b < blocks; ++b) {
     const Index begin = static_cast<Index>(b * kTriangularBlock);
     const Index end = std::min<Index>(n, begin + kTriangularBlock);
@@ -42,7 +43,7 @@ PaddedTriangle pad_rows(Index n, const std::vector<std::int64_t>& ptr, const std
       const std::int64_t count = ptr[i + 1] - ptr[i];
       for (int k = 0; k < width; ++k) {
         t.col[at + k] = k < count ? col[ptr[i] + k] : n;
-        t.val[at + k] = k < count ? static_cast<FactorValue>(val[ptr[i] + k]) : FactorValue{0};
+        t.val[at + k] = k < count ? static_cast<T>(val[ptr[i] + k]) : T{0};
       }
     }
   }
@@ -51,8 +52,8 @@ PaddedTriangle pad_rows(Index n, const std::vector<std::int64_t>& ptr, const std
 
 // Σ v[k] w[c[k]] over one padded row. W >= 0 is the width known at compile time, which unrolls the loop
 // and leaves no branch; W = -1 reads it from `width`.
-template <int W>
-inline double row_sum(const Index* SSOLVE_RESTRICT c, const FactorValue* SSOLVE_RESTRICT v, const double* w, int width) {
+template <int W, class T>
+inline double row_sum(const Index* SSOLVE_RESTRICT c, const T* SSOLVE_RESTRICT v, const double* w, int width) {
   const int count = W >= 0 ? W : width;
   double s0 = 0.0, s1 = 0.0;
   int k = 0;
@@ -84,12 +85,12 @@ inline void with_width(int width, Body&& body) {
 static_assert(kTriangularMaxWidth == 8, "with_width lists the widths 0 to 8");
 
 // Forward sweep, K w = r, optionally with the CG update of r and x first in each row.
-template <bool Update>
-double forward(const TriangularFactor& f, double a, const double* SSOLVE_RESTRICT p, const double* SSOLVE_RESTRICT q,
+template <bool Update, class T>
+double forward(const TriangularFactorT<T>& f, double a, const double* SSOLVE_RESTRICT p, const double* SSOLVE_RESTRICT q,
                double* SSOLVE_RESTRICT x, double* SSOLVE_RESTRICT r, double* w) {
-  const PaddedTriangle& t = f.lower;
-  const FactorValue* SSOLVE_RESTRICT const near = f.near.data();
-  const FactorValue* SSOLVE_RESTRICT const inv_diag = f.inv_diag.data();
+  const PaddedTriangleT<T>& t = f.lower;
+  const T* SSOLVE_RESTRICT const near = f.near.data();
+  const T* SSOLVE_RESTRICT const inv_diag = f.inv_diag.data();
   const Index n = f.n;
   double prev = 0.0;  // w[i - 1], kept in a register
   double rr = 0.0;
@@ -97,7 +98,7 @@ double forward(const TriangularFactor& f, double a, const double* SSOLVE_RESTRIC
     const Index end = std::min<Index>(n, begin + kTriangularBlock);
     const int width = t.width[b];
     const Index* c = t.col.data() + t.block_start[b];
-    const FactorValue* v = t.val.data() + t.block_start[b];
+    const T* v = t.val.data() + t.block_start[b];
     with_width(width, [&](auto tag) {
       constexpr int W = decltype(tag)::value;
       for (Index i = begin; i < end; ++i, c += width, v += width) {
@@ -118,10 +119,11 @@ double forward(const TriangularFactor& f, double a, const double* SSOLVE_RESTRIC
 }
 
 // Backward sweep, Kᵀ w = w in place, returning r·w.
-double backward(const TriangularFactor& f, const double* SSOLVE_RESTRICT r, double* w) {
-  const PaddedTriangle& t = f.upper;
-  const FactorValue* SSOLVE_RESTRICT const near = f.near.data();
-  const FactorValue* SSOLVE_RESTRICT const inv_diag = f.inv_diag.data();
+template <class T>
+double backward(const TriangularFactorT<T>& f, const double* SSOLVE_RESTRICT r, double* w) {
+  const PaddedTriangleT<T>& t = f.upper;
+  const T* SSOLVE_RESTRICT const near = f.near.data();
+  const T* SSOLVE_RESTRICT const inv_diag = f.inv_diag.data();
   const Index n = f.n;
   const Index blocks = static_cast<Index>(t.width.size());
   double next = 0.0;  // w[i + 1], kept in a register
@@ -131,7 +133,7 @@ double backward(const TriangularFactor& f, const double* SSOLVE_RESTRICT r, doub
     const Index end = std::min<Index>(n, begin + kTriangularBlock);
     const int width = t.width[b];
     const Index* const c0 = t.col.data() + t.block_start[b];
-    const FactorValue* const v0 = t.val.data() + t.block_start[b];
+    const T* const v0 = t.val.data() + t.block_start[b];
     with_width(width, [&](auto tag) {
       constexpr int W = decltype(tag)::value;
       for (Index i = end - 1; i >= begin; --i) {
@@ -183,28 +185,25 @@ class TriangularPreconditioner final : public Preconditioner {
 
 }  // namespace
 
-TriangularFactor make_triangular_factor(const CsrMatrix& strict_lower, const AlignedArray<double>& diagonal) {
+TriangularFactor make_triangular_factor(const CsrMatrix& strict_lower, const AlignedArray<double>& diagonal,
+                                        FactorPrecision precision) {
   const Index n = strict_lower.n_rows;
   if (strict_lower.n_cols != n || diagonal.size() != static_cast<std::size_t>(n)) {
     throw std::runtime_error("triangular factor: sizes do not match");
   }
   const std::size_t un = static_cast<std::size_t>(n);
 
-  TriangularFactor f;
-  f.n = n;
-  f.near = AlignedArray<FactorValue>(un + 1);
-  f.near.fill(0.0);
-  f.inv_diag = AlignedArray<FactorValue>(un);
-  for (Index i = 0; i < n; ++i) f.inv_diag[i] = static_cast<FactorValue>(1.0 / diagonal[i]);
-
-  // The lower rows without the neighbour, and their transpose, as plain row lists.
+  // Everything in double first: the neighbour entries, the inverse diagonal, and the lower rows without
+  // the neighbour and their transpose as plain row lists.
+  std::vector<double> near(un + 1, 0.0), inv_diag(un);
+  for (std::size_t i = 0; i < un; ++i) inv_diag[i] = 1.0 / diagonal[i];
   std::vector<std::int64_t> lower_ptr(un + 1, 0), upper_ptr(un + 1, 0);
   for (Index i = 0; i < n; ++i) {
     for (std::int64_t k = strict_lower.row_ptr[i]; k < strict_lower.row_ptr[i + 1]; ++k) {
       const Index j = strict_lower.col[k];
       if (j < 0 || j >= i) throw std::runtime_error("triangular factor: an entry is not below the diagonal");
       if (j == i - 1) {
-        f.near[i] = static_cast<FactorValue>(f.near[i] + strict_lower.val[k]);
+        near[static_cast<std::size_t>(i)] += strict_lower.val[k];
       } else {
         ++lower_ptr[i + 1];
         ++upper_ptr[j + 1];
@@ -229,13 +228,38 @@ TriangularFactor make_triangular_factor(const CsrMatrix& strict_lower, const Ali
       upper_val[upper_at[j]++] = strict_lower.val[k];
     }
   }
-  f.lower = pad_rows(n, lower_ptr, lower_col, lower_val);
-  f.upper = pad_rows(n, upper_ptr, upper_col, upper_val);
+
+  // Single precision only if no coefficient would overflow, flush to zero or lose its exponent range.
+  const auto fits = [](const std::vector<double>& values) {
+    for (const double v : values) {
+      const double size = std::fabs(v);
+      if (v != 0.0 && !(size >= FLT_MIN && size <= FLT_MAX)) return false;  // also false for NaN
+    }
+    return true;
+  };
+  TriangularFactor f;
+  f.n = n;
+  f.single = precision == FactorPrecision::Auto && fits(near) && fits(inv_diag) && fits(lower_val);
+  const auto fill = [&](auto& t) {
+    using T = std::decay_t<decltype(t.near[0])>;
+    t.n = n;
+    t.near = AlignedArray<T>(un + 1);
+    t.inv_diag = AlignedArray<T>(un);
+    for (std::size_t i = 0; i <= un; ++i) t.near[i] = static_cast<T>(near[i]);
+    for (std::size_t i = 0; i < un; ++i) t.inv_diag[i] = static_cast<T>(inv_diag[i]);
+    t.lower = pad_rows<T>(n, lower_ptr, lower_col, lower_val);
+    t.upper = pad_rows<T>(n, upper_ptr, upper_col, upper_val);
+  };
+  if (f.single) {
+    fill(f.f32);
+  } else {
+    fill(f.f64);
+  }
   return f;
 }
 
 // K = (D + L) D^(-1/2): K(i, j) = a(i, j) / sqrt(a(j, j)) below the diagonal, K(i, i) = sqrt(a(i, i)).
-TriangularFactor sgs_triangular_factor(const CsrMatrix& a) {
+TriangularFactor sgs_triangular_factor(const CsrMatrix& a, FactorPrecision precision) {
   if (a.n_rows != a.n_cols) throw std::runtime_error("symmetric Gauss-Seidel needs a square matrix");
   const Index n = a.n_rows;
   AlignedArray<double> diagonal(static_cast<std::size_t>(n));
@@ -265,11 +289,11 @@ TriangularFactor sgs_triangular_factor(const CsrMatrix& a) {
     }
   }
   for (Index i = 0; i < n; ++i) diagonal[i] = std::sqrt(diagonal[i]);
-  return make_triangular_factor(lower, diagonal);
+  return make_triangular_factor(lower, diagonal, precision);
 }
 
 // M⁻¹ = S L⁻ᵀ L⁻¹ S, so K = S⁻¹ L: row i of L divided by S(i).
-TriangularFactor ic0_triangular_factor(const Ic0Factor& f) {
+TriangularFactor ic0_triangular_factor(const Ic0Factor& f, FactorPrecision precision) {
   const Index n = f.n;
   CsrMatrix lower;
   lower.n_rows = lower.n_cols = n;
@@ -285,11 +309,11 @@ TriangularFactor ic0_triangular_factor(const Ic0Factor& f) {
     }
     diagonal[i] = 1.0 / (f.inv_diag[i] * f.scale[i]);
   }
-  return make_triangular_factor(lower, diagonal);
+  return make_triangular_factor(lower, diagonal, precision);
 }
 
 // The same for Eigen's factor, stored by columns: entry (i, j) of column j goes to row i of K.
-TriangularFactor ic_triangular_factor(const CholeskyFactor& f) {
+TriangularFactor ic_triangular_factor(const CholeskyFactor& f, FactorPrecision precision) {
   const Index n = f.n;
   const std::size_t un = static_cast<std::size_t>(n);
   CsrMatrix lower;
@@ -323,19 +347,28 @@ TriangularFactor ic_triangular_factor(const CholeskyFactor& f) {
       lower.val[at] = f.val[k] / f.scale[i];
     }
   }
-  return make_triangular_factor(lower, diagonal);
+  return make_triangular_factor(lower, diagonal, precision);
 }
 
 double triangular_apply(const TriangularFactor& f, const double* r, double* w) {
   w[f.n] = 0.0;
-  forward<false>(f, 0.0, nullptr, nullptr, nullptr, const_cast<double*>(r), w);
-  return backward(f, r, w);
+  // r is not written: forward<false> skips the update.
+  if (f.single) {
+    forward<false>(f.f32, 0.0, nullptr, nullptr, nullptr, const_cast<double*>(r), w);
+    return backward(f.f32, r, w);
+  }
+  forward<false>(f.f64, 0.0, nullptr, nullptr, nullptr, const_cast<double*>(r), w);
+  return backward(f.f64, r, w);
 }
 
 RrRz triangular_update_apply(const TriangularFactor& f, double a, const double* p, const double* q, double* x,
                              double* r, double* w) {
-  const double rr = forward<true>(f, a, p, q, x, r, w);
-  return {rr, backward(f, r, w)};
+  if (f.single) {
+    const double rr = forward<true>(f.f32, a, p, q, x, r, w);
+    return {rr, backward(f.f32, r, w)};
+  }
+  const double rr = forward<true>(f.f64, a, p, q, x, r, w);
+  return {rr, backward(f.f64, r, w)};
 }
 
 std::unique_ptr<Preconditioner> make_triangular_preconditioner(TriangularFactor f) {

@@ -58,8 +58,12 @@ std::unique_ptr<Backend> make_sell_backend(SellMatrix s);
 
 // Backends of I + off_diagonal: the diagonal is 1 and not stored, so each product reads n entries fewer.
 // For the Jacobi-scaled system of jacobi_scaled.hpp. off_diagonal must have no diagonal entries.
+// Throws if off_diagonal stores a diagonal entry, which would be counted twice.
 std::unique_ptr<Backend> make_seq_backend_unit_diagonal(CsrMatrix off_diagonal);
 std::unique_ptr<Backend> make_sell_backend_unit_diagonal(const CsrMatrix& off_diagonal, int chunk = kSellChunk,
                                                          Index sigma = kSellSigma);
+
+// Throws if a stores any entry on its diagonal.
+void require_no_diagonal(const CsrMatrix& a);
 
 }  // namespace ssolve

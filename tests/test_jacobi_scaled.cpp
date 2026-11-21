@@ -104,4 +104,10 @@ TEST(scaling_refuses_a_nonpositive_diagonal) {
   CHECK_THROWS_WITH(jacobi_scaling(csr_from_coo(coo)), "positive");
 }
 
+TEST(unit_diagonal_backends_refuse_a_stored_diagonal) {
+  const CsrMatrix a = make_stencil(Stencil::Poisson2D, 4);
+  CHECK_THROWS_WITH(make_seq_backend_unit_diagonal(clone(a)), "without its diagonal");
+  CHECK_THROWS_WITH(make_sell_backend_unit_diagonal(a), "without its diagonal");
+}
+
 TEST_MAIN()

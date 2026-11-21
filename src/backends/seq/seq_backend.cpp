@@ -85,11 +85,20 @@ std::unique_ptr<Backend> make(CsrMatrix a, bool allow_narrow_row_ptr) {
 
 }  // namespace
 
+void require_no_diagonal(const CsrMatrix& a) {
+  for (Index i = 0; i < a.n_rows; ++i) {
+    for (std::int64_t k = a.row_ptr[i]; k < a.row_ptr[i + 1]; ++k) {
+      if (a.col[k] == i) throw std::runtime_error("a unit-diagonal backend needs the matrix without its diagonal");
+    }
+  }
+}
+
 std::unique_ptr<Backend> make_seq_backend(CsrMatrix a, bool allow_narrow_row_ptr) {
   return make<false>(std::move(a), allow_narrow_row_ptr);
 }
 
 std::unique_ptr<Backend> make_seq_backend_unit_diagonal(CsrMatrix off_diagonal) {
+  require_no_diagonal(off_diagonal);
   return make<true>(std::move(off_diagonal), true);
 }
 

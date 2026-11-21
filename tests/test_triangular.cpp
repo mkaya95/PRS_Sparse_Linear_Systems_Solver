@@ -120,13 +120,84 @@ TEST(update_apply_is_the_update_then_the_apply) {
 
 TEST(padding_points_at_the_zero_slot) {
   const CsrMatrix a = make_stencil(Stencil::Poisson2D, 9);
-  const TriangularFactor f = sgs_triangular_factor(a);
-  for (const PaddedTriangle* t : {&f.lower, &f.upper}) {
-    for (std::size_t k = 0; k < t->col.size(); ++k) {
-      if (t->val[k] == 0.0) CHECK_EQ(t->col[k], a.n_rows);
-      CHECK(t->col[k] >= 0 && t->col[k] <= a.n_rows);
+  for (const FactorPrecision precision : {FactorPrecision::Auto, FactorPrecision::Double}) {
+    const TriangularFactor f = sgs_triangular_factor(a, precision);
+    CHECK_EQ(f.single, precision == FactorPrecision::Auto);
+    const auto check = [&](const auto& t) {
+      for (std::size_t k = 0; k < t.col.size(); ++k) {
+        if (t.val[k] == 0) CHECK_EQ(t.col[k], a.n_rows);
+        CHECK(t.col[k] >= 0 && t.col[k] <= a.n_rows);
+      }
+    };
+    if (f.single) {
+      check(f.f32.lower);
+      check(f.f32.upper);
+    } else {
+      check(f.f64.lower);
+      check(f.f64.upper);
     }
   }
+}
+
+// In double precision the sweeps agree with the references to rounding.
+TEST(double_factor_matches_the_references_to_rounding) {
+  for (const CsrMatrix& a : matrices()) {
+    const std::size_t n = static_cast<std::size_t>(a.n_rows);
+    const std::vector<double> r = wave(n, 0.3);
+    const Ic0Factor f0 = ic0(a);
+    const SymGaussSeidel sgs(clone(a));
+    const CholeskyFactor fc = incomplete_cholesky(a, 1e-3, EigenBugs::Fixed);
+    struct Case {
+      TriangularFactor factor;
+      std::vector<double> expected;
+    };
+    std::vector<Case> cases;
+    cases.push_back({ic0_triangular_factor(f0, FactorPrecision::Double), std::vector<double>(n)});
+    ic0_apply(f0, r.data(), cases.back().expected.data());
+    cases.push_back({sgs_triangular_factor(a, FactorPrecision::Double), std::vector<double>(n)});
+    sgs.apply(r.data(), cases.back().expected.data());
+    cases.push_back({ic_triangular_factor(fc, FactorPrecision::Double), std::vector<double>(n)});
+    incomplete_cholesky_apply(fc, r.data(), cases.back().expected.data());
+    for (const Case& c : cases) {
+      CHECK(!c.factor.single);
+      std::vector<double> w(n + 1, 0.0);
+      triangular_apply(c.factor, r.data(), w.data());
+      for (std::size_t i = 0; i < n; ++i) CHECK_NEAR(w[i], c.expected[i], 1e-12 * max_abs(c.expected));
+    }
+  }
+}
+
+// A coefficient beyond float's range keeps the whole factor in double, so nothing overflows.
+TEST(out_of_range_coefficients_keep_double_precision) {
+  CsrMatrix a = make_stencil(Stencil::Poisson2D, 5);
+  for (double& v : a.val) v *= 1e80;  // sqrt(4e80) = 2e40 > FLT_MAX
+  const TriangularFactor f = sgs_triangular_factor(a);
+  CHECK(!f.single);
+  const std::size_t n = static_cast<std::size_t>(a.n_rows);
+  const std::vector<double> r = wave(n, 0.1);
+  std::vector<double> expected(n), w(n + 1, 0.0);
+  SymGaussSeidel(clone(a)).apply(r.data(), expected.data());
+  triangular_apply(f, r.data(), w.data());
+  for (std::size_t i = 0; i < n; ++i) CHECK_NEAR(w[i], expected[i], 1e-12 * max_abs(expected));
+}
+
+// A row with more entries than any fixed width: an arrow matrix, whose first column is full.
+TEST(rows_wider_than_any_block_width_are_handled) {
+  const Index n = 600;
+  Coo coo;
+  coo.n_rows = coo.n_cols = n;
+  coo.add(0, 0, 4.0 * n);
+  for (Index i = 1; i < n; ++i) {
+    coo.add(i, i, 4.0);
+    coo.add(i, 0, -1.0);
+    coo.add(0, i, -1.0);
+  }
+  const CsrMatrix a = csr_from_coo(coo);
+  const std::vector<double> r = wave(static_cast<std::size_t>(n), 0.2);
+  std::vector<double> expected(static_cast<std::size_t>(n)), w(static_cast<std::size_t>(n) + 1, 0.0);
+  SymGaussSeidel(clone(a)).apply(r.data(), expected.data());
+  triangular_apply(sgs_triangular_factor(a, FactorPrecision::Double), r.data(), w.data());
+  for (std::size_t i = 0; i < expected.size(); ++i) CHECK_NEAR(w[i], expected[i], 1e-12 * max_abs(expected));
 }
 
 TEST(factor_rejects_bad_input) {
