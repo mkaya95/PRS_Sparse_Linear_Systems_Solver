@@ -74,7 +74,7 @@ scripts/profile_vtune.sh ~/p08/data/thermal2.mtx results/my-machine/vtune       
 python3 scripts/vtune_table.py results/before results/after                           # before -> after
 ```
 
-The VTune result folders go to `~/p08/vtune-methods`; open one with `vtune-gui ~/p08/vtune-methods/cg_ic0-hotspots`. What the per-method profiles showed, and what was optimized because of them, is in [profiling po metodama](docs/profiling-po-metodama.md) (in Bosnian). The earlier profile of the shared `solve` binary is in [the VTune results](docs/results/vtune-i5-1335U-linux.md).
+The VTune result folders go to `~/p08/vtune-methods`; open one from `vtune-gui` with **Open Result…** and its `.vtune` file (VTune 2026.6 ignores a result path given on the command line). Screenshots of every method's views, before and after, are in `results/i5-1335U-linux/vtune-methods/screenshots`. What the per-method profiles showed, and what was optimized because of them, is in [profiling po metodama](docs/profiling-po-metodama.md) (in Bosnian). The earlier profile of the shared `solve` binary is in [the VTune results](docs/results/vtune-i5-1335U-linux.md).
 
 ## Run the solver
 

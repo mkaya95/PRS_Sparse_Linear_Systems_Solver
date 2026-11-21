@@ -238,23 +238,71 @@ scripts/profile_vtune.sh ~/p08/data/thermal2.mtx results/moje
 python3 scripts/vtune_table.py results/i5-1335U-linux/vtune-methods/baseline results/i5-1335U-linux/vtune-methods/optimized
 ```
 
-Tekstualni izvještaji su u `results/i5-1335U-linux/vtune-methods/baseline` (prije) i `.../optimized` (poslije). VTune rezultati za otvaranje u GUI-ju su u `~/p08/vtune-methods/optimized/` (poslije) i spakovani u `~/p08/vtune-methods/baseline/*.tar.zst` (prije); jedan se raspakuje sa `tar --zstd -xf cg_ic0-hotspots.tar.zst`, pa `vtune-gui cg_ic0-hotspots`.
+Tekstualni izvještaji su u `results/i5-1335U-linux/vtune-methods/baseline` (prije) i `.../optimized` (poslije). VTune rezultati za otvaranje u GUI-ju su u `~/p08/vtune-methods/optimized/` (poslije) i spakovani u `~/p08/vtune-methods/baseline/*.tar.zst` (prije); jedan se raspakuje sa `tar --zstd -xf cg_ic0-hotspots.tar.zst`. Kako ga otvoriti u GUI-ju i screenshotovi: tačka 12.
 
 ## 12. Screenshotovi iz VTune-a
 
-VTune GUI treba otključan ekran, pa su screenshotovi ostavljeni za jutro. Za svaku metodu korisna su tri prozora, prije i poslije:
+Svi screenshotovi su iz VTune GUI-ja (Intel VTune Profiler 2026.6), za svih 7 naših metoda, prije i poslije: `results/i5-1335U-linux/vtune-methods/screenshots/`. Ime fajla kaže metodu, prozor i prije/poslije, npr. `cg_ic0-1-before-uarch.png`. Svaka metoda ima tri prozora:
 
-1. **Microarchitecture Exploration → Summary:** CPI, Retiring, Bad Speculation, Memory Bound (crvene zastavice).
-2. **Memory Access → Summary → Bandwidth Utilization Histogram:** histogram propusnosti; poslije optimizacije stubovi su na desnoj strani.
-3. **Hotspots → Summary:** najtoplije funkcije i histogram iskorištenosti jezgri.
+1. **`1-…-uarch`, Microarchitecture Exploration → Summary:** CPI, Retiring, Bad Speculation, Memory Bound. Crvena zastavica znači da VTune tu vrijednost smatra problemom.
+2. **`2-…-memory`, Memory Access → Summary → Bandwidth Utilization Histogram:** koliko je vremena memorija radila kojom brzinom. Stubovi desno, u crvenom „High" pojasu, znače da kod koristi skoro svu propusnost memorije.
+3. **`3-…-hotspots`, Hotspots → Summary:** najtoplije funkcije i histogram iskorištenosti jezgri. Taj histogram je na 1 jezgri i prije i poslije, jer je kod sekvencijalan; pomjerit će ga paralelizacija.
 
-Otvaranje:
+Za prezentaciju su dovoljna dva para, `cg_ic0` i `cg_jacobi`.
+
+### `cg_ic0`: CPI 0,778 → 0,492, bad speculation 33,8% → 7,6%
+
+| Prije | Poslije |
+| --- | --- |
+| ![prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic0-1-before-uarch.png) | ![poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic0-1-after-uarch.png) |
+
+Šta pokazati: CPI Rate, Bad Speculation (crveno prije, bez zastavice poslije) i Retiring (23% → 42%, procesor radi korisnog posla skoro duplo više). Elapsed Time je pao sa 26,6 s na 17,5 s za isti broj iteracija.
+
+| Prije | Poslije |
+| --- | --- |
+| ![prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic0-2-before-memory.png) | ![poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic0-2-after-memory.png) |
+
+Šta pokazati: prije su stubovi oko 14–18 GB/s, većinom u žutom (Medium) pojasu; poslije su na 22–25 GB/s, u crvenom (High) pojasu. Histogram je pomjeren udesno.
+
+| Prije | Poslije |
+| --- | --- |
+| ![prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic0-3-before-hotspots.png) | ![poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic0-3-after-hotspots.png) |
+
+Šta pokazati: prije je najtoplija funkcija `ic0_apply` (56% vremena); poslije su to `forward` i `backward`, novi trouglasti kernel, a vrijeme je 25,3 s → 16,1 s.
+
+### `cg_jacobi`: bad speculation 21,6% → 0,0%
+
+| Prije | Poslije |
+| --- | --- |
+| ![prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_jacobi-1-before-uarch.png) | ![poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_jacobi-1-after-uarch.png) |
+
+Šta pokazati: Bad Speculation 21,6% → 0,0% (množenje matrice i vektora više nema grananja), CPI 0,717 → 0,594.
+
+| Prije | Poslije |
+| --- | --- |
+| ![prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_jacobi-2-before-memory.png) | ![poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_jacobi-2-after-memory.png) |
+
+| Prije | Poslije |
+| --- | --- |
+| ![prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_jacobi-3-before-hotspots.png) | ![poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_jacobi-3-after-hotspots.png) |
+
+### Ostale metode
+
+| Metoda | Microarchitecture | Bandwidth histogram | Hotspots |
+| --- | --- | --- | --- |
+| `cg_sell_jacobi` | [prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_sell_jacobi-1-before-uarch.png), [poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_sell_jacobi-1-after-uarch.png) | [prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_sell_jacobi-2-before-memory.png), [poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_sell_jacobi-2-after-memory.png) | [prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_sell_jacobi-3-before-hotspots.png), [poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_sell_jacobi-3-after-hotspots.png) |
+| `cg_sgs` | [prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_sgs-1-before-uarch.png), [poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_sgs-1-after-uarch.png) | [prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_sgs-2-before-memory.png), [poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_sgs-2-after-memory.png) | [prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_sgs-3-before-hotspots.png), [poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_sgs-3-after-hotspots.png) |
+| `cg_ic` | [prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic-1-before-uarch.png), [poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic-1-after-uarch.png) | [prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic-2-before-memory.png), [poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic-2-after-memory.png) | [prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic-3-before-hotspots.png), [poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic-3-after-hotspots.png) |
+| `cg_ic_fixed` | [prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic_fixed-1-before-uarch.png), [poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic_fixed-1-after-uarch.png) | [prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic_fixed-2-before-memory.png), [poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic_fixed-2-after-memory.png) | [prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic_fixed-3-before-hotspots.png), [poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic_fixed-3-after-hotspots.png) |
+| `cg_ic0_rcm` | [prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic0_rcm-1-before-uarch.png), [poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic0_rcm-1-after-uarch.png) | [prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic0_rcm-2-before-memory.png), [poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic0_rcm-2-after-memory.png) | [prije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic0_rcm-3-before-hotspots.png), [poslije](../results/i5-1335U-linux/vtune-methods/screenshots/cg_ic0_rcm-3-after-hotspots.png) |
+
+Eigen metode (`eigen_e1`, `eigen_e4`) nemaju screenshotove, jer njihov kod nismo mijenjali; njihove brojke su u tabeli gore.
+
+### Kako otvoriti rezultat u GUI-ju
 
 ```bash
 source /opt/intel/oneapi/setvars.sh
-vtune-gui ~/p08/vtune-methods/optimized/cg_ic0-uarch-exploration      # poslije
-cd ~/p08/vtune-methods/baseline && tar --zstd -xf cg_ic0-uarch-exploration.tar.zst
-vtune-gui ~/p08/vtune-methods/baseline/cg_ic0-uarch-exploration       # prije
+vtune-gui
 ```
 
-Za prezentaciju su dovoljna dva para: `cg_jacobi` (bad speculation 21,6% → 0,0%) i `cg_ic0` (CPI 0,78 → 0,49, histogram propusnosti 24% → 100%).
+U VTune-u: **Open Result…** i izabrati `.vtune` fajl, npr. `~/p08/vtune-methods/optimized/cg_ic0-uarch-exploration/cg_ic0-uarch-exploration.vtune` (poslije) ili `~/p08/vtune-methods/baseline/cg_ic0-uarch-exploration/…` (prije). Rezultati prije za `cg_ic0` i `cg_jacobi` su već raspakovani; ostali su u `~/p08/vtune-methods/baseline/*.tar.zst` i raspakuju se sa `tar --zstd -xf cg_sgs-uarch-exploration.tar.zst`.
