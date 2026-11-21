@@ -54,11 +54,19 @@ def metrics(directory, method):
     m["cpu_time_s"] = first(r"^\s*CPU Time: ([\d.]+)s", hot)
     m["elapsed_s"] = first(r"^Elapsed Time: ([\d.]+)s", hot)
     m["top_function"] = None
-    rows = re.search(r"Top Hotspots\n.*\n-+.*\n((?:.+\n)+?)\[Others\]", hot)
-    if rows:
-        line = rows.group(1).splitlines()[0]
-        m["top_function"] = re.split(r"\s{2,}", line.strip())[0]
-        m["top_share"] = first(r"([\d.]+)%\s*$", line)
+    functions = d / f"{method}-hotspots-functions.csv"
+    if functions.exists():
+        with functions.open(newline="") as f:
+            rows = [r for r in csv.DictReader(f) if r.get("CPU Time")]
+        by_function = {}
+        for r in rows:  # a function can appear in several rows, e.g. once per template instance
+            name = short_name(r["Function"])
+            by_function[name] = by_function.get(name, 0.0) + float(r["CPU Time"])
+        total = sum(by_function.values())
+        if by_function and total > 0:
+            name, time = max(by_function.items(), key=lambda kv: kv[1])
+            m["top_function"] = name
+            m["top_share"] = 100.0 * time / total
 
     mem = read(d / f"{method}-memory-access-summary.txt")
     m["dram_bound"] = first(r"^\s*DRAM Bound: ([\d.]+)%", mem)
@@ -143,7 +151,7 @@ def table_one(directory):
     for name in methods:
         m = data[name]
         cells = [fmt(m.get(key), digits, suffix) for _, key, digits, suffix in COLUMNS]
-        top = f"`{short_name(m['top_function'])}` {m.get('top_share', 0):.0f}%" if m.get("top_function") else "–"
+        top = f"`{m['top_function']}` {m.get('top_share', 0):.0f}%" if m.get("top_function") else "–"
         out.append(f"| `{name}` | " + " | ".join(cells) + f" | {top} |")
     return "\n".join(out)
 

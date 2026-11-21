@@ -1,8 +1,7 @@
 Function,CPU Time,CPU Time:Effective Time,CPU Time:Spin Time,CPU Time:Overhead Time,Instructions Retired,Microarchitecture Usage(%),Microarchitecture Usage:Microarchitecture Usage(%),Microarchitecture Usage:CPI Rate,Module,Function (Full),Source File,Start Address
-chunk_times_vector,13.054888,13.054888,0.0,0.0,74475000000,25.2,25.2,0.802216,cg_sell_jacobi,chunk_times_vector,sell_backend.cpp,0xfeb7
+ssolve::(anonymous namespace)::SellBackend<(int)8>::spmv_dot,14.857772,14.857772,0.0,0.0,93372500000,25.3,25.3,0.730006,cg_sell_jacobi,"ssolve::(anonymous namespace)::SellBackend<(int)8>::spmv_dot(double const*, double*) const",sell_backend.cpp,0xfe70
 ssolve::SeqVectorBackend::jacobi_update,4.491186,4.491186,0.0,0.0,8560000000,8.9,8.9,2.403621,cg_sell_jacobi,"ssolve::SeqVectorBackend::jacobi_update(double, double const*, double const*, double*, double*, double const*) const",seq_vectors.hpp,0x12200
 ssolve::SeqVectorBackend::jacobi_direction,2.297676,2.297676,0.0,0.0,5087500000,9.3,9.3,2.066830,cg_sell_jacobi,"ssolve::SeqVectorBackend::jacobi_direction(double const*, double const*, double, double*) const",seq_vectors.hpp,0x12440
-ssolve::(anonymous namespace)::SellBackend<(int)8>::spmv_dot,1.802885,1.802885,0.0,0.0,18897500000,26.0,26.0,0.445429,cg_sell_jacobi,"ssolve::(anonymous namespace)::SellBackend<(int)8>::spmv_dot(double const*, double*) const",sell_backend.cpp,0xfe70
 native_write_msr_safe,0.048077,0.048077,0.0,0.0,27500000,21.7,21.7,7.909091,vmlinux,native_write_msr_safe,[Unknown],0xffffffffa6746de0
 [sep5],0.036058,0.036058,0.0,0.0,215000000,22.5,22.5,0.523256,sep5,[sep5],[Unknown],0x0
 native_irq_return_iret,0.033053,0.033053,0.0,0.0,0,22.1,22.1,,vmlinux,native_irq_return_iret,[Unknown],0xffffffffa6401248
@@ -46,7 +45,7 @@ asm_sysvec_apic_timer_interrupt,0.001002,0.001002,0.0,0.0,0,20.2,20.2,,vmlinux,a
 blk_stat_timer_fn,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,vmlinux,blk_stat_timer_fn,[Unknown],0xffffffffa6f05470
 calc_global_load,0.001002,0.001002,0.0,0.0,0,24.1,24.1,,vmlinux,calc_global_load,[Unknown],0xffffffffa682f9b0
 calc_global_load_tick,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,vmlinux,calc_global_load_tick,[Unknown],0xffffffffa682fbf0
-cg_loop,0.001002,0.001002,0.0,0.0,0,10.5,10.5,0.0,cg_sell_jacobi,cg_loop,cg.cpp,0xa066
+cg_loop,0.001002,0.001002,0.0,0.0,0,10.4,10.4,0.0,cg_sell_jacobi,cg_loop,cg.cpp,0xa066
 count_memcg_events,0.001002,0.001002,0.0,0.0,2500000,19.3,19.3,0.0,vmlinux,count_memcg_events,[Unknown],0xffffffffa6bbde20
 css_rstat_updated,0.001002,0.001002,0.0,0.0,2500000,19.2,19.2,2.000000,vmlinux,css_rstat_updated,[Unknown],0xffffffffa68eda90
 ct_nmi_exit,0.001002,0.001002,0.0,0.0,0,27.5,27.5,,vmlinux,ct_nmi_exit,[Unknown],0xffffffffa799bb40
@@ -65,10 +64,10 @@ rmqueue_bulk,0.001002,0.001002,0.0,0.0,0,16.9,16.9,,vmlinux,rmqueue_bulk,[Unknow
 rseq_update_cpu_node_id,0.001002,0.001002,0.0,0.0,0,0.0,0.0,0.0,vmlinux,rseq_update_cpu_node_id,[Unknown],0xffffffffa6a8d7d0
 sched_tick,0.001002,0.001002,0.0,0.0,2500000,18.0,18.0,2.000000,vmlinux,sched_tick,[Unknown],0xffffffffa67e25c0
 ssolve::SeqVectorBackend::dot,0.001002,0.001002,0.0,0.0,2500000,18.2,18.2,2.000000,cg_sell_jacobi,"ssolve::SeqVectorBackend::dot(double const*, double const*) const",seq_vectors.hpp,0x11e90
+ssolve::cg,0.001002,0.001002,0.0,0.0,15000000,41.8,41.8,0.166667,cg_sell_jacobi,"ssolve::cg(ssolve::Backend const&, ssolve::Preconditioner&, double const*, double*, ssolve::SolveOptions const&)",cg.cpp,0xa0dc
 task_tick_mm_cid,0.001002,0.001002,0.0,0.0,2500000,15.9,15.9,0.0,vmlinux,task_tick_mm_cid,[Unknown],0xffffffffa67e2540
 timerqueue_del,0.001002,0.001002,0.0,0.0,0,19.8,19.8,0.0,vmlinux,timerqueue_del,[Unknown],0xffffffffa79820b0
 tmigr_requires_handle_remote,0.001002,0.001002,0.0,0.0,2500000,14.8,14.8,0.0,vmlinux,tmigr_requires_handle_remote,[Unknown],0xffffffffa68c7610
-"with_rhs_scaling<ssolve::cg(const Backend&, Preconditioner&, double const*, double*, const SolveOptions&)::<lambda(double const*, double*)> >",0.001002,0.001002,0.0,0.0,15000000,41.8,41.8,0.166667,cg_sell_jacobi,"with_rhs_scaling<ssolve::cg(const Backend&, Preconditioner&, double const*, double*, const SolveOptions&)::<lambda(double const*, double*)> >",cg_common.hpp,0xa0dc
 [iwlmvm],0.0,0.0,0.0,0.0,0,23.5,23.5,0.0,iwlmvm,[iwlmvm],[Unknown],0x0
 [iwlwifi],0.0,0.0,0.0,0.0,0,22.4,22.4,0.0,iwlwifi,[iwlwifi],[Unknown],0x0
 [kvm],0.0,0.0,0.0,0.0,0,19.3,19.3,,kvm,[kvm],[Unknown],0x0
@@ -186,7 +185,6 @@ set_ptes.isra.0,0.0,0.0,0.0,0.0,0,21.2,21.2,0.0,vmlinux,set_ptes.isra.0,[Unknown
 smp_call_function_single_async,0.0,0.0,0.0,0.0,0,9.0,9.0,0.0,vmlinux,smp_call_function_single_async,[Unknown],0xffffffffa68d26f0
 ssolve::(anonymous namespace)::JacobiPreconditioner::direction,0.0,0.0,0.0,0.0,0,9.2,9.2,0.0,cg_sell_jacobi,"ssolve::(anonymous namespace)::JacobiPreconditioner::direction(ssolve::Backend const&, double const*, double, double*)",basic.cpp,0x17a10
 ssolve::(anonymous namespace)::JacobiPreconditioner::update,0.0,0.0,0.0,0.0,0,11.4,11.4,0.0,cg_sell_jacobi,"ssolve::(anonymous namespace)::JacobiPreconditioner::update(ssolve::Backend const&, double, double const*, double const*, double*, double*)",basic.cpp,0x179e0
-std::isfinite,0.0,0.0,0.0,0.0,0,9.4,9.4,0.0,cg_sell_jacobi,std::isfinite(double),cmath,0x1b108
 task_h_load,0.0,0.0,0.0,0.0,0,8.2,8.2,0.0,vmlinux,task_h_load,[Unknown],0xffffffffa67e2ec0
 task_mm_cid_work,0.0,0.0,0.0,0.0,0,8.8,8.8,0.0,vmlinux,task_mm_cid_work,[Unknown],0xffffffffa67d4260
 task_tick_fair,0.0,0.0,0.0,0.0,0,18.4,18.4,,vmlinux,task_tick_fair,[Unknown],0xffffffffa67f0a10

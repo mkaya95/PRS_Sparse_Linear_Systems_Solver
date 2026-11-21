@@ -1,9 +1,8 @@
 Function,CPU Time,Performance-core (P-core):Memory Bound(%),Performance-core (P-core):Memory Bound:L1 Bound(%),Performance-core (P-core):Memory Bound:L2 Bound(%),Performance-core (P-core):Memory Bound:L3 Bound(%),Performance-core (P-core):Memory Bound:DRAM Bound(%),Performance-core (P-core):Memory Bound:Store Bound(%),Efficient-core (E-core):Memory Bound(%),Efficient-core (E-core):Memory Bound:L1 Bound(%),Efficient-core (E-core):Memory Bound:L2 Bound(%),Efficient-core (E-core):Memory Bound:L3 Bound(%),Loads,Stores,LLC Miss Count,Average Latency (cycles),Module,Function (Full),Source File,Start Address
 ssolve::SymGaussSeidel::apply,19.928886,16.6,4.6,2.5,3.6,17.4,0.0,0.0,0.0,0.0,0.0,56998909916,2204866144,225644731,14.997758,cg_sgs,"ssolve::SymGaussSeidel::apply(double const*, double*) const",sgs.cpp,0x16c70
-row_times_vector,8.013822,20.2,6.9,2.7,4.8,25.6,0.0,0.0,0.0,0.0,0.0,31606548168,2600078,59825116,15.124268,cg_sgs,row_times_vector,seq_backend.cpp,0xf1c8
+ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot,8.794070,20.2,7.4,3.1,4.6,23.6,0.0,0.0,0.0,0.0,0.0,33024890717,1396241886,59825116,14.745614,cg_sgs,"ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot(double const*, double*) const",seq_backend.cpp,0xf190
 ssolve::SeqVectorBackend::cg_update,1.441306,66.5,19.9,1.1,9.2,48.8,0.0,0.0,0.0,0.0,0.0,1501545045,756622698,145010879,241.693548,cg_sgs,"ssolve::SeqVectorBackend::cg_update(double, double const*, double const*, double*, double*) const",seq_vectors.hpp,0xfa20
 ssolve::SeqVectorBackend::xpby,0.897436,66.0,0.0,0.0,20.0,68.0,0.0,0.0,0.0,0.0,0.0,683820514,332809984,107945318,423.800000,cg_sgs,"ssolve::SeqVectorBackend::xpby(double const*, double, double*) const",seq_vectors.hpp,0xf970
-ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot,0.780248,19.6,12.7,7.6,1.8,3.3,0.0,0.0,0.0,0.0,0.0,1418342549,1393641808,0,7.076271,cg_sgs,"ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot(double const*, double*) const",seq_backend.cpp,0xf190
 __memset_avx2_unaligned_erms,0.716146,99.3,0.0,0.0,0.0,0.0,51.4,0.0,0.0,0.0,0.0,0,0,0,0.0,libc.so.6,__memset_avx2_unaligned_erms,memset-vec-unaligned-erms.S,0x189480
 ssolve::SeqVectorBackend::dot,0.357572,39.8,0.0,0.0,5.7,62.3,0.0,0.0,0.0,0.0,0.0,650019500,0,120300505,251.593750,cg_sgs,"ssolve::SeqVectorBackend::dot(double const*, double const*) const",seq_vectors.hpp,0xf850
 [sep5],0.044071,20.8,31.8,21.2,10.6,0.0,0.0,0.0,0.0,0.0,0.0,66301989,119603588,0,10.800000,sep5,[sep5],[Unknown],0x0
@@ -148,8 +147,8 @@ scx_allow_ttwu_queue,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0
 select_idle_sibling,0.0,68.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,select_idle_sibling,[Unknown],0xffffffffa67ed9c0
 select_task_rq_fair,0.0,15.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,select_task_rq_fair,[Unknown],0xffffffffa67f6b80
 should_we_balance,0.0,70.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,should_we_balance,[Unknown],0xffffffffa67e9590
-ssolve::(anonymous namespace)::SgsPreconditioner::update,0.0,24.1,0.0,0.0,,,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,cg_sgs,"ssolve::(anonymous namespace)::SgsPreconditioner::update(ssolve::Backend const&, double, double const*, double const*, double*, double*)",sgs.cpp,0x16da0
-ssolve::AlignedArray<int>::data,0.0,71.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,cg_sgs,ssolve::AlignedArray<int>::data(void) const,aligned_array.hpp,0xf194
+ssolve::(anonymous namespace)::SgsPreconditioner::update,0.0,24.1,,0.0,,,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,cg_sgs,"ssolve::(anonymous namespace)::SgsPreconditioner::update(ssolve::Backend const&, double, double const*, double const*, double*, double*)",sgs.cpp,0x16da0
+ssolve::cg,0.0,10.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,96202886,62401872,0,9.333333,cg_sgs,"ssolve::cg(ssolve::Backend const&, ssolve::Preconditioner&, double const*, double*, ssolve::SolveOptions const&)",cg.cpp,0xa54c
 sysvec_apic_timer_interrupt,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,1300039,0,0.0,vmlinux,sysvec_apic_timer_interrupt,[Unknown],0xffffffffa799a360
 task_mm_cid_work,0.0,13.7,0.0,0.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,task_mm_cid_work,[Unknown],0xffffffffa67d4260
 task_tick_mm_cid,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,task_tick_mm_cid,[Unknown],0xffffffffa67e2540
@@ -164,5 +163,4 @@ update_se,0.0,41.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,update_
 update_vdso_time_data,0.0,15.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,1300039,0,19.000000,vmlinux,update_vdso_time_data,[Unknown],0xffffffffa68c7c20
 update_vsyscall,0.0,14.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,update_vsyscall,[Unknown],0xffffffffa68c7dd0
 vma_alloc_folio_noprof,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,vma_alloc_folio_noprof,[Unknown],0xffffffffa6b83440
-"with_rhs_scaling<ssolve::cg(const Backend&, Preconditioner&, double const*, double*, const SolveOptions&)::<lambda(double const*, double*)> >",0.0,10.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,96202886,62401872,0,9.333333,cg_sgs,"with_rhs_scaling<ssolve::cg(const Backend&, Preconditioner&, double const*, double*, const SolveOptions&)::<lambda(double const*, double*)> >",cg_common.hpp,0xa54c
 zap_present_ptes.constprop.0,0.0,45.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,zap_present_ptes.constprop.0,[Unknown],0xffffffffa6b01c40

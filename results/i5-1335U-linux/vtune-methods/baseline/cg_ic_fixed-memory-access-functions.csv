@@ -1,8 +1,7 @@
 Function,CPU Time,Performance-core (P-core):Memory Bound(%),Performance-core (P-core):Memory Bound:L1 Bound(%),Performance-core (P-core):Memory Bound:L2 Bound(%),Performance-core (P-core):Memory Bound:L3 Bound(%),Performance-core (P-core):Memory Bound:DRAM Bound(%),Performance-core (P-core):Memory Bound:Store Bound(%),Efficient-core (E-core):Memory Bound(%),Efficient-core (E-core):Memory Bound:L1 Bound(%),Efficient-core (E-core):Memory Bound:L2 Bound(%),Efficient-core (E-core):Memory Bound:L3 Bound(%),Loads,Stores,LLC Miss Count,Average Latency (cycles),Module,Function (Full),Source File,Start Address
 ssolve::incomplete_cholesky_apply,26.132812,13.7,15.8,2.8,4.0,14.5,1.0,0.0,0.0,0.0,0.0,49847395377,8686860598,428529907,18.858253,cg_ic_fixed,"ssolve::incomplete_cholesky_apply(ssolve::CholeskyFactor const&, double const*, double*)",incomplete_cholesky.cpp,0x14e00
-row_times_vector,10.397636,20.2,8.8,2.9,3.7,23.4,0.0,0.0,0.0,0.0,0.0,39223476669,1300039,78032760,14.534621,cg_ic_fixed,row_times_vector,seq_backend.cpp,0xf1c8
+ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot,11.440304,20.1,9.1,2.8,3.7,21.4,0.0,0.0,0.0,0.0,0.0,40897926901,1697850934,78032760,14.225765,cg_ic_fixed,"ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot(double const*, double*) const",seq_backend.cpp,0xf190
 ssolve::SeqVectorBackend::cg_update,2.109375,66.8,7.5,0.4,15.9,58.5,0.0,0.0,0.0,0.0,0.0,1441743251,717621528,191180262,276.349206,cg_ic_fixed,"ssolve::SeqVectorBackend::cg_update(double, double const*, double const*, double*, double*) const",seq_vectors.hpp,0xfa20
-ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot,1.042668,19.5,12.2,2.2,4.3,1.4,0.0,0.0,0.0,0.0,0.0,1674450232,1696550895,0,7.196970,cg_ic_fixed,"ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot(double const*, double*) const",seq_backend.cpp,0xf190
 ssolve::SeqVectorBackend::xpby,1.004607,64.6,0.0,0.0,13.9,66.5,0.0,0.0,0.0,0.0,0.0,772223166,399111973,171672072,320.096774,cg_ic_fixed,"ssolve::SeqVectorBackend::xpby(double const*, double, double*) const",seq_vectors.hpp,0xf970
 ssolve::SeqVectorBackend::dot,0.727163,59.4,0.0,0.8,6.2,65.4,0.0,0.0,0.0,0.0,0.0,767023010,0,173622891,266.085714,cg_ic_fixed,"ssolve::SeqVectorBackend::dot(double const*, double const*) const",seq_vectors.hpp,0xf850
 native_write_msr_safe,0.052083,20.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,vmlinux,native_write_msr_safe,[Unknown],0xffffffffa6746de0
@@ -67,12 +66,12 @@ sched_clock,0.001002,7.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,3900117,27300819,0,
 set_task_cpu,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,set_task_cpu,[Unknown],0xffffffffa67db8b0
 smp_call_function_single_async,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,smp_call_function_single_async,[Unknown],0xffffffffa68d26f0
 ssolve::(anonymous namespace)::IcPreconditioner::start,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,cg_ic_fixed,"ssolve::(anonymous namespace)::IcPreconditioner::start(ssolve::Backend const&, double const*, double, double*)",incomplete_cholesky.cpp,0x15200
+ssolve::cg,0.001002,6.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,96202886,63701911,0,9.666667,cg_ic_fixed,"ssolve::cg(ssolve::Backend const&, ssolve::Preconditioner&, double const*, double*, ssolve::SolveOptions const&)",cg.cpp,0xa54c
 task_mm_cid_work,0.001002,63.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,task_mm_cid_work,[Unknown],0xffffffffa67d4260
 tick_do_update_jiffies64,0.001002,24.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,tick_do_update_jiffies64,[Unknown],0xffffffffa68c1f50
 tick_program_event,0.001002,16.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,tick_program_event,[Unknown],0xffffffffa68c18f0
 timerqueue_add,0.001002,16.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,timerqueue_add,[Unknown],0xffffffffa7981fa0
 tmigr_next_groupevt,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,tmigr_next_groupevt,[Unknown],0xffffffffa68c56d0
-"with_rhs_scaling<ssolve::cg(const Backend&, Preconditioner&, double const*, double*, const SolveOptions&)::<lambda(double const*, double*)> >",0.001002,6.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,96202886,63701911,0,9.666667,cg_ic_fixed,"with_rhs_scaling<ssolve::cg(const Backend&, Preconditioner&, double const*, double*, const SolveOptions&)::<lambda(double const*, double*)> >",cg_common.hpp,0xa54c
 x2apic_send_IPI,0.001002,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,x2apic_send_IPI,[Unknown],0xffffffffa6738660
 [kvm],0.0,71.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,kvm,[kvm],[Unknown],0x0
 __calc_delta.constprop.0,0.0,29.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1300039,0,0,0.0,vmlinux,__calc_delta.constprop.0,[Unknown],0xffffffffa67e3f80

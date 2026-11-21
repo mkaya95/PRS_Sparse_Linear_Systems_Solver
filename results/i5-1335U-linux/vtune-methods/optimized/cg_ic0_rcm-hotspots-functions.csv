@@ -1,0 +1,63 @@
+Function,CPU Time,CPU Time:Effective Time,CPU Time:Spin Time,CPU Time:Overhead Time,Instructions Retired,Microarchitecture Usage(%),Microarchitecture Usage:Microarchitecture Usage(%),Microarchitecture Usage:CPI Rate,Module,Function (Full),Source File,Start Address
+"ssolve::(anonymous namespace)::SeqBackend<int, (bool)0>::spmv_dot",4.106570,4.106570,0.0,0.0,46812500000,50.9,50.9,0.402937,cg_ic0_rcm,"ssolve::(anonymous namespace)::SeqBackend<int, (bool)0>::spmv_dot(double const*, double*) const",seq_backend.cpp,0x11cc0
+forward<true>,2.944711,2.944711,0.0,0.0,32675000000,50.2,50.2,0.399388,cg_ic0_rcm,forward<true>,triangular.cpp,0x1dfb0
+ssolve::(anonymous namespace)::backward,2.413862,2.413862,0.0,0.0,29737500000,58.7,58.7,0.371585,cg_ic0_rcm,"ssolve::(anonymous namespace)::backward(ssolve::TriangularFactor const&, double const*, double*)",triangular.cpp,0x1f720
+ssolve::SeqVectorBackend::xpby,0.495793,0.495793,0.0,0.0,1425000000,21.1,21.1,1.789474,cg_ic0_rcm,"ssolve::SeqVectorBackend::xpby(double const*, double, double*) const",seq_vectors.hpp,0x133d0
+[sep5],0.010016,0.010016,0.0,0.0,12500000,53.7,53.7,1.000000,sep5,[sep5],[Unknown],0x0
+native_read_msr,0.010016,0.010016,0.0,0.0,0,50.8,50.8,,vmlinux,native_read_msr,[Unknown],0xffffffffa6746ec0
+update_vsyscall,0.010016,0.010016,0.0,0.0,0,49.8,49.8,0.0,vmlinux,update_vsyscall,[Unknown],0xffffffffa68c7dd0
+__memcg_slab_free_hook,0.005008,0.005008,0.0,0.0,0,0.0,0.0,0.0,vmlinux,__memcg_slab_free_hook,[Unknown],0xffffffffa6bc0fe0
+__memmove_avx_unaligned_erms,0.005008,0.005008,0.0,0.0,0,14.4,14.4,0.0,libc.so.6,__memmove_avx_unaligned_erms,memmove-vec-unaligned-erms.S,0x188d80
+__raw_spin_lock_irqsave,0.005008,0.005008,0.0,0.0,0,0.0,0.0,0.0,vmlinux,__raw_spin_lock_irqsave,[Unknown],0xffffffffa6836d80
+__sysvec_apic_timer_interrupt,0.005008,0.005008,0.0,0.0,0,0.0,0.0,0.0,vmlinux,__sysvec_apic_timer_interrupt,[Unknown],0xffffffffa672d0a0
+__update_load_avg_cfs_rq,0.005008,0.005008,0.0,0.0,0,57.6,57.6,0.0,vmlinux,__update_load_avg_cfs_rq,[Unknown],0xffffffffa680ee10
+account_user_time,0.005008,0.005008,0.0,0.0,0,53.6,53.6,,vmlinux,account_user_time,[Unknown],0xffffffffa6810ca0
+fpregs_assert_state_consistent,0.005008,0.005008,0.0,0.0,0,34.9,34.9,0.0,vmlinux,fpregs_assert_state_consistent,[Unknown],0xffffffffa66f34a0
+native_irq_return_iret,0.005008,0.005008,0.0,0.0,0,47.6,47.6,0.0,vmlinux,native_irq_return_iret,[Unknown],0xffffffffa6401248
+sched_use_asym_prio,0.005008,0.005008,0.0,0.0,0,55.0,55.0,,vmlinux,sched_use_asym_prio,[Unknown],0xffffffffa67e7470
+tick_nohz_handler,0.005008,0.005008,0.0,0.0,0,0.0,0.0,0.0,vmlinux,tick_nohz_handler,[Unknown],0xffffffffa68c20d0
+update_cfs_group,0.005008,0.005008,0.0,0.0,0,50.0,50.0,0.0,vmlinux,update_cfs_group,[Unknown],0xffffffffa67f0910
+update_sg_lb_stats,0.005008,0.005008,0.0,0.0,0,0.0,0.0,0.0,vmlinux,update_sg_lb_stats,[Unknown],0xffffffffa67ef6d0
+__calc_delta.constprop.0,0.0,0.0,0.0,0.0,0,51.4,51.4,0.0,vmlinux,__calc_delta.constprop.0,[Unknown],0xffffffffa67e3f80
+__cgroup_account_cputime_field,0.0,0.0,0.0,0.0,0,47.1,47.1,0.0,vmlinux,__cgroup_account_cputime_field,[Unknown],0xffffffffa68ee6f0
+__irq_exit_rcu,0.0,0.0,0.0,0.0,0,27.5,27.5,0.0,vmlinux,__irq_exit_rcu,[Unknown],0xffffffffa678b420
+__memset_avx2_unaligned_erms,0.0,0.0,0.0,0.0,0,6.7,6.7,0.0,libc.so.6,__memset_avx2_unaligned_erms,memset-vec-unaligned-erms.S,0x189780
+__rdmsr_safe_on_cpu,0.0,0.0,0.0,0.0,0,50.6,50.6,0.0,vmlinux,__rdmsr_safe_on_cpu,[Unknown],0xffffffffa7093020
+__timekeeping_advance,0.0,0.0,0.0,0.0,12500000,50.8,50.8,0.0,vmlinux,__timekeeping_advance,[Unknown],0xffffffffa68ac090
+__update_load_avg_se,0.0,0.0,0.0,0.0,0,59.2,59.2,0.0,vmlinux,__update_load_avg_se,[Unknown],0xffffffffa680e7c0
+_find_next_bit,0.0,0.0,0.0,0.0,0,59.2,59.2,0.0,vmlinux,_find_next_bit,[Unknown],0xffffffffa6fa0b10
+acct_account_cputime,0.0,0.0,0.0,0.0,0,59.6,59.6,0.0,vmlinux,acct_account_cputime,[Unknown],0xffffffffa6932760
+common_interrupt_return,0.0,0.0,0.0,0.0,0,54.9,54.9,0.0,vmlinux,common_interrupt_return,[Unknown],0xffffffffa6401150
+cpuacct_account_field,0.0,0.0,0.0,0.0,0,55.8,55.8,0.0,vmlinux,cpuacct_account_field,[Unknown],0xffffffffa682b3d0
+enqueue_entity,0.0,0.0,0.0,0.0,0,53.7,53.7,0.0,vmlinux,enqueue_entity,[Unknown],0xffffffffa67f27d0
+enqueue_hrtimer,0.0,0.0,0.0,0.0,0,55.3,55.3,0.0,vmlinux,enqueue_hrtimer,[Unknown],0xffffffffa68a8780
+exc_nmi,0.0,0.0,0.0,0.0,12500000,0.0,0.0,0.0,vmlinux,exc_nmi,[Unknown],0xffffffffa79978b0
+fmax,0.0,0.0,0.0,0.0,12500000,40.3,40.3,0.0,libm.so.6,fmax,s_fmax.S,0x3a160
+forward<false>,0.0,0.0,0.0,0.0,25000000,48.3,48.3,0.500000,cg_ic0_rcm,forward<false>,triangular.cpp,0x1ed00
+func@0x8380,0.0,0.0,0.0,0.0,0,43.9,43.9,0.0,cg_ic0_rcm,func@0x8380,[Unknown],0x8380
+intel_thermal_interrupt,0.0,0.0,0.0,0.0,0,50.6,50.6,0.0,vmlinux,intel_thermal_interrupt,[Unknown],0xffffffffa75b1bb0
+irq_enter_rcu,0.0,0.0,0.0,0.0,0,50.2,50.2,0.0,vmlinux,irq_enter_rcu,[Unknown],0xffffffffa678b840
+irqentry_nmi_exit,0.0,0.0,0.0,0.0,12500000,0.0,0.0,0.0,vmlinux,irqentry_nmi_exit,[Unknown],0xffffffffa799b270
+native_sched_clock,0.0,0.0,0.0,0.0,25000000,0.0,0.0,0.0,vmlinux,native_sched_clock,[Unknown],0xffffffffa7997ff0
+native_write_msr,0.0,0.0,0.0,0.0,0,39.7,39.7,0.0,vmlinux,native_write_msr,[Unknown],0xffffffffa6747070
+native_write_msr_safe,0.0,0.0,0.0,0.0,0,51.4,51.4,,vmlinux,native_write_msr_safe,[Unknown],0xffffffffa6746de0
+notifier_call_chain,0.0,0.0,0.0,0.0,0,49.0,49.0,,vmlinux,notifier_call_chain,[Unknown],0xffffffffa67c3050
+ntp_tick_length,0.0,0.0,0.0,0.0,0,53.3,53.3,0.0,vmlinux,ntp_tick_length,[Unknown],0xffffffffa68afa10
+profile_tick,0.0,0.0,0.0,0.0,0,52.5,52.5,0.0,vmlinux,profile_tick,[Unknown],0xffffffffa68a0f90
+rcu_pending,0.0,0.0,0.0,0.0,12500000,0.0,0.0,0.0,vmlinux,rcu_pending,[Unknown],0xffffffffa687d150
+reweight_entity,0.0,0.0,0.0,0.0,0,58.0,58.0,0.0,vmlinux,reweight_entity,[Unknown],0xffffffffa67f0690
+sched_tick,0.0,0.0,0.0,0.0,0,54.6,54.6,0.0,vmlinux,sched_tick,[Unknown],0xffffffffa67e25c0
+ssolve::(anonymous namespace)::TriangularPreconditioner::direction,0.0,0.0,0.0,0.0,0,59.6,59.6,0.0,cg_ic0_rcm,"ssolve::(anonymous namespace)::TriangularPreconditioner::direction(ssolve::Backend const&, double const*, double, double*)",triangular.cpp,0x1df90
+ssolve::SeqVectorBackend::dot,0.0,0.0,0.0,0.0,12500000,18.8,18.8,1.000000,cg_ic0_rcm,"ssolve::SeqVectorBackend::dot(double const*, double const*) const",seq_vectors.hpp,0x132b0
+ssolve::cg,0.0,0.0,0.0,0.0,12500000,43.7,43.7,1.000000,cg_ic0_rcm,"ssolve::cg(ssolve::Backend const&, ssolve::Preconditioner&, double const*, double*, ssolve::SolveOptions const&)",cg.cpp,0xb23f
+ssolve::to_new_order,0.0,0.0,0.0,0.0,0,14.6,14.6,0.0,cg_ic0_rcm,"ssolve::to_new_order(std::vector<int, std::allocator<int>> const&, double const*, double*)",reorder.cpp,0x16fe0
+ssolve::to_original_order,0.0,0.0,0.0,0.0,12500000,30.2,30.2,1.000000,cg_ic0_rcm,"ssolve::to_original_order(std::vector<int, std::allocator<int>> const&, double const*, double*)",reorder.cpp,0x17020
+task_tick_mm_cid,0.0,0.0,0.0,0.0,0,58.8,58.8,0.0,vmlinux,task_tick_mm_cid,[Unknown],0xffffffffa67e2540
+tick_do_update_jiffies64,0.0,0.0,0.0,0.0,0,48.6,48.6,,vmlinux,tick_do_update_jiffies64,[Unknown],0xffffffffa68c1f50
+timekeeping_adjust,0.0,0.0,0.0,0.0,0,39.2,39.2,0.0,vmlinux,timekeeping_adjust,[Unknown],0xffffffffa68ab280
+timerqueue_add,0.0,0.0,0.0,0.0,0,49.0,49.0,0.0,vmlinux,timerqueue_add,[Unknown],0xffffffffa7981fa0
+update_curr,0.0,0.0,0.0,0.0,0,52.1,52.1,,vmlinux,update_curr,[Unknown],0xffffffffa67e85a0
+update_load_avg,0.0,0.0,0.0,0.0,0,56.0,56.0,0.0,vmlinux,update_load_avg,[Unknown],0xffffffffa67ea320
+update_min_vruntime,0.0,0.0,0.0,0.0,0,52.2,52.2,0.0,vmlinux,update_min_vruntime,[Unknown],0xffffffffa67e2dd0
+update_se,0.0,0.0,0.0,0.0,12500000,34.2,34.2,0.0,vmlinux,update_se,[Unknown],0xffffffffa67e8420
+update_wall_time,0.0,0.0,0.0,0.0,0,51.8,51.8,0.0,vmlinux,update_wall_time,[Unknown],0xffffffffa68aee80

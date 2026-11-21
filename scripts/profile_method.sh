@@ -77,7 +77,8 @@ for analysis in $analyses; do
   [ -d "$result" ] || continue
   vtune -report summary -result-dir "$result" -report-knob show-issues=false \
       -report-output "$reports/$method-$analysis-summary.txt" > /dev/null 2>&1
-  vtune -report hotspots -result-dir "$result" -format csv -csv-delimiter comma \
+  # Inlined helpers (intrinsics, the per-width row loops) count toward the function they were inlined into.
+  vtune -report hotspots -result-dir "$result" -inline-mode off -format csv -csv-delimiter comma \
       -report-output "$reports/$method-$analysis-functions.csv" > /dev/null 2>&1
   rm -rf "$result"/data.*  # raw samples, not needed once finalized: vtune-gui opens sqlite-db
 done

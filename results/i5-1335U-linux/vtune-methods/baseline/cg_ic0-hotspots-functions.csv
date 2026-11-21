@@ -1,9 +1,8 @@
 Function,CPU Time,CPU Time:Effective Time,CPU Time:Spin Time,CPU Time:Overhead Time,Instructions Retired,Microarchitecture Usage(%),Microarchitecture Usage:Microarchitecture Usage(%),Microarchitecture Usage:CPI Rate,Module,Function (Full),Source File,Start Address
 ssolve::ic0_apply,14.144631,14.144631,0.0,0.0,78160000000,21.0,21.0,0.828141,cg_ic0,"ssolve::ic0_apply(ssolve::Ic0Factor const&, double const*, double*)",ic0.cpp,0x13fe0
-row_times_vector,7.495993,7.495993,0.0,0.0,58860000000,30.9,30.9,0.584820,cg_ic0,row_times_vector,seq_backend.cpp,0xf1c8
+ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot,8.226162,8.226162,0.0,0.0,63415000000,31.0,31.0,0.594615,cg_ic0,"ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot(double const*, double*) const",seq_backend.cpp,0xf190
 ssolve::SeqVectorBackend::cg_update,1.488381,1.488381,0.0,0.0,2962500000,8.1,8.1,2.279325,cg_ic0,"ssolve::SeqVectorBackend::cg_update(double, double const*, double const*, double*, double*) const",seq_vectors.hpp,0xfa20
 ssolve::SeqVectorBackend::xpby,0.746194,0.746194,0.0,0.0,1707500000,8.9,8.9,1.982430,cg_ic0,"ssolve::SeqVectorBackend::xpby(double const*, double, double*) const",seq_vectors.hpp,0xf970
-ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot,0.730168,0.730168,0.0,0.0,4555000000,31.4,31.4,0.721186,cg_ic0,"ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot(double const*, double*) const",seq_backend.cpp,0xf190
 ssolve::SeqVectorBackend::dot,0.504808,0.504808,0.0,0.0,1542500000,15.8,15.8,1.424635,cg_ic0,"ssolve::SeqVectorBackend::dot(double const*, double const*) const",seq_vectors.hpp,0xf850
 native_write_msr_safe,0.056090,0.056090,0.0,0.0,32500000,23.8,23.8,8.769231,vmlinux,native_write_msr_safe,[Unknown],0xffffffffa6746de0
 [sep5],0.032051,0.032051,0.0,0.0,265000000,23.5,23.5,0.481132,sep5,[sep5],[Unknown],0x0
@@ -56,12 +55,12 @@ propagate_entity_load_avg,0.001002,0.001002,0.0,0.0,0,19.5,19.5,0.0,vmlinux,prop
 rcu_pending,0.001002,0.001002,0.0,0.0,0,26.2,26.2,0.0,vmlinux,rcu_pending,[Unknown],0xffffffffa687d150
 rcu_sched_clock_irq,0.001002,0.001002,0.0,0.0,0,19.2,19.2,,vmlinux,rcu_sched_clock_irq,[Unknown],0xffffffffa6880070
 sched_tick,0.001002,0.001002,0.0,0.0,0,22.5,22.5,,vmlinux,sched_tick,[Unknown],0xffffffffa67e25c0
+ssolve::cg,0.001002,0.001002,0.0,0.0,10000000,43.8,43.8,0.250000,cg_ic0,"ssolve::cg(ssolve::Backend const&, ssolve::Preconditioner&, double const*, double*, ssolve::SolveOptions const&)",cg.cpp,0xa54c
 tick_do_update_jiffies64,0.001002,0.001002,0.0,0.0,0,22.3,22.3,,vmlinux,tick_do_update_jiffies64,[Unknown],0xffffffffa68c1f50
 tick_program_event,0.001002,0.001002,0.0,0.0,0,26.9,26.9,,vmlinux,tick_program_event,[Unknown],0xffffffffa68c18f0
 timekeeping_update_from_shadow,0.001002,0.001002,0.0,0.0,7500000,22.3,22.3,0.333333,vmlinux,timekeeping_update_from_shadow,[Unknown],0xffffffffa68aba60
 update_min_vruntime,0.001002,0.001002,0.0,0.0,0,23.9,23.9,,vmlinux,update_min_vruntime,[Unknown],0xffffffffa67e2dd0
 update_vdso_time_data,0.001002,0.001002,0.0,0.0,2500000,26.3,26.3,0.0,vmlinux,update_vdso_time_data,[Unknown],0xffffffffa68c7c20
-"with_rhs_scaling<ssolve::cg(const Backend&, Preconditioner&, double const*, double*, const SolveOptions&)::<lambda(double const*, double*)> >",0.001002,0.001002,0.0,0.0,10000000,43.8,43.8,0.250000,cg_ic0,"with_rhs_scaling<ssolve::cg(const Backend&, Preconditioner&, double const*, double*, const SolveOptions&)::<lambda(double const*, double*)> >",cg_common.hpp,0xa54c
 [iwlmvm],0.0,0.0,0.0,0.0,0,19.6,19.6,0.0,iwlmvm,[iwlmvm],[Unknown],0x0
 [kvm],0.0,0.0,0.0,0.0,0,23.3,23.3,,kvm,[kvm],[Unknown],0x0
 __calc_delta.constprop.0,0.0,0.0,0.0,0.0,7500000,23.4,23.4,0.666667,vmlinux,__calc_delta.constprop.0,[Unknown],0xffffffffa67e3f80
@@ -106,7 +105,7 @@ avg_vruntime,0.0,0.0,0.0,0.0,2500000,28.5,28.5,1.000000,vmlinux,avg_vruntime,[Un
 blk_cgroup_congested,0.0,0.0,0.0,0.0,0,28.2,28.2,,vmlinux,blk_cgroup_congested,[Unknown],0xffffffffa6f21e70
 calc_global_load,0.0,0.0,0.0,0.0,0,24.4,24.4,,vmlinux,calc_global_load,[Unknown],0xffffffffa682f9b0
 calc_global_load_tick,0.0,0.0,0.0,0.0,0,20.9,20.9,,vmlinux,calc_global_load_tick,[Unknown],0xffffffffa682fbf0
-cg_loop,0.0,0.0,0.0,0.0,0,14.4,14.4,,cg_ic0,cg_loop,cg.cpp,0xa4d6
+cg_loop,0.0,0.0,0.0,0.0,0,14.5,14.5,,cg_ic0,cg_loop,cg.cpp,0xa4d6
 charge_memcg,0.0,0.0,0.0,0.0,0,24.3,24.3,0.0,vmlinux,charge_memcg,[Unknown],0xffffffffa6bc04d0
 check_cpu_stall,0.0,0.0,0.0,0.0,0,18.7,18.7,,vmlinux,check_cpu_stall,[Unknown],0xffffffffa687cf20
 clear_page_erms,0.0,0.0,0.0,0.0,0,17.8,17.8,,vmlinux,clear_page_erms,[Unknown],0xffffffffa798e650
@@ -172,9 +171,7 @@ sched_clock_noinstr,0.0,0.0,0.0,0.0,5000000,21.2,21.2,0.0,vmlinux,sched_clock_no
 sched_core_idle_cpu,0.0,0.0,0.0,0.0,0,12.5,12.5,0.0,vmlinux,sched_core_idle_cpu,[Unknown],0xffffffffa681a0b0
 select_task_rq,0.0,0.0,0.0,0.0,0,20.8,20.8,0.0,vmlinux,select_task_rq,[Unknown],0xffffffffa67dacd0
 ssolve::(anonymous namespace)::Ic0Preconditioner::update,0.0,0.0,0.0,0.0,0,20.2,20.2,0.0,cg_ic0,"ssolve::(anonymous namespace)::Ic0Preconditioner::update(ssolve::Backend const&, double, double const*, double const*, double*, double*)",ic0.cpp,0x140e0
-ssolve::AlignedArray<int>::data,0.0,0.0,0.0,0.0,0,6.7,6.7,0.0,cg_ic0,ssolve::AlignedArray<int>::data(void) const,aligned_array.hpp,0xf194
 start_dl_timer,0.0,0.0,0.0,0.0,0,31.0,31.0,0.0,vmlinux,start_dl_timer,[Unknown],0xffffffffa68012c0
-std::isfinite,0.0,0.0,0.0,0.0,0,16.5,16.5,0.0,cg_ic0,std::isfinite(double),cmath,0x17218
 sysvec_apic_timer_interrupt,0.0,0.0,0.0,0.0,0,22.0,22.0,,vmlinux,sysvec_apic_timer_interrupt,[Unknown],0xffffffffa799a360
 task_mm_cid_work,0.0,0.0,0.0,0.0,0,25.5,25.5,,vmlinux,task_mm_cid_work,[Unknown],0xffffffffa67d4260
 task_tick_mm_cid,0.0,0.0,0.0,0.0,0,23.9,23.9,,vmlinux,task_tick_mm_cid,[Unknown],0xffffffffa67e2540
