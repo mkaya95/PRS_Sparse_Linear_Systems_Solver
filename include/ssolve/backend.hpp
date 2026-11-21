@@ -56,4 +56,10 @@ std::unique_ptr<Backend> make_sell_backend(const CsrMatrix& a, int chunk = kSell
 // The same from a SELL matrix already built, for a caller that also wants its layout. Throws if not square.
 std::unique_ptr<Backend> make_sell_backend(SellMatrix s);
 
+// Backends of I + off_diagonal: the diagonal is 1 and not stored, so each product reads n entries fewer.
+// For the Jacobi-scaled system of jacobi_scaled.hpp. off_diagonal must have no diagonal entries.
+std::unique_ptr<Backend> make_seq_backend_unit_diagonal(CsrMatrix off_diagonal);
+std::unique_ptr<Backend> make_sell_backend_unit_diagonal(const CsrMatrix& off_diagonal, int chunk = kSellChunk,
+                                                         Index sigma = kSellSigma);
+
 }  // namespace ssolve

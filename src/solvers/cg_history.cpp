@@ -32,6 +32,8 @@ class RecordingPreconditioner final : public Preconditioner {
     inner_.direction(backend, r, beta, p);
   }
 
+  double norm_squared(const Backend& backend, const double* v) override { return inner_.norm_squared(backend, v); }
+
  private:
   Preconditioner& inner_;
   std::vector<double>& rr_;
@@ -66,7 +68,7 @@ SolveResult cg_with_history(const Backend& backend, Preconditioner& precond, con
   const double last = rr.back();
   const double reported = result.recursive_residual;
   const double bb = (std::isfinite(reported) && reported > 0.0 && std::isfinite(last)) ? last / (reported * reported)
-                                                                                         : backend.dot(b, b);
+                                                                                         : precond.norm_squared(backend, b);
   history.push_back(1.0);
   for (const double value : rr) history.push_back(std::sqrt(value / bb));
   return result;

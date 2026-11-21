@@ -21,7 +21,7 @@ namespace ssolve {
 
 namespace {
 
-template <class Ptr>
+template <class Ptr, bool UnitDiagonal>
 class SeqBackend final : public SeqVectorBackend {
  public:
   explicit SeqBackend(CsrMatrixT<Ptr> a)
@@ -62,7 +62,8 @@ class SeqBackend final : public SeqVectorBackend {
     for (std::size_t i = 0; i < size_; ++i) {
       // Widen once per row, so a 32-bit row pointer adds no sign extension to the inner loop.
       const std::int64_t start = row_ptr[i];
-      const double value = masked_row<W>(col + start, val + start, x, row_ptr[i + 1] - start);
+      double value = masked_row<W>(col + start, val + start, x, row_ptr[i + 1] - start);
+      if (UnitDiagonal) value += x[i];
       y[i] = value;
       if (Dot) dot += x[i] * value;
     }
@@ -73,14 +74,23 @@ class SeqBackend final : public SeqVectorBackend {
   int width_;
 };
 
+template <bool UnitDiagonal>
+std::unique_ptr<Backend> make(CsrMatrix a, bool allow_narrow_row_ptr) {
+  if (a.n_rows != a.n_cols) throw std::runtime_error("the solver backend needs a square matrix");
+  if (allow_narrow_row_ptr && fits_row_ptr32(a)) {
+    return std::make_unique<SeqBackend<std::int32_t, UnitDiagonal>>(narrow_row_ptr(std::move(a)));
+  }
+  return std::make_unique<SeqBackend<std::int64_t, UnitDiagonal>>(std::move(a));
+}
+
 }  // namespace
 
 std::unique_ptr<Backend> make_seq_backend(CsrMatrix a, bool allow_narrow_row_ptr) {
-  if (a.n_rows != a.n_cols) throw std::runtime_error("the solver backend needs a square matrix");
-  if (allow_narrow_row_ptr && fits_row_ptr32(a)) {
-    return std::make_unique<SeqBackend<std::int32_t>>(narrow_row_ptr(std::move(a)));
-  }
-  return std::make_unique<SeqBackend<std::int64_t>>(std::move(a));
+  return make<false>(std::move(a), allow_narrow_row_ptr);
+}
+
+std::unique_ptr<Backend> make_seq_backend_unit_diagonal(CsrMatrix off_diagonal) {
+  return make<true>(std::move(off_diagonal), true);
 }
 
 }  // namespace ssolve

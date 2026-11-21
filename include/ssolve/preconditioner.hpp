@@ -24,6 +24,10 @@ class Preconditioner {
 
   // p = z + beta p, with z from the last start() or update().
   virtual void direction(const Backend& backend, const double* r, double beta, double* p) = 0;
+
+  // v·v in the norm CG stops on, ‖r‖ < tol·‖b‖. A preconditioner that solves a rescaled system
+  // (jacobi_scaled.hpp) overrides it, so the test stays on the caller's own r and b.
+  virtual double norm_squared(const Backend& backend, const double* v) { return backend.dot(v, v); }
 };
 
 std::unique_ptr<Preconditioner> make_identity_preconditioner();

@@ -60,6 +60,7 @@ add_library(ssolve STATIC
   src/precond/triangular.cpp
   src/solvers/cg.cpp
   src/solvers/cg_history.cpp
+  src/solvers/jacobi_scaled.cpp
   src/verify.cpp
 )
 add_dependencies(ssolve ssolve_build_info)
@@ -151,6 +152,7 @@ ssolve_test(test_sell)
 ssolve_test(test_reorder)
 ssolve_test(test_precond)
 ssolve_test(test_triangular)
+ssolve_test(test_jacobi_scaled)
 
 add_executable(test_solvers tests/test_solvers.cpp)
 target_include_directories(test_solvers PRIVATE tests)
