@@ -218,6 +218,28 @@ Da. Svaka metoda konvergira do istog praga (pravi rezidual ispod 10⁻⁸), sa i
 **Šta ostaje od bad speculation (oko 8%)?**
 Blokovi od 8 redova imaju različite širine (redovi imaju 0 do 7 elemenata ispod dijagonale), pa procesor na prelazu između blokova pogađa koja širina slijedi. To je jedno pogađanje na 8 redova umjesto jednog po redu.
 
+**Da li dobijamo isto rješenje kao Eigen?**
+Da, onoliko tačno koliko je moguće. Testni sistem pravimo sami: izaberemo tačno rješenje x, izračunamo b = A·x, pa provjerimo koliko je svaki solver od njega daleko. Na šest matrica, poslije optimizacija (`results/i5-1335U-linux/eigen-check/`):
+- naš Jacobi se od Eigenovog razlikuje za 10⁻¹³ do 10⁻⁶, a naš `ic` od Eigenovog za 10⁻⁹ do 4·10⁻⁶ (osim `thermal2`, pitanje ispod);
+- broj iteracija je isti (najviše ±9 na 2.600);
+- svaki solver, naš i Eigenov, je od tačnog rješenja daleko 10⁻⁵ do 3·10⁻³, jer CG staje kad rezidual padne ispod 10⁻⁸, a ne kad je x tačan. Razlika između nas i Eigena je uvijek manja od te greške (najmanje 8 puta, na `hood`; obično hiljadama puta), a naša greška je ista kao Eigenova, pa nijedan nije „tačniji".
+
+Bit-za-bit isto rješenje nije moguće: računar zaokružuje svaku operaciju, a Eigen sabira drugim redoslijedom. Ni Eigen ne bi dao bit-za-bit isto sam sa sobom, preveden drugim opcijama kompajlera. Ako treba bliže tačnom rješenju, smanji se tolerancija (npr. 10⁻¹²), za sve solvere jednako.
+
+**Zašto `cg_ic` na `thermal2` treba 1.524 iteracije, a Eigen 1.133?**
+Nije greška. Faktor je isti: uporedili smo Eigenov i naš faktor L na `thermal2` kolonu po kolonu, i u svih 1.228.045 kolona imaju iste pozicije i vrijednosti koje se razlikuju tek u 13. cifri. Razlika je u tome gdje CG stane. Od oko 1.000. iteracije rezidual se vrti tik iznad 10⁻⁸: kod 1.133. iteracije Eigenov je pao malo ispod linije, a naš je bio 5% iznad, pa je opet porastao i liniju prešao tek kod 1.524. Dokaz: kad se linija pomjeri za 1 do 2%, oba se pomjere zajedno.
+
+| Tolerancija | Eigen E4 | naš `cg_ic` |
+| --- | ---: | ---: |
+| 1,02·10⁻⁸ | 1.110 | 1.135 |
+| 1,00·10⁻⁸ | 1.133 | 1.524 |
+| 0,99·10⁻⁸ | 1.522 | 1.525 |
+
+Na ostalih pet matrica broj iteracija je isti (672/672, 504/504, 579/580, 251/251, 717/717). Zbog dužeg rada je naš `cg_ic` na `thermal2` čak 5 puta bliži tačnom rješenju od Eigena (greška 1,8·10⁻⁴ naspram 8,8·10⁻⁴).
+
+**Šta je IC?**
+Nepotpuni Cholesky (incomplete Cholesky). Pravi Cholesky rastavlja A = L·Lᵀ i s njim bi se sistem riješio tačno, ali L ima previše nenultih elemenata. Nepotpuni zadrži samo neke (IC(0): samo pozicije koje A već ima), pa je L·Lᵀ ≈ A. To je jeftina približna inverzija od A, koju CG primijeni u svakoj iteraciji, i zbog nje treba 2 do 3 puta manje iteracija nego sa Jacobijem. Četiri naše metode su IC: `cg_ic` (Eigenov algoritam), `cg_ic_fixed` (Eigenov sa ispravljene dvije greške), `cg_ic0` i `cg_ic0_rcm` (najbrža metoda).
+
 **Zašto se Eigen nije promijenio?**
 Eigen je biblioteka sa kojom se poredimo; njen kod ne mijenjamo. Poslužio je kao kontrolna grupa: njegove brojke su ostale iste na 0,5%, što dokazuje da su naše promjene stvarne.
 
