@@ -386,7 +386,7 @@ TEST(kernel_timing_refuses_values_that_overflow) {
 
 TEST(the_ladder_has_every_rung) {
   for (const char* name : {"L0-naive", "L1-restrict", "L2-simd", "L3-acc2", "L3-unroll4", "L3-simdrow", "L4-fused",
-                           "L5-nopass", "L6-rowptr32", "J0-passes", "J1-fused", "ours", "ours-jacobi"}) {
+                           "L5-nopass", "L6-rowptr32", "J0-passes", "J1-fused", "J2-rowptr32", "ours", "ours-jacobi"}) {
     CHECK_EQ(ssolve_bench::find_solver(name).name, std::string(name));
   }
 }

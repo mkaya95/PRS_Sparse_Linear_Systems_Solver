@@ -8,6 +8,7 @@
 #include "ssolve/aligned_array.hpp"
 #include "ssolve/backend.hpp"
 #include "ssolve/cg.hpp"
+#include "ssolve/jacobi_scaled.hpp"
 #include "ssolve/preconditioner.hpp"
 #include "ssolve/reorder.hpp"
 #include "ssolve/timer.hpp"
@@ -31,6 +32,19 @@ SolveResult run_sell(const CsrMatrix& a, const double* b, double* x, const Solve
   const double setup_seconds = wall_seconds() - setup_start;
   SolveResult result = verified_cg(a, *backend, P == Precond::Jacobi ? inv_diag.data() : nullptr, b, x, options);
   result.setup_seconds = setup_seconds;
+  return result;
+}
+
+// Jacobi on SELL as cg_sell_jacobi in apps/methods runs it: CG on the scaled system, whose unit diagonal is
+// not stored (ssolve/jacobi_scaled.hpp).
+SolveResult run_sell_scaled_jacobi(const CsrMatrix& a, const double* b, double* x, const SolveOptions& options) {
+  const double setup_start = wall_seconds();
+  const JacobiScaling scaling = jacobi_scaling(a);
+  const std::unique_ptr<Backend> backend = make_sell_backend_unit_diagonal(scaling.off_diagonal);
+  const double setup_seconds = wall_seconds() - setup_start;
+  SolveResult result = cg_scaled_jacobi(*backend, scaling, b, x, options);
+  result.setup_seconds = setup_seconds;
+  verify_result(a, b, x, options, result);
   return result;
 }
 
@@ -80,7 +94,7 @@ std::vector<NamedSolver> variant_solvers() {
   using P = Precond;
   return {
       {"ours-sell", P::None, run_sell<P::None>},
-      {"ours-sell-jacobi", P::Jacobi, run_sell<P::Jacobi>},
+      {"ours-sell-jacobi", P::Jacobi, run_sell_scaled_jacobi},
       {"ours-sgs", P::SymGaussSeidel, run_precond<Format::Csr, P::SymGaussSeidel>},
       {"ours-ic", P::IncompleteCholesky, run_precond<Format::Csr, P::IncompleteCholesky>},
       {"ours-ic-fixed", P::IncompleteCholeskyFixed, run_precond<Format::Csr, P::IncompleteCholeskyFixed>},
