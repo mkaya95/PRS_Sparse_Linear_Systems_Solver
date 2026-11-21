@@ -57,6 +57,7 @@ add_library(ssolve STATIC
   src/precond/ic0.cpp
   src/precond/incomplete_cholesky.cpp
   src/precond/sgs.cpp
+  src/precond/triangular.cpp
   src/solvers/cg.cpp
   src/solvers/cg_history.cpp
   src/verify.cpp
@@ -149,6 +150,7 @@ ssolve_test(test_compare)
 ssolve_test(test_sell)
 ssolve_test(test_reorder)
 ssolve_test(test_precond)
+ssolve_test(test_triangular)
 
 add_executable(test_solvers tests/test_solvers.cpp)
 target_include_directories(test_solvers PRIVATE tests)

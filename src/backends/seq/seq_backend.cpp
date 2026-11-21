@@ -1,7 +1,13 @@
-// The sequential CSR backend, as chosen by the measurements in results/.
+// The sequential CSR backend.
 //
-// The CSR row loop uses two accumulators, the best of the variants tried on the optimization
-// ladder. The vector kernels are shared with the other formats in seq_vectors.hpp.
+// The matrix is plain CSR, read front to back. Each row goes through masked_row (masked_row.hpp): it is
+// read as W consecutive entries with those past its end switched off, so the loop has no branch on the
+// row's length. With the row-by-row loop it replaced, a fifth of the processor's work was thrown away
+// on wrong guesses of where a row ends (VTune, docs/results/vtune-i5-1335U-linux.md): thermal2's rows have
+// 5 to 9 entries, in no pattern. W is 4, 8 or 16, chosen once from the row lengths.
+//
+// The vector kernels are shared with the other formats in seq_vectors.hpp.
+#include <algorithm>
 #include <cstdint>
 #include <stdexcept>
 #include <utility>
@@ -9,6 +15,7 @@
 #include "seq_vectors.hpp"
 #include "ssolve/backend.hpp"
 #include "ssolve/kernels_common.hpp"
+#include "ssolve/masked_row.hpp"
 
 namespace ssolve {
 
@@ -18,48 +25,52 @@ template <class Ptr>
 class SeqBackend final : public SeqVectorBackend {
  public:
   explicit SeqBackend(CsrMatrixT<Ptr> a)
-      : SeqVectorBackend(static_cast<std::size_t>(a.n_rows)), a_(std::move(a)) {}
+      : SeqVectorBackend(static_cast<std::size_t>(a.n_rows)), a_(std::move(a)),
+        width_(masked_width(a_.row_ptr.data(), a_.n_rows)) {}
 
   Index n() const override { return a_.n_rows; }
 
   void spmv(const double* SSOLVE_RESTRICT x, double* SSOLVE_RESTRICT y) const override {
-    const Ptr* SSOLVE_RESTRICT const row_ptr = a_.row_ptr.data();
-    const Index* SSOLVE_RESTRICT const col = a_.col.data();
-    const double* SSOLVE_RESTRICT const val = a_.val.data();
-    for (std::size_t i = 0; i < size_; ++i) y[i] = row_times_vector(row_ptr, col, val, x, i);
+    with_width([&](auto w) { sweep<decltype(w)::value, false>(x, y); });
   }
 
   double spmv_dot(const double* SSOLVE_RESTRICT x, double* SSOLVE_RESTRICT y) const override {
-    const Ptr* SSOLVE_RESTRICT const row_ptr = a_.row_ptr.data();
-    const Index* SSOLVE_RESTRICT const col = a_.col.data();
-    const double* SSOLVE_RESTRICT const val = a_.val.data();
-    double sum = 0.0;
-    for (std::size_t i = 0; i < size_; ++i) {
-      const double value = row_times_vector(row_ptr, col, val, x, i);
-      y[i] = value;
-      sum += x[i] * value;
-    }
-    return sum;
+    double dot = 0.0;
+    with_width([&](auto w) { dot = sweep<decltype(w)::value, true>(x, y); });
+    return dot;
   }
 
  private:
-  // Two accumulators break the dependency between consecutive additions, so the CPU can run two at once.
-  static inline double row_times_vector(const Ptr* SSOLVE_RESTRICT row_ptr, const Index* SSOLVE_RESTRICT col,
-                                        const double* SSOLVE_RESTRICT val, const double* SSOLVE_RESTRICT x,
-                                        std::size_t i) {
-    double sum0 = 0.0, sum1 = 0.0;
-    // Widen once per row, so a 32-bit row pointer adds no sign extension to the inner loop.
-    std::int64_t k = row_ptr[i];
-    const std::int64_t end = row_ptr[i + 1];
-    for (; k + 1 < end; k += 2) {
-      sum0 += val[k] * x[col[k]];
-      sum1 += val[k + 1] * x[col[k + 1]];
+  template <class Body>
+  void with_width(Body&& body) const {
+    if (width_ == 4) {
+      body(std::integral_constant<int, 4>{});
+    } else if (width_ == 8) {
+      body(std::integral_constant<int, 8>{});
+    } else {
+      body(std::integral_constant<int, 16>{});
     }
-    if (k < end) sum0 += val[k] * x[col[k]];
-    return sum0 + sum1;
+  }
+
+  // y = A x, and x·y when Dot.
+  template <int W, bool Dot>
+  double sweep(const double* SSOLVE_RESTRICT x, double* SSOLVE_RESTRICT y) const {
+    const Ptr* SSOLVE_RESTRICT const row_ptr = a_.row_ptr.data();
+    const Index* SSOLVE_RESTRICT const col = a_.col.data();
+    const double* SSOLVE_RESTRICT const val = a_.val.data();
+    double dot = 0.0;
+    for (std::size_t i = 0; i < size_; ++i) {
+      // Widen once per row, so a 32-bit row pointer adds no sign extension to the inner loop.
+      const std::int64_t start = row_ptr[i];
+      const double value = masked_row<W>(col + start, val + start, x, row_ptr[i + 1] - start);
+      y[i] = value;
+      if (Dot) dot += x[i] * value;
+    }
+    return dot;
   }
 
   CsrMatrixT<Ptr> a_;
+  int width_;
 };
 
 }  // namespace

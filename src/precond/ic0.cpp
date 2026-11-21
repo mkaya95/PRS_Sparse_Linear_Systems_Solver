@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "ssolve/backend.hpp"
+#include "ssolve/triangular.hpp"
 
 namespace ssolve {
 
@@ -113,38 +114,9 @@ void ic0_apply(const Ic0Factor& f, const double* r, double* z) {
   }
 }
 
-namespace {
-
-// z is stored: the triangular solves need all of r before any of z is known.
-class Ic0Preconditioner final : public Preconditioner {
- public:
-  explicit Ic0Preconditioner(const CsrMatrix& a) : f_(ic0(a)), z_(static_cast<std::size_t>(a.n_rows)) {}
-
-  double start(const Backend& backend, const double* r, double, double* p) override {
-    ic0_apply(f_, r, z_.data());
-    backend.copy(z_.data(), p);
-    return backend.dot(r, z_.data());
-  }
-
-  RrRz update(const Backend& backend, double a, const double* p, const double* q, double* x, double* r) override {
-    const double rr = backend.cg_update(a, p, q, x, r);
-    ic0_apply(f_, r, z_.data());
-    return {rr, backend.dot(r, z_.data())};
-  }
-
-  void direction(const Backend& backend, const double*, double beta, double* p) override {
-    backend.xpby(z_.data(), beta, p);
-  }
-
- private:
-  Ic0Factor f_;
-  AlignedArray<double> z_;
-};
-
-}  // namespace
-
+// The preconditioner runs the same M as ic0_apply() above, through the branch-free sweeps of triangular.hpp.
 std::unique_ptr<Preconditioner> make_ic0_preconditioner(const CsrMatrix& a) {
-  return std::make_unique<Ic0Preconditioner>(a);
+  return make_triangular_preconditioner(ic0_triangular_factor(ic0(a)));
 }
 
 }  // namespace ssolve
