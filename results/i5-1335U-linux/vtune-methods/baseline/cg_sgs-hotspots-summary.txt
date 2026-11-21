@@ -1,0 +1,38 @@
+Elapsed Time: 34.643s
+    CPU Time: 32.709s
+        Effective Time: 32.709s
+        Spin Time: 0s
+        Overhead Time: 0s
+    Instructions Retired: 237,455,000,000
+    Microarchitecture Usage: 29.8% of Pipeline Slots
+        CPI Rate: 0.626
+    Total Thread Count: 1
+    Paused Time: 0.980s
+
+Top Hotspots
+Function                                                  Module  CPU Time  % of CPU Time(%)
+--------------------------------------------------------  ------  --------  ----------------
+ssolve::SymGaussSeidel::apply                             cg_sgs   19.997s             61.1%
+row_times_vector                                          cg_sgs    8.064s             24.7%
+ssolve::SeqVectorBackend::cg_update                       cg_sgs    1.619s              4.9%
+ssolve::SeqVectorBackend::xpby                            cg_sgs    0.855s              2.6%
+ssolve::(anonymous namespace)::SeqBackend<int>::spmv_dot  cg_sgs    0.817s              2.5%
+[Others]                                                  N/A       1.357s              4.1%
+Effective Physical Core Utilization: 9.7% (0.965 out of 10)
+    Effective Logical Core Utilization: 8.1% (0.972 out of 12)
+Collection and Platform Info
+    Application Command Line: taskset "-c" "0" "build/profile/methods/cg_sgs" "--matrix" "/home/nottarik/p08/data/thermal2.mtx" "--maxit" "30000" 
+    User Name: nottarik
+    Operating System: 6.17.0-19-generic DISTRIB_ID=Ubuntu DISTRIB_RELEASE=24.04 DISTRIB_CODENAME=noble DISTRIB_DESCRIPTION="Ubuntu 24.04.4 LTS"
+    Computer Name: nottarik-t14
+    Result Size: 825.4 MB 
+    Collection start time: 01:10:29 21/11/2026 UTC
+    Collection stop time: 01:11:04 21/11/2026 UTC
+    Collector Type: Event-based sampling driver
+    CPU
+        Name: Intel(R) microarchitecture code named Raptorlake-P
+        Frequency: 2.496 GHz
+        Logical CPU Count: 12
+        Cache Allocation Technology
+            Level 2 capability: not detected
+            Level 3 capability: not detected
