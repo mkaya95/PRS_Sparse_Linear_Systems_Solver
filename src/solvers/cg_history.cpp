@@ -1,4 +1,4 @@
-// Convergence history for plots. It wraps the backend rather than changing cg(), so the loop
+// Convergence history for plots. It wraps the preconditioner rather than changing cg(), so the loop
 // the benchmarks time stays exactly as it was measured.
 #include <cmath>
 #include <memory>
@@ -11,38 +11,31 @@ namespace ssolve {
 
 namespace {
 
-// Forwards every call to the real backend and keeps the r·r that each residual update returns.
-class RecordingBackend final : public Backend {
+// Forwards every call to the real preconditioner and keeps the r·r that each residual update returns.
+// It wraps the preconditioner rather than the backend, because a preconditioner may update r in its own
+// fused loop (triangular.hpp) instead of the backend's.
+class RecordingPreconditioner final : public Preconditioner {
  public:
-  RecordingBackend(const Backend& inner, std::vector<double>& rr) : inner_(inner), rr_(rr) {}
+  RecordingPreconditioner(Preconditioner& inner, std::vector<double>& rr) : inner_(inner), rr_(rr) {}
 
-  Index n() const override { return inner_.n(); }
-  void set_zero(double* x) const override { inner_.set_zero(x); }
-  void copy(const double* source, double* destination) const override { inner_.copy(source, destination); }
-  double dot(const double* x, const double* y) const override { return inner_.dot(x, y); }
-  void spmv(const double* x, double* y) const override { inner_.spmv(x, y); }
-  void xpby(const double* x, double beta, double* y) const override { inner_.xpby(x, beta, y); }
-  double spmv_dot(const double* x, double* y) const override { return inner_.spmv_dot(x, y); }
-
-  double cg_update(double a, const double* p, const double* q, double* x, double* r) const override {
-    const double rr = inner_.cg_update(a, p, q, x, r);
-    rr_.push_back(rr);
-    return rr;
+  double start(const Backend& backend, const double* r, double rr, double* p) override {
+    return inner_.start(backend, r, rr, p);
   }
 
-  RrRz jacobi_update(double a, const double* p, const double* q, double* x, double* r,
-                     const double* inv_diag) const override {
-    const RrRz sums = inner_.jacobi_update(a, p, q, x, r, inv_diag);
+  RrRz update(const Backend& backend, double a, const double* p, const double* q, double* x, double* r) override {
+    const RrRz sums = inner_.update(backend, a, p, q, x, r);
     rr_.push_back(sums.rr);
     return sums;
   }
 
-  void jacobi_direction(const double* inv_diag, const double* r, double beta, double* p) const override {
-    inner_.jacobi_direction(inv_diag, r, beta, p);
+  void direction(const Backend& backend, const double* r, double beta, double* p) override {
+    inner_.direction(backend, r, beta, p);
   }
 
+  double norm_squared(const Backend& backend, const double* v) override { return inner_.norm_squared(backend, v); }
+
  private:
-  const Backend& inner_;
+  Preconditioner& inner_;
   std::vector<double>& rr_;
 };
 
@@ -59,10 +52,10 @@ SolveResult cg_with_history(const Backend& backend, Preconditioner& precond, con
                             const SolveOptions& options, std::vector<double>& history) {
   if (options.use_initial_guess) throw std::runtime_error("cg_with_history starts from x = 0");
   std::vector<double> rr;
-  const RecordingBackend recording(backend, rr);
+  RecordingPreconditioner recording(precond, rr);
   SolveOptions plain = options;
   plain.history = nullptr;  // this function is the recorder; cg() must not call back into it
-  const SolveResult result = cg(recording, precond, b, x, plain);
+  const SolveResult result = cg(backend, recording, b, x, plain);
 
   history.clear();
   if (rr.empty()) {
@@ -75,7 +68,7 @@ SolveResult cg_with_history(const Backend& backend, Preconditioner& precond, con
   const double last = rr.back();
   const double reported = result.recursive_residual;
   const double bb = (std::isfinite(reported) && reported > 0.0 && std::isfinite(last)) ? last / (reported * reported)
-                                                                                         : recording.dot(b, b);
+                                                                                         : precond.norm_squared(backend, b);
   history.push_back(1.0);
   for (const double value : rr) history.push_back(std::sqrt(value / bb));
   return result;

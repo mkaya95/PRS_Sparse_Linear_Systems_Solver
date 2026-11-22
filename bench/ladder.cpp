@@ -18,6 +18,7 @@
 #include "ssolve/backend.hpp"
 #include "ssolve/cg.hpp"
 #include "ssolve/cg_common.hpp"
+#include "ssolve/jacobi_scaled.hpp"
 #include "ssolve/kernels_common.hpp"
 #include "ssolve/sell.hpp"
 #include "ssolve/timer.hpp"
@@ -309,6 +310,19 @@ SolveResult run_backend(const CsrMatrix& a, const double* b, double* x, const So
   return result;
 }
 
+// The shipping Jacobi solver, as cg_jacobi in apps/methods runs it: CG on the scaled system S A S, whose unit
+// diagonal is not stored (ssolve/jacobi_scaled.hpp). Scaling and the backend count as setup.
+SolveResult run_scaled_jacobi(const CsrMatrix& a, const double* b, double* x, const SolveOptions& options) {
+  const double setup_start = wall_seconds();
+  const JacobiScaling scaling = jacobi_scaling(a);
+  const std::unique_ptr<Backend> backend = make_seq_backend_unit_diagonal(clone(scaling.off_diagonal));
+  const double setup_seconds = wall_seconds() - setup_start;
+  SolveResult result = cg_scaled_jacobi(*backend, scaling, b, x, options);
+  result.setup_seconds = setup_seconds;
+  verify_result(a, b, x, options, result);
+  return result;
+}
+
 template <class K>
 KernelSet make_kernels(const CsrMatrix& a) {
   const CsrMatrix* const matrix = &a;
@@ -384,9 +398,10 @@ std::vector<NamedSolver> ladder_solvers() {
       {"L6-rowptr32", Precond::None, run_backend<true, false, Precond::None>},
       {"J0-passes", Precond::Jacobi, jacobi_passes<KAcc2>},
       {"J1-fused", Precond::Jacobi, run_backend<false, false, Precond::Jacobi>},
+      {"J2-rowptr32", Precond::Jacobi, run_backend<true, false, Precond::Jacobi>},
       // The shipping configurations, equal to the top rungs. Always compare these against Eigen.
       {"ours", Precond::None, run_backend<true, false, Precond::None>},
-      {"ours-jacobi", Precond::Jacobi, run_backend<true, false, Precond::Jacobi>},
+      {"ours-jacobi", Precond::Jacobi, run_scaled_jacobi},
   };
 }
 

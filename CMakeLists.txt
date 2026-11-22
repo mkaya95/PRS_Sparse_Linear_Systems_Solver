@@ -57,8 +57,10 @@ add_library(ssolve STATIC
   src/precond/ic0.cpp
   src/precond/incomplete_cholesky.cpp
   src/precond/sgs.cpp
+  src/precond/triangular.cpp
   src/solvers/cg.cpp
   src/solvers/cg_history.cpp
+  src/solvers/jacobi_scaled.cpp
   src/verify.cpp
 )
 add_dependencies(ssolve ssolve_build_info)
@@ -106,6 +108,30 @@ target_link_libraries(solve PRIVATE ssolve)
 add_executable(matrix_preview apps/matrix_preview.cpp)
 target_link_libraries(matrix_preview PRIVATE ssolve)
 
+# One executable per method, each with its own main, so VTune can profile one method at a time
+# (apps/methods/method_main.hpp). They land in <build>/methods.
+# With VTune's ITT library found, each one tells VTune to collect only during its iterations.
+find_path(SSOLVE_ITT_INCLUDE ittnotify.h
+  HINTS "$ENV{VTUNE_PROFILER_DIR}/include" /opt/intel/oneapi/vtune/latest/include)
+find_library(SSOLVE_ITT_LIBRARY NAMES libittnotify.a ittnotify
+  HINTS "$ENV{VTUNE_PROFILER_DIR}/lib64" /opt/intel/oneapi/vtune/latest/lib64)
+set(ssolve_methods cg_jacobi cg_sell_jacobi cg_sgs cg_ic cg_ic_fixed cg_ic0 cg_ic0_rcm eigen_e1 eigen_e4)
+foreach(method IN LISTS ssolve_methods)
+  add_executable(${method} apps/methods/${method}.cpp)
+  target_link_libraries(${method} PRIVATE ssolve)
+  set_target_properties(${method} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/methods")
+  if(SSOLVE_ITT_INCLUDE AND SSOLVE_ITT_LIBRARY)
+    target_compile_definitions(${method} PRIVATE SSOLVE_ITT)
+    target_include_directories(${method} SYSTEM PRIVATE "${SSOLVE_ITT_INCLUDE}")
+    target_link_libraries(${method} PRIVATE "${SSOLVE_ITT_LIBRARY}" ${CMAKE_DL_LIBS})
+  endif()
+endforeach()
+foreach(method eigen_e1 eigen_e4)
+  target_include_directories(${method} SYSTEM PRIVATE "${SSOLVE_EIGEN_DIR}")
+  target_compile_definitions(${method} PRIVATE EIGEN_DONT_PARALLELIZE)
+endforeach()
+add_custom_target(methods DEPENDS ${ssolve_methods})
+
 enable_testing()
 
 function(ssolve_test name)
@@ -125,6 +151,8 @@ ssolve_test(test_compare)
 ssolve_test(test_sell)
 ssolve_test(test_reorder)
 ssolve_test(test_precond)
+ssolve_test(test_triangular)
+ssolve_test(test_jacobi_scaled)
 
 add_executable(test_solvers tests/test_solvers.cpp)
 target_include_directories(test_solvers PRIVATE tests)

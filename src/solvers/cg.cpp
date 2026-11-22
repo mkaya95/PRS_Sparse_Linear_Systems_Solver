@@ -35,9 +35,9 @@ SolveResult cg_loop(const Backend& backend, Preconditioner& precond, const doubl
     backend.copy(rhs, r);  // with x = 0 the residual is b, and no SpMV is needed
   }
 
-  const double rhs_squared = backend.dot(rhs, rhs);
+  const double rhs_squared = precond.norm_squared(backend, rhs);
   const double threshold = std::max(options.tol * options.tol * rhs_squared, std::numeric_limits<double>::min());
-  double rr = backend.dot(r, r);
+  double rr = precond.norm_squared(backend, r);
 
   SolveResult result;
   const auto finish = [&](SolveStatus status, const char* detail = "") {

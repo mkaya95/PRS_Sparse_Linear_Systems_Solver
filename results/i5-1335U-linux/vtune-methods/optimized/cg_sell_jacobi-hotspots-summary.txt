@@ -1,0 +1,38 @@
+Elapsed Time: 20.883s
+    CPU Time: 19.707s
+        Effective Time: 19.707s
+        Spin Time: 0s
+        Overhead Time: 0s
+    Instructions Retired: 101,375,000,000
+    Microarchitecture Usage: 20.3% of Pipeline Slots
+        CPI Rate: 0.892
+    Total Thread Count: 1
+    Paused Time: 1.018s
+
+Top Hotspots
+Function                                                               Module          CPU Time  % of CPU Time(%)
+---------------------------------------------------------------------  --------------  --------  ----------------
+chunk_times_vector                                                     cg_sell_jacobi   11.253s             57.1%
+ssolve::SeqVectorBackend::jacobi_update                                cg_sell_jacobi    4.472s             22.7%
+ssolve::(anonymous namespace)::SellBackend<(int)8, (bool)1>::spmv_dot  cg_sell_jacobi    1.948s              9.9%
+ssolve::SeqVectorBackend::xpby                                         cg_sell_jacobi    1.853s              9.4%
+[sep5]                                                                 sep5              0.015s              0.1%
+[Others]                                                               N/A               0.165s              0.8%
+Effective Physical Core Utilization: 9.8% (0.982 out of 10)
+    Effective Logical Core Utilization: 8.3% (0.992 out of 12)
+Collection and Platform Info
+    Application Command Line: taskset "-c" "0" "build/profile/methods/cg_sell_jacobi" "--matrix" "/home/nottarik/p08/data/thermal2.mtx" "--maxit" "30000" 
+    User Name: nottarik
+    Operating System: 6.17.0-19-generic DISTRIB_ID=Ubuntu DISTRIB_RELEASE=24.04 DISTRIB_CODENAME=noble DISTRIB_DESCRIPTION="Ubuntu 24.04.4 LTS"
+    Computer Name: nottarik-t14
+    Result Size: 104.3 MB 
+    Collection start time: 02:29:37 21/11/2026 UTC
+    Collection stop time: 02:29:58 21/11/2026 UTC
+    Collector Type: Event-based sampling driver
+    CPU
+        Name: Intel(R) microarchitecture code named Raptorlake-P
+        Frequency: 2.496 GHz
+        Logical CPU Count: 12
+        Cache Allocation Technology
+            Level 2 capability: not detected
+            Level 3 capability: not detected

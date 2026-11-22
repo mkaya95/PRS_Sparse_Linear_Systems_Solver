@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ssolve/backend.hpp"
+#include "ssolve/masked_row.hpp"
 #include "ssolve/cg.hpp"
 #include "ssolve/generators.hpp"
 #include "ssolve/preconditioner.hpp"
@@ -93,6 +94,35 @@ TEST(spmv_matches_the_reference_for_narrow_and_wide_row_pointers) {
     make_seq_backend(clone(a), narrow)->spmv(x.data(), y.data());
     for (std::size_t i = 0; i < n; ++i) CHECK_NEAR(y[i], expected[i], 1e-12);
   }
+}
+
+// The masked rows (masked_row.hpp) take W = 4 (a path, 3 per row), W = 8 (Poisson2D and 3D, 5 and 7 per row)
+// and W = 16 (Point27, 27 per row, so the loop runs twice). Every width must give the
+// reference product, also on rows shorter and longer than W in the same matrix.
+TEST(masked_spmv_matches_the_reference_at_every_width) {
+  for (const CsrMatrix& a : {path_graph_matrix(50), make_stencil(Stencil::Poisson2D, 9),
+                             make_stencil(Stencil::Poisson3D, 6), make_stencil(Stencil::Point27, 6)}) {
+    const std::size_t n = static_cast<std::size_t>(a.n_rows);
+    const std::vector<double> x = ramp(n, -2.0, 0.37);
+    std::vector<double> expected(n), y(n);
+    spmv_reference(a, x.data(), expected.data());
+    const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
+    const double dot = backend->spmv_dot(x.data(), y.data());
+    double expected_dot = 0.0;
+    for (std::size_t i = 0; i < n; ++i) {
+      CHECK_NEAR(y[i], expected[i], 1e-12 * (1.0 + std::fabs(expected[i])));
+      expected_dot += x[i] * expected[i];
+    }
+    CHECK_NEAR(dot, expected_dot, 1e-10 * (1.0 + std::fabs(expected_dot)));
+  }
+}
+
+TEST(masked_width_picks_the_smallest_width_holding_97_percent_of_rows) {
+  CHECK_EQ(masked_width(path_graph_matrix(50).row_ptr.data(), 50), 4);
+  const CsrMatrix p3 = make_stencil(Stencil::Poisson3D, 6);
+  CHECK_EQ(masked_width(p3.row_ptr.data(), p3.n_rows), 8);
+  const CsrMatrix p27 = make_stencil(Stencil::Point27, 6);
+  CHECK_EQ(masked_width(p27.row_ptr.data(), p27.n_rows), 16);
 }
 
 TEST(spmv_dot_equals_spmv_followed_by_dot) {

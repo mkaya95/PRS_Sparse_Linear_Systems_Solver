@@ -12,6 +12,7 @@
 #include "ssolve/incomplete_cholesky.hpp"
 #include "ssolve/preconditioner.hpp"
 #include "ssolve/sgs.hpp"
+#include "ssolve/triangular.hpp"
 #include "ssolve/verify.hpp"
 #include "test_util.hpp"
 
@@ -277,11 +278,18 @@ TEST(ic0_is_exact_without_fill) {
 
   const AlignedArray<double> b = rhs_for_unit_solution(a);
   const std::unique_ptr<Backend> backend = make_seq_backend(clone(a));
-  const std::unique_ptr<Preconditioner> m = make_preconditioner(Precond::IncompleteCholeskyZero, a);
   AlignedArray<double> x(n);
-  const SolveResult result = verified_cg(a, *backend, *m, b.data(), x.data(), {});
+  // With the factor in double, the solver's preconditioner is exact too: one SpMV.
+  const std::unique_ptr<Preconditioner> exact =
+      make_triangular_preconditioner(ic0_triangular_factor(f, FactorPrecision::Double));
+  const SolveResult result = verified_cg(a, *backend, *exact, b.data(), x.data(), {});
   CHECK(result.status == SolveStatus::Converged);
   CHECK_EQ(result.spmv_count, std::int64_t{1});
+  // The default stores it in single precision (triangular.hpp), M = A to about 1e-7: one more SpMV at most.
+  const std::unique_ptr<Preconditioner> m = make_preconditioner(Precond::IncompleteCholeskyZero, a);
+  const SolveResult single = verified_cg(a, *backend, *m, b.data(), x.data(), {});
+  CHECK(single.status == SolveStatus::Converged);
+  CHECK(single.spmv_count <= 2);
 }
 
 TEST(ic0_keeps_the_pattern_of_the_lower_triangle) {

@@ -1,0 +1,43 @@
+Elapsed Time: 17.444s
+    CPU Time: 16.108s
+    Performance-core (P-core)
+        Memory Bound: 25.7% of Pipeline Slots
+            L1 Bound: 4.4% of Clockticks
+            L2 Bound: 0.7% of Clockticks
+            L3 Bound: 5.5% of Clockticks
+            DRAM Bound: 19.9% of Clockticks
+            Store Bound: 0.1% of Clockticks
+    Efficient-core (E-core)
+        Memory Bound: 0.0% of Clockticks
+            L1 Bound: 0.0% of Clockticks
+            L2 Bound: 0.0% of Clockticks
+            L3 Bound: 0.0% of Clockticks
+    Uncore
+        DRAM Bandwidth Bound: 99.5% of Elapsed Time
+    Loads: 60,363,410,848
+    Stores: 8,130,443,906
+    LLC Miss Count: 195,081,900
+    Average Latency (cycles): 17
+    Total Thread Count: 1
+    Paused Time: 1.149s
+
+Bandwidth Utilization
+Bandwidth Domain  Platform Maximum  Observed Maximum  Average  % of Elapsed Time with High BW Utilization(%)
+----------------  ----------------  ----------------  -------  ---------------------------------------------
+DRAM, GB/sec      25                          26.100   23.144                                          99.5%
+Collection and Platform Info
+    Application Command Line: taskset "-c" "0" "build/profile/methods/cg_ic0" "--matrix" "/home/nottarik/p08/data/thermal2.mtx" "--maxit" "30000" 
+    User Name: nottarik
+    Operating System: 6.17.0-19-generic DISTRIB_ID=Ubuntu DISTRIB_RELEASE=24.04 DISTRIB_CODENAME=noble DISTRIB_DESCRIPTION="Ubuntu 24.04.4 LTS"
+    Computer Name: nottarik-t14
+    Result Size: 89.7 MB 
+    Collection start time: 02:39:43 21/11/2026 UTC
+    Collection stop time: 02:40:01 21/11/2026 UTC
+    Collector Type: Event-based sampling driver
+    CPU
+        Name: Intel(R) microarchitecture code named Raptorlake-P
+        Frequency: 2.496 GHz
+        Logical CPU Count: 12
+        Cache Allocation Technology
+            Level 2 capability: not detected
+            Level 3 capability: not detected

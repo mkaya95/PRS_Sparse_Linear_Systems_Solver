@@ -69,7 +69,10 @@ SolveResult run_eigen(const CsrMatrix& a, const double* b, double* x, const Solv
   }
   result.solve_seconds = wall_seconds() - solve_start;
 
-  result.status = cg.info() == Eigen::Success ? SolveStatus::Converged : SolveStatus::MaxIterations;
+  // NoConvergence is running out of iterations; NumericalIssue is a breakdown.
+  result.status = cg.info() == Eigen::Success          ? SolveStatus::Converged
+                  : cg.info() == Eigen::NumericalIssue ? SolveStatus::Breakdown
+                                                       : SolveStatus::MaxIterations;
   result.recursive_residual = cg.error();
   // Convergence breaks out of Eigen's loop before its counter advances, so a converged
   // run did one more SpMV than iterations() reports. A zero rhs returns before the loop.

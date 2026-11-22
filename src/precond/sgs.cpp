@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "ssolve/backend.hpp"
+#include "ssolve/triangular.hpp"
 
 namespace ssolve {
 
@@ -69,38 +70,9 @@ void SymGaussSeidel::apply(const double* r, double* z) const {
   }
 }
 
-namespace {
-
-// z is stored: the sweeps need all of r before any of z is known, so nothing merges into the updates.
-class SgsPreconditioner final : public Preconditioner {
- public:
-  explicit SgsPreconditioner(const CsrMatrix& a) : m_(clone(a)), z_(static_cast<std::size_t>(a.n_rows)) {}
-
-  double start(const Backend& backend, const double* r, double, double* p) override {
-    m_.apply(r, z_.data());
-    backend.copy(z_.data(), p);
-    return backend.dot(r, z_.data());
-  }
-
-  RrRz update(const Backend& backend, double a, const double* p, const double* q, double* x, double* r) override {
-    const double rr = backend.cg_update(a, p, q, x, r);
-    m_.apply(r, z_.data());
-    return {rr, backend.dot(r, z_.data())};
-  }
-
-  void direction(const Backend& backend, const double*, double beta, double* p) override {
-    backend.xpby(z_.data(), beta, p);
-  }
-
- private:
-  SymGaussSeidel m_;
-  AlignedArray<double> z_;
-};
-
-}  // namespace
-
+// The preconditioner runs the same M as apply() above, through the branch-free sweeps of triangular.hpp.
 std::unique_ptr<Preconditioner> make_sgs_preconditioner(const CsrMatrix& a) {
-  return std::make_unique<SgsPreconditioner>(a);
+  return make_triangular_preconditioner(sgs_triangular_factor(a));
 }
 
 }  // namespace ssolve

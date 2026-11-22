@@ -1,0 +1,72 @@
+Function,CPU Time,Performance-core (P-core):Memory Bound(%),Performance-core (P-core):Memory Bound:L1 Bound(%),Performance-core (P-core):Memory Bound:L2 Bound(%),Performance-core (P-core):Memory Bound:L3 Bound(%),Performance-core (P-core):Memory Bound:DRAM Bound(%),Performance-core (P-core):Memory Bound:Store Bound(%),Efficient-core (E-core):Memory Bound(%),Efficient-core (E-core):Memory Bound:L1 Bound(%),Efficient-core (E-core):Memory Bound:L2 Bound(%),Efficient-core (E-core):Memory Bound:L3 Bound(%),Loads,Stores,LLC Miss Count,Average Latency (cycles),Module,Function (Full),Source File,Start Address
+"ssolve::(anonymous namespace)::SeqBackend<int, (bool)0>::spmv_dot",4.128606,24.6,0.0,0.0,10.7,13.5,0.0,0.0,0.0,0.0,0.0,8426852798,915227456,14306006,18.935802,cg_ic0_rcm,"ssolve::(anonymous namespace)::SeqBackend<int, (bool)0>::spmv_dot(double const*, double*) const",seq_backend.cpp,0x11cc0
+forward<true>,2.822516,17.1,5.4,0.4,6.2,7.6,1.2,0.0,0.0,0.0,0.0,16260887812,3140894224,1300546,9.834975,cg_ic0_rcm,forward<true>,triangular.cpp,0x1dfb0
+ssolve::(anonymous namespace)::backward,2.479968,5.7,10.0,0.0,1.2,1.2,0.0,0.0,0.0,0.0,0.0,15943678296,2173665208,0,7.983827,cg_ic0_rcm,"ssolve::(anonymous namespace)::backward(ssolve::TriangularFactor const&, double const*, double*)",triangular.cpp,0x1f720
+ssolve::SeqVectorBackend::xpby,0.635016,35.4,0.0,4.1,11.3,58.6,0.0,0.0,0.0,0.0,0.0,434213026,213206396,98841496,503.384615,cg_ic0_rcm,"ssolve::SeqVectorBackend::xpby(double const*, double, double*) const",seq_vectors.hpp,0x133d0
+[sep5],0.016026,18.4,86.7,0.0,43.3,0.0,0.0,0.0,0.0,0.0,0.0,5200156,13000390,0,0.0,sep5,[sep5],[Unknown],0x0
+_find_next_bit,0.004006,17.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,_find_next_bit,[Unknown],0xffffffffa6fa0b10
+account_user_time,0.004006,15.4,100.0,0.0,100.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,account_user_time,[Unknown],0xffffffffa6810ca0
+fpregs_assert_state_consistent,0.004006,20.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,fpregs_assert_state_consistent,[Unknown],0xffffffffa66f34a0
+native_irq_return_iret,0.004006,16.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,native_irq_return_iret,[Unknown],0xffffffffa6401248
+native_sched_clock,0.004006,21.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,0,0,0.0,vmlinux,native_sched_clock,[Unknown],0xffffffffa7997ff0
+native_write_msr_safe,0.004006,20.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,native_write_msr_safe,[Unknown],0xffffffffa6746de0
+_raw_spin_unlock_irqrestore,0.002003,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,_raw_spin_unlock_irqrestore,[Unknown],0xffffffffa79ab370
+fmax,0.002003,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,23400702,0,0,0.0,libm.so.6,fmax,s_fmax.S,0x3a160
+format_decode,0.002003,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,format_decode,[Unknown],0xffffffffa7984180
+forward<false>,0.002003,14.6,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,239207176,18200546,0,7.000000,cg_ic0_rcm,forward<false>,triangular.cpp,0x1ed00
+func@0x8380,0.002003,4.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,cg_ic0_rcm,func@0x8380,[Unknown],0x8380
+hrtimer_interrupt,0.002003,0.0,,,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,hrtimer_interrupt,[Unknown],0xffffffffa68a9b90
+irq_enter_rcu,0.002003,22.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,irq_enter_rcu,[Unknown],0xffffffffa678b840
+native_read_msr,0.002003,5.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,native_read_msr,[Unknown],0xffffffffa6746ec0
+native_write_msr,0.002003,21.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,native_write_msr,[Unknown],0xffffffffa6747070
+nohz_balancer_kick,0.002003,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,nohz_balancer_kick,[Unknown],0xffffffffa67f9500
+rcu_sched_clock_irq,0.002003,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,rcu_sched_clock_irq,[Unknown],0xffffffffa6880070
+ssolve::SeqVectorBackend::dot,0.002003,74.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,15600468,0,0,0.0,cg_ic0_rcm,"ssolve::SeqVectorBackend::dot(double const*, double const*) const",seq_vectors.hpp,0x132b0
+ssolve::to_original_order,0.002003,53.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,cg_ic0_rcm,"ssolve::to_original_order(std::vector<int, std::allocator<int>> const&, double const*, double*)",reorder.cpp,0x17020
+tick_nohz_handler,0.002003,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,tick_nohz_handler,[Unknown],0xffffffffa68c20d0
+__cgroup_account_cputime_field,0.0,40.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,__cgroup_account_cputime_field,[Unknown],0xffffffffa68ee6f0
+__ct_user_exit,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,63.000000,vmlinux,__ct_user_exit,[Unknown],0xffffffffa799ba40
+__hrtimer_next_event_base,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,2600078,0,0.0,vmlinux,__hrtimer_next_event_base,[Unknown],0xffffffffa68a8840
+__hrtimer_run_queues,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,2600078,0,0.0,vmlinux,__hrtimer_run_queues,[Unknown],0xffffffffa68a8b90
+__memmove_avx_unaligned_erms,0.0,67.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,7800234,5200156,0,0.0,libc.so.6,__memmove_avx_unaligned_erms,memmove-vec-unaligned-erms.S,0x188d80
+__memset_avx2_unaligned_erms,0.0,87.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,libc.so.6,__memset_avx2_unaligned_erms,memset-vec-unaligned-erms.S,0x189780
+__raw_spin_lock_irqsave,0.0,16.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,__raw_spin_lock_irqsave,[Unknown],0xffffffffa6836d80
+__sysvec_apic_timer_interrupt,0.0,20.4,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,__sysvec_apic_timer_interrupt,[Unknown],0xffffffffa672d0a0
+__timekeeping_advance,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,vmlinux,__timekeeping_advance,[Unknown],0xffffffffa68ac090
+__update_load_avg_cfs_rq,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,0,0,0.0,vmlinux,__update_load_avg_cfs_rq,[Unknown],0xffffffffa680ee10
+_raw_spin_lock,0.0,19.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,_raw_spin_lock,[Unknown],0xffffffffa79aba80
+arch_asym_cpu_priority,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,vmlinux,arch_asym_cpu_priority,[Unknown],0xffffffffa6749650
+asm_sysvec_apic_timer_interrupt,0.0,16.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,asm_sysvec_apic_timer_interrupt,[Unknown],0xffffffffa6400ef0
+blk_stat_timer_fn,0.0,16.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,blk_stat_timer_fn,[Unknown],0xffffffffa6f05470
+calc_global_load_tick,0.0,4.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,calc_global_load_tick,[Unknown],0xffffffffa682fbf0
+call_function_single_prep_ipi,0.0,9.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,call_function_single_prep_ipi,[Unknown],0xffffffffa67dbcf0
+cpuacct_account_field,0.0,16.9,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,cpuacct_account_field,[Unknown],0xffffffffa682b3d0
+cpuacct_charge,0.0,24.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,cpuacct_charge,[Unknown],0xffffffffa682b320
+ct_nmi_exit,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,8.000000,vmlinux,ct_nmi_exit,[Unknown],0xffffffffa799bb40
+default_do_nmi,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,5200156,0,0,0.0,vmlinux,default_do_nmi,[Unknown],0xffffffffa7997730
+exc_nmi,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,2600078,0,0.0,vmlinux,exc_nmi,[Unknown],0xffffffffa79978b0
+generic_exec_single,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,2600078,0,0.0,vmlinux,generic_exec_single,[Unknown],0xffffffffa68d2350
+irqentry_enter,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,vmlinux,irqentry_enter,[Unknown],0xffffffffa799b330
+irqentry_enter_from_user_mode,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,vmlinux,irqentry_enter_from_user_mode,[Unknown],0xffffffffa799b2e0
+ittcolext_report_state,0.0,74.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,libittnotify_collector.so,ittcolext_report_state,[Unknown],0x65b0
+kick_ilb,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,2600078,0,0.0,vmlinux,kick_ilb,[Unknown],0xffffffffa67e3b20
+lapic_next_deadline,0.0,16.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,lapic_next_deadline,[Unknown],0xffffffffa672cef0
+mask_ioapic_irq,0.0,62.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,mask_ioapic_irq,[Unknown],0xffffffffa67326f0
+ntp_tick_length,0.0,19.8,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,ntp_tick_length,[Unknown],0xffffffffa68afa10
+perf_adjust_freq_unthr_context,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,vmlinux,perf_adjust_freq_unthr_context,[Unknown],0xffffffffa6a70f40
+perf_event_task_tick,0.0,20.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,perf_event_task_tick,[Unknown],0xffffffffa6a74510
+raw_spin_rq_lock_nested,0.0,4.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,raw_spin_rq_lock_nested,[Unknown],0xffffffffa67d6b00
+rb_next,0.0,7.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,rb_next,[Unknown],0xffffffffa797e930
+read_tsc,0.0,17.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,read_tsc,[Unknown],0xffffffffa66ee9b0
+reweight_entity,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,vmlinux,reweight_entity,[Unknown],0xffffffffa67f0690
+sched_clock,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,2600078,0,0.0,vmlinux,sched_clock,[Unknown],0xffffffffa66efd90
+sched_core_idle_cpu,0.0,5.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,sched_core_idle_cpu,[Unknown],0xffffffffa681a0b0
+sched_use_asym_prio,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,vmlinux,sched_use_asym_prio,[Unknown],0xffffffffa67e7470
+ssolve::cg,0.0,5.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,101403042,62401872,0,64.666667,cg_ic0_rcm,"ssolve::cg(ssolve::Backend const&, ssolve::Preconditioner&, double const*, double*, ssolve::SolveOptions const&)",cg.cpp,0xb23f
+ssolve::to_new_order,0.0,64.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,28600858,15600468,0,0.0,cg_ic0_rcm,"ssolve::to_new_order(std::vector<int, std::allocator<int>> const&, double const*, double*)",reorder.cpp,0x16fe0
+task_tick_fair,0.0,4.7,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,2600078,0,0.0,vmlinux,task_tick_fair,[Unknown],0xffffffffa67f0a10
+update_cfs_group,0.0,19.2,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,vmlinux,update_cfs_group,[Unknown],0xffffffffa67f0910
+update_curr,0.0,14.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,0,0,0.0,vmlinux,update_curr,[Unknown],0xffffffffa67e85a0
+update_load_avg,0.0,36.5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2600078,2600078,0,0.0,vmlinux,update_load_avg,[Unknown],0xffffffffa67ea320
+update_rq_clock,0.0,4.3,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,update_rq_clock,[Unknown],0xffffffffa67d87a0
+update_vsyscall,0.0,13.1,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0,0,0,0.0,vmlinux,update_vsyscall,[Unknown],0xffffffffa68c7dd0

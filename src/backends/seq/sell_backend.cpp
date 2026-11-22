@@ -18,7 +18,7 @@ namespace ssolve {
 
 namespace {
 
-template <int C>
+template <int C, bool UnitDiagonal>
 class SellBackend final : public SeqVectorBackend {
  public:
   explicit SellBackend(SellMatrix s) : SeqVectorBackend(static_cast<std::size_t>(s.n_rows)), s_(std::move(s)) {}
@@ -32,7 +32,7 @@ class SellBackend final : public SeqVectorBackend {
       chunk_times_vector(c, x, sum);
       const Index* const rows = s_.row_of.data() + c * C;
       for (int r = 0; r < C; ++r) {
-        if (rows[r] >= 0) y[rows[r]] = sum[r];
+        if (rows[r] >= 0) y[rows[r]] = UnitDiagonal ? sum[r] + x[rows[r]] : sum[r];
       }
     }
   }
@@ -46,8 +46,10 @@ class SellBackend final : public SeqVectorBackend {
       const Index* const rows = s_.row_of.data() + c * C;
       for (int r = 0; r < C; ++r) {
         if (rows[r] >= 0) {
-          y[rows[r]] = sum[r];
-          dot += x[rows[r]] * sum[r];
+          const double xr = x[rows[r]];
+          const double value = UnitDiagonal ? sum[r] + xr : sum[r];
+          y[rows[r]] = value;
+          dot += xr * value;
         }
       }
     }
@@ -77,20 +79,33 @@ std::unique_ptr<Backend> make_sell_backend(const CsrMatrix& a, int chunk, Index 
   return make_sell_backend(sell_from_csr(a, chunk, sigma));
 }
 
-std::unique_ptr<Backend> make_sell_backend(SellMatrix s) {
+namespace {
+
+template <bool UnitDiagonal>
+std::unique_ptr<Backend> make(SellMatrix s) {
   if (s.n_rows != s.n_cols) throw std::runtime_error("the solver backend needs a square matrix");
   switch (s.chunk) {
     case 4:
-      return std::make_unique<SellBackend<4>>(std::move(s));
+      return std::make_unique<SellBackend<4, UnitDiagonal>>(std::move(s));
     case 8:
-      return std::make_unique<SellBackend<8>>(std::move(s));
+      return std::make_unique<SellBackend<8, UnitDiagonal>>(std::move(s));
     case 16:
-      return std::make_unique<SellBackend<16>>(std::move(s));
+      return std::make_unique<SellBackend<16, UnitDiagonal>>(std::move(s));
     case 32:
-      return std::make_unique<SellBackend<32>>(std::move(s));
+      return std::make_unique<SellBackend<32, UnitDiagonal>>(std::move(s));
     default:
       throw std::runtime_error("SELL chunk must be 4, 8, 16 or 32");
   }
+}
+
+}  // namespace
+
+std::unique_ptr<Backend> make_sell_backend(SellMatrix s) { return make<false>(std::move(s)); }
+
+std::unique_ptr<Backend> make_sell_backend_unit_diagonal(const CsrMatrix& off_diagonal, int chunk, Index sigma) {
+  require_no_diagonal(off_diagonal);
+  if (off_diagonal.n_rows != off_diagonal.n_cols) throw std::runtime_error("the solver backend needs a square matrix");
+  return make<true>(sell_from_csr(off_diagonal, chunk, sigma));
 }
 
 }  // namespace ssolve
